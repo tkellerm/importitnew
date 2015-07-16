@@ -13,11 +13,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import de.abas.ceks.jedp.EDPConstants;
-import de.abas.ceks.jedp.EDPQuery;
-import de.abas.ceks.jedp.EDPSession;
-import de.abas.ceks.jedp.InvalidQueryException;
-
 /**
  * @author tkellermann
  * 
@@ -35,7 +30,8 @@ public class ExcelProcessing {
 	private org.apache.poi.ss.usermodel.Sheet errorSheet;
 	
 	private ArrayList<Datensatz> datensatzList;
-	private List<Feld> kopfFelder = new ArrayList<Feld>();
+	private List<Feld> kopfFelder ;
+	private DatensatzTabelle tabellenFelder;
 	
 	private String importFilename; 
 	private String errorFilename;
@@ -46,107 +42,194 @@ public class ExcelProcessing {
 	private int anzahlDatensaetze;
 	private OptionCode optionCode;
 	
-	public ExcelProcessing(String importFilename) {
+	public ExcelProcessing(String importFilename) throws ImportitException {
 		super();
+		this.kopfFelder = new ArrayList<Feld>();
+		this.tabellenFelder = new DatensatzTabelle();
+		this.datensatzList = new ArrayList<Datensatz>();
 		this.importFilename = importFilename;
+		checkImportFile(importFilename);
+		this.importWorkbook = initWorkbook(importFilename);
+		this.importSheet = importWorkbook.getSheetAt(0);
+		pruefeUndHoleInfoAusSheet(this.importSheet);
+		this.kopfFelder = readFieldinHead(this.importSheet , this.tabelleAbFeld);
+		this.tabellenFelder = readFieldInTable(this.importSheet , this.tabelleAbFeld);
+		this.datensatzList = readAllData(this.importSheet);
 	}
 	
-	private List<Feld> legeKopfFelderListe(Sheet importSheet2) throws ImportitException {
+	
+	
+	
+	/**
+	 * @param importSheet2
+	 * @return
+	 * @throws ImportitException
+	 * 
+	 * Über die Funktion readAllData werden die Daten aus dem Excelzeilen in die Datensatzstruktur eingelesen.
+	 * Über das Keyfeld wird gesteuert, ob ein neuer Datensatz angelegt 
+	 * 
+	 */
+	private ArrayList<Datensatz> readAllData(Sheet importSheet2) throws ImportitException {
+	
+		ArrayList<Datensatz> datensatzListtemp = new ArrayList<Datensatz>();
+		Integer row = 2;
+		Integer col = 0;
+		Datensatz datensatz = null;
+		for (row = row ; row < getMaxRow(importSheet2); row++) {
+//			prüfen, ob noch gleicher Datensatz normal Col = 0, wenn key - Feldnummer aus kopfffelder holen angegeben dann
+			
+			if (datensatz==null) {
+				
+//				Es wird die erste Datenzeile in der ExcelTabelle gelesen
+				
+				datensatz = fuellValueInKopfdatensatz(importSheet2 , row); 
+				datensatzListtemp.add(datensatz);		
+				
+			}else {
+				
+//				Es wird eine weitere Zeile gelesen
+//				prüfen ob noch gleicher Kopfdatensatz Prüfung über keyfeld(ColNumber)
+				
+				if (datensatz.getValueOfKeyfield().equals(getZellenInhaltString(importSheet2, datensatz.getKeyfield(), row))) {
+					//Es ist der gleiche Datensatz aber neue Tabellenzeile
+						List<DatensatzTabelle> tabelle = datensatz.getTabellenzeilen();
+						
+						DatensatzTabelle datensatzTabelle = new DatensatzTabelle(this.tabellenFelder);
+						ArrayList<Feld> tabrow = datensatzTabelle.getTabellenFelder();
+						 tabrow = this.tabellenFelder.getTabellenFelder();
+						for (Feld feld : tabrow) {
+							feld.setValue(getZellenInhaltString(importSheet2, feld.getColNumber(), row));
+						}
+//						Datensatz an Tabelle anfügen
+						tabelle.add(datensatzTabelle);						
+					
+				}else {
+					
+					//Es fängt ein neuer Datensatz an
+					
+					datensatz = fuellValueInKopfdatensatz(importSheet2 , row);
+					datensatzListtemp.add(datensatz);
+				}
+			}
+			
+		}
 		
-			
-			
+		return datensatzListtemp;
+	}
+
+
+
+	/**
+	 * @param importSheet2
+	 * @param tableBeginAtRow
+	 * @return
+	 * @throws ImportitException
+	 * 
+	 * Liest die Werte aus bis zur Spalte @tableBeginAtRow aus und schreibt sie in das Value der einzeln Kopffeldern
+	 * 
+	 */
+	/**
+	 * @param importSheet2
+	 * @param tableBeginAtRow
+	 * @return
+	 * @throws ImportitException
+	 */
+	private Datensatz fuellValueInKopfdatensatz(Sheet importSheet2, Integer tableBeginAtRow) throws ImportitException {
+
+		Datensatz datensatz = initNewDatensatz();
+		List<Feld> kopffelder = datensatz.getKopfFelder();
+		for (Feld feld : kopffelder) {
+			feld.setValue(getZellenInhaltString(importSheet2, feld.getColNumber(), tableBeginAtRow));
+
+		}
+
+		return datensatz;
+		
+	}
+
+
+
+
+	private Datensatz initNewDatensatz() throws ImportitException {
+
+		Datensatz datensatz = new Datensatz();
+		datensatz.setKopfFelder(this.kopfFelder);
+		datensatz.setDatenbank(this.datenbank);
+		datensatz.setGruppe(this.gruppe);
+		datensatz.setTippkommando(this.tippkommando);
+		datensatz.setOptionCode(this.optionCode);
+		datensatz.setTableStartsAtField(this.tabelleAbFeld);
+		List<DatensatzTabelle> tabelle = datensatz.getTabellenzeilen();
+		return datensatz;
+	}
+
+
+
+
+	private List<Feld> leseDataKopffelder(List<Feld> kopfFelder2) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+
+	public ArrayList<Datensatz> getDatensatzList() {
+		return datensatzList;
+	}
+
+
+
+	private  List<Feld> readFieldinHead(Sheet importSheet2, Integer tabelleAbFeld2) throws ImportitException {
+
 //			alle Felder in der Zeile2 durchlaufen, ob Sie in der Datenbank vorhanden sind
 //			Falls ja, dann in Struktur einfügen
-
+			List<Feld> kopfFelder2 = new ArrayList<Feld>();
 			String variable;
 			
 //			Tabellefelder  vorhanden
 				Integer row = 1;
 				for (int col = 0; (col < getMaxCol(importSheet2)) && (col < (this.tabelleAbFeld) || this.tabelleAbFeld == 0) ; col++) {
 					
-					String zelleninhalt = getZellenInhaltString(importSheet2, col, row);
-					
-					int index = zelleninhalt.indexOf("@");
-					if (index != -1 ) {
-						
-						variable = zelleninhalt.substring(0, index );
-					
-					}else {
-						
-						variable = zelleninhalt;
-					}
-					
-//					Wenn der Variablenname leer dann skip option setzen
-						Feld feld = new Feld();
-					if (!variable.isEmpty()) {
-					
-						String selectionString = "vdn=" + this.datenbank.toString() + ";vgr=" + this.gruppe.toString() + ";vname=`" + variable ;
-						
-						
-						
-						
-							
-						
-								
-								feld.setName(variable);
-								
-//								Die Optionen auslesen
-								
-								feld.setOption_notEmpty(zelleninhalt.contains(ImportOptionen.NOTEMPTY.getSearchstring()));
-								feld.setOption_modifiable(zelleninhalt.contains(ImportOptionen.MODIFIABLE.getSearchstring()));
-								feld.setOption_skip(zelleninhalt.contains(ImportOptionen.SKIP.getSearchstring()));
-								
-//								Falls die Option Alle Felder auf modifiable Prüfen gesetzt wird, dann Option in jedem Feld setzen
-								
-								if (this.optionCode.getCheckFieldIsModifiable()) {
-									
-									feld.setOption_modifiable(true);
-									
-								}
-								
-//								Den Schlüssel auslesen, wenn es das erste Feld ist.
-								
-								if ( zelleninhalt.contains("@") && 
-										!(zelleninhalt.contains(ImportOptionen.NOTEMPTY.getSearchstring())) &&
-										!(zelleninhalt.contains(ImportOptionen.MODIFIABLE.getSearchstring())) &&
-										!(zelleninhalt.contains(ImportOptionen.SKIP.getSearchstring())) &&
-										col == 0)	{
-														String schluessel = zelleninhalt.substring(index+1); 	
-														
-						
-														
-						
-						
-														}else {
-															feld.setKey(schluessel);	
-														}
-									
-										 			}
-						
-								}
-					
-					
-							
-							
-						}else {
-							
-//							wenn der Variablenname leer ist wird dieses Feld ignoriert
-							
-							feld.setOption_skip(true);
-							
-						}
+//					Zelleninhalt auslesen und Feld Konstruktor übergeben
+
+					Feld feld = new Feld(getZellenInhaltString(importSheet2, col, row), true , col );
 
 //					hänge das Feld an die Kopffelder an
 					
-					kopfFelder.add(feld);
-					
-					
-					
+					kopfFelder2.add(feld);
 					
 				}
 				
-		
+			return kopfFelder2;	
 	}
+		
+
+	private DatensatzTabelle readFieldInTable(Sheet importSheet2,	Integer tabelleAbFeld2) {
+//		alle Felder in der Zeile2 durchlaufen, ob Sie in der Datenbank vorhanden sind
+//		Falls ja, dann in Struktur einfügen
+		DatensatzTabelle datensatzTabelle = new DatensatzTabelle();
+		
+		List<Feld> tabellenFelder2 = datensatzTabelle.getTabellenFelder();
+		String variable;
+//		Tabellenfelder  vorhanden
+			Integer row = 1;
+			if (tabelleAbFeld2 > 0) {
+				for (int col = this.tabelleAbFeld; col < getMaxCol(importSheet2) ; col++) {
+					
+//					Zelleninhalt auslesen und Feld Konstruktor übergeben
+
+					Feld feld = new Feld(getZellenInhaltString(importSheet2, col, row), true , col );
+
+//					hänge das Feld an die Kopffelder an
+					
+					tabellenFelder2.add(feld);
+					
+				}
+			}
+		return datensatzTabelle;	
+	}
+	
 	
 	
 	private void checkImportFile(String filename) throws ImportitException{
@@ -203,8 +286,7 @@ public class ExcelProcessing {
 
     }
 	
-	private void pruefeUndHoleInfoAusSheet(
-			org.apache.poi.ss.usermodel.Sheet sheet) throws ImportitException {
+	private void pruefeUndHoleInfoAusSheet(Sheet sheet) throws ImportitException {
 		
 			try{
 				
