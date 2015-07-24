@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry excluding="de/abaspro/infosystem/importit/ImportIt20.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="/Client"/>
 	<classpathentry kind="lib" path="includejar/abas-jfopapi.jar"/>
 	<classpathentry kind="lib" path="includejar/jedp.jar"/>
-	<classpathentry kind="lib" path="includejar/poi-3.9-20121203.jar"/>
 	<classpathentry kind="lib" path="includejar/poi-ooxml-3.9-20121203.jar"/>
 	<classpathentry kind="lib" path="includejar/poi-ooxml-schemas-3.9-20121203.jar"/>
 	<classpathentry kind="lib" path="includejar/xmlbeans-2.3.0.jar"/>
 	<classpathentry kind="lib" path="/S3Java/lib/commons-codec.jar"/>
+	<classpathentry kind="lib" path="/Client/lib/abas-db-infosys.jar" sourcepath="/Client/lib/abas-db-infosys-src.zip"/>
+	<classpathentry kind="lib" path="includejar/poi-3.9-20121203.jar"/>
+	<classpathentry kind="lib" path="/S3Java/lib/jxl.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

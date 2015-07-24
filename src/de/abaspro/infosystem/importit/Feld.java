@@ -16,8 +16,23 @@ public class Feld {
 	private String  completeContent;
 	private Boolean fieldtoCopy;
 	private Integer colNumber;
+	private String 	abasTyp;
 	
 	
+	@Override
+	public String toString() {
+		return "Feld [name=" + name + ", value=" + value + ", abasTyp="
+				+ abasTyp + "]";
+	}
+
+	public String getAbastyp() {
+		return abasTyp;
+	}
+
+	public void setAbastyp(String abastyp) {
+		this.abasTyp = abastyp;
+	}
+
 	/**
 	 * @param completeContent
 	 * @param fieldInHead
@@ -34,6 +49,8 @@ public class Feld {
 		this.colNumber = col;
 		this.key = "";
 		this.error = "";
+		this.name = "";
+		this.abasTyp = "";
 		if (fieldToCopy) {
 	//		Es ist ein Kopfffeld und daher wird nicht value, sondern name gefüllt
 			this.name = extractValue(completeContent);
@@ -62,6 +79,7 @@ public class Feld {
 			
 			this.completeContent = completeContent;
 			this.fieldtoCopy = false;
+			this.name = "";
 			this.name = headfield.getName();
 			this.value = extractValue(completeContent);
 			this.option_modifiable = headfield.getOption_modifiable();
@@ -70,6 +88,7 @@ public class Feld {
 			this.colNumber = headfield.colNumber;
 			this.key = "";
 			this.error = "";
+			this.abasTyp = "";
 			
 		}else {
 			throw new ImportitException("Es wurde kein Feld mit der Eigenschaft fieldInHead übergeben!");

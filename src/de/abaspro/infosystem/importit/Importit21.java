@@ -40,6 +40,13 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				ExcelProcessing excelProcessing = new ExcelProcessing(infosysImportit.getYdatafile());
 				ArrayList<Datensatz> datensatzList = excelProcessing.getDatensatzList();
 				
+				EdpProcessing edpProcessing = new EdpProcessing(infosysImportit.getYserver(), infosysImportit.getYport(), infosysImportit.getYmandant(), infosysImportit.getYpasswort());
+				edpProcessing.checkDatensatzList(datensatzList);
+				edpProcessing.importDatensatzList(datensatzList);
+				
+				
+				String daten = "test2"; 
+				
 				
 			} catch (ImportitException e) {
 				TextBox textBox = new TextBox(getContext(), "Fehler", e.toString());

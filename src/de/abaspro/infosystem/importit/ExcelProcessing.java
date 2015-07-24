@@ -66,7 +66,8 @@ public class ExcelProcessing {
 	 * @throws ImportitException
 	 * 
 	 * Über die Funktion readAllData werden die Daten aus dem Excelzeilen in die Datensatzstruktur eingelesen.
-	 * Über das Keyfeld wird gesteuert, ob ein neuer Datensatz angelegt 
+	 * Über das Keyfeld wird gesteuert, ob ein neuer Datensatz angelegt
+	 *  
 	 * 
 	 */
 	private ArrayList<Datensatz> readAllData(Sheet importSheet2) throws ImportitException {
@@ -75,47 +76,60 @@ public class ExcelProcessing {
 		Integer row = 2;
 		Integer col = 0;
 		Datensatz datensatz = null;
-		for (row = row ; row < getMaxRow(importSheet2); row++) {
+		for (row = row ; row <= getMaxRow(importSheet2); row++) {
 //			prüfen, ob noch gleicher Datensatz normal Col = 0, wenn key - Feldnummer aus kopfffelder holen angegeben dann
 			
 			if (datensatz==null) {
 				
 //				Es wird die erste Datenzeile in der ExcelTabelle gelesen
 				
-				datensatz = fuellValueInKopfdatensatz(importSheet2 , row); 
+				datensatz = fuellValueInKopfdatensatz(importSheet2 , row);
+				
 				datensatzListtemp.add(datensatz);		
 				
 			}else {
 				
 //				Es wird eine weitere Zeile gelesen
 //				prüfen ob noch gleicher Kopfdatensatz Prüfung über keyfeld(ColNumber)
-				
-				if (datensatz.getValueOfKeyfield().equals(getZellenInhaltString(importSheet2, datensatz.getKeyfield(), row))) {
-					//Es ist der gleiche Datensatz aber neue Tabellenzeile
-						List<DatensatzTabelle> tabelle = datensatz.getTabellenzeilen();
+				String valueKeyfield = getZellenInhaltString(importSheet2, datensatz.getKeyfield(), row);
+				if ((!datensatz.getValueOfKeyfield().equals(valueKeyfield)) || this.tabellenFelder == null) {
+						//Es fängt ein neuer Datensatz an
 						
-						DatensatzTabelle datensatzTabelle = new DatensatzTabelle(this.tabellenFelder);
-						ArrayList<Feld> tabrow = datensatzTabelle.getTabellenFelder();
-						 tabrow = this.tabellenFelder.getTabellenFelder();
-						for (Feld feld : tabrow) {
-							feld.setValue(getZellenInhaltString(importSheet2, feld.getColNumber(), row));
-						}
-//						Datensatz an Tabelle anfügen
-						tabelle.add(datensatzTabelle);						
-					
-				}else {
-					
-					//Es fängt ein neuer Datensatz an
-					
-					datensatz = fuellValueInKopfdatensatz(importSheet2 , row);
-					datensatzListtemp.add(datensatz);
+						datensatz = fuellValueInKopfdatensatz(importSheet2 , row);
+						datensatzListtemp.add(datensatz);
 				}
+
 			}
-			
+//			falls es eine Tabelle gibt muss Sie in jeder Zeile ausgelesen werden
+			readTableData(importSheet2 ,row , datensatz);			
 		}
 		
 		return datensatzListtemp;
 	}
+
+
+
+	private void readTableData(Sheet importSheet2, Integer row, Datensatz datensatz) {
+		
+//		Wenn keine tabellenfelder definiert sind, dürfen auch keine Tabellen gefüllt werden.
+		
+		if (this.tabellenFelder !=null) {
+				
+			List<DatensatzTabelle> tabelle = datensatz.getTabellenzeilen();	
+				DatensatzTabelle datensatzTabelle = new DatensatzTabelle(this.tabellenFelder);
+				ArrayList<Feld> tabrow = datensatzTabelle.getTabellenFelder();
+				tabrow = this.tabellenFelder.getTabellenFelder();
+				
+				for (Feld feld : tabrow) {
+					feld.setValue(getZellenInhaltString(importSheet2, feld.getColNumber(), row));
+				}
+				
+//				Datensatz an Tabelle anfügen
+				tabelle.add(datensatzTabelle);	
+			}
+				
+	}
+
 
 
 
@@ -127,12 +141,6 @@ public class ExcelProcessing {
 	 * 
 	 * Liest die Werte aus bis zur Spalte @tableBeginAtRow aus und schreibt sie in das Value der einzeln Kopffeldern
 	 * 
-	 */
-	/**
-	 * @param importSheet2
-	 * @param tableBeginAtRow
-	 * @return
-	 * @throws ImportitException
 	 */
 	private Datensatz fuellValueInKopfdatensatz(Sheet importSheet2, Integer tableBeginAtRow) throws ImportitException {
 
@@ -159,18 +167,8 @@ public class ExcelProcessing {
 		datensatz.setTippkommando(this.tippkommando);
 		datensatz.setOptionCode(this.optionCode);
 		datensatz.setTableStartsAtField(this.tabelleAbFeld);
-		List<DatensatzTabelle> tabelle = datensatz.getTabellenzeilen();
 		return datensatz;
 	}
-
-
-
-
-	private List<Feld> leseDataKopffelder(List<Feld> kopfFelder2) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 
 
 
@@ -192,12 +190,16 @@ public class ExcelProcessing {
 				for (int col = 0; (col < getMaxCol(importSheet2)) && (col < (this.tabelleAbFeld) || this.tabelleAbFeld == 0) ; col++) {
 					
 //					Zelleninhalt auslesen und Feld Konstruktor übergeben
+					String feldInhalt = getZellenInhaltString(importSheet2, col, row);
+//					Falls das Feld komplettleer ist dann nicht in Feldliste aufnehmen
+					if (!feldInhalt.isEmpty()) {
+						Feld feld = new Feld(feldInhalt , true , col );
 
-					Feld feld = new Feld(getZellenInhaltString(importSheet2, col, row), true , col );
-
-//					hänge das Feld an die Kopffelder an
+//						hänge das Feld an die Kopffelder an
+						
+						kopfFelder2.add(feld);	
+					}
 					
-					kopfFelder2.add(feld);
 					
 				}
 				
@@ -213,21 +215,28 @@ public class ExcelProcessing {
 		List<Feld> tabellenFelder2 = datensatzTabelle.getTabellenFelder();
 		String variable;
 //		Tabellenfelder  vorhanden
-			Integer row = 1;
+		Integer row = 1;
 			if (tabelleAbFeld2 > 0) {
 				for (int col = this.tabelleAbFeld; col < getMaxCol(importSheet2) ; col++) {
 					
 //					Zelleninhalt auslesen und Feld Konstruktor übergeben
+					String feldInhalt = getZellenInhaltString(importSheet2, col, row);
+					if (!feldInhalt.isEmpty()) {
+						Feld feld = new Feld(feldInhalt, true , col );
 
-					Feld feld = new Feld(getZellenInhaltString(importSheet2, col, row), true , col );
-
-//					hänge das Feld an die Kopffelder an
+//						hänge das Feld an die Kopffelder an
+						
+						tabellenFelder2.add(feld);	
+					}
 					
-					tabellenFelder2.add(feld);
 					
 				}
+				return datensatzTabelle;
+			}else {
+				return null;
 			}
-		return datensatzTabelle;	
+			
+			
 	}
 	
 	
@@ -395,13 +404,13 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 		
 		String dbgroup = getdbgroup(sheet);
 		String groupString;
-		int doppelpunkt =dbgroup.indexOf(":");
+		int doppelpunkt =dbgroup.indexOf(":") + 1;
         
         if (doppelpunkt>0)
      
         {
 
-        	groupString = dbgroup.substring(0,doppelpunkt);
+        	groupString = dbgroup.substring(doppelpunkt,dbgroup.length());
         	
         	if (!groupString.isEmpty() && groupString != null ){
         		

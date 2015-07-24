@@ -6,6 +6,8 @@ import java.util.List;
 public class Datensatz {
 
 	 private List<Feld> kopfFelder = new ArrayList<Feld>();
+//	 die Tabellenfelder werden hier nur zum Strukturcheck gespeichert, da es sonst zu einem Problem mit dem Überprüfen der Variablen kommt.
+//	 private List<Feld> tabFelder = new ArrayList<Feld>();
 	 private List<DatensatzTabelle> tabellenZeilen = new ArrayList<DatensatzTabelle>();
 	 
 	 private Integer database;
@@ -163,5 +165,89 @@ public class Datensatz {
 		}
 		
 	}
-	 
+	
+	public String getKeyOfKeyfield() throws ImportitException {
+		if (getKopfFelder()!= null) {
+			  
+			Feld feld = getKopfFelder().get(this.keyfield);
+			if (feld != null) {
+				return feld.getKey();
+			}else {
+				throw new ImportitException("Das Feld an der Stelle " + this.keyfield.toString() + "ist nicht initialisiert");
+			}
+			
+		}else {
+			throw new ImportitException("Es waren die Kopffelder noch nicht gesetzt");
+		}
+		
+	}
+	
+	public String getNameOfKeyfield() throws ImportitException {
+		if (getKopfFelder()!= null) {
+			  
+			Feld feld = getKopfFelder().get(this.keyfield);
+			if (feld != null) {
+				return feld.getName();
+			}else {
+				throw new ImportitException("Das Feld an der Stelle " + this.keyfield.toString() + "ist nicht initialisiert");
+			}
+			
+		}else {
+			throw new ImportitException("Es waren die Kopffelder noch nicht gesetzt");
+		}
+		
+	}
+
+
+	/**
+	 * @return
+	 * Liefert die Liste der Felder im ersten Tabellenzeilendatensatz aus
+	 * 
+	 */
+	public List<Feld> getTabellenFelder() {
+//		Es wird die erste Zeile der Tabelle geholt und die Felder übergeben
+		
+		List<DatensatzTabelle> tabZeilen = this.getTabellenzeilen();
+		if (tabZeilen.size()> 0) {
+			DatensatzTabelle tabErsteZeile = tabZeilen.get(0);
+			return tabErsteZeile.getTabellenFelder();	
+		}else {
+			return null;
+		}
+		
+		
+	}
+
+
+	public void copyAbasTypInDatensatz(Datensatz datensatz) {
+		// aus dem übergebenen Datensatz werden die abastypen in alle anghängten Felder kopiert.
+				
+		for (int i = 0; i < this.kopfFelder.size(); i++) {
+			if (!this.kopfFelder.get(i).getAbastyp().isEmpty()) {
+				this.kopfFelder.get(i).setAbastyp(datensatz.kopfFelder.get(i).getAbastyp());	
+			}
+
+		}
+		List<Feld> tabellenfelder = datensatz.getTabellenFelder();
+		for (DatensatzTabelle datensatzTabelle : this.tabellenZeilen) {
+			
+			datensatzTabelle.copyAbasTypInTable(tabellenfelder);
+		}
+
+	}
+
+
+	/**
+	 * @param errorString
+	 * 
+	 * Es wird der Fehler errorString als neue Zeile an den Fehlerstring angehängt
+	 * 
+	 */
+	
+	public void appendError(String errorString) {
+		
+		this.error = this.error + "\n" + errorString;
+		
+	}
+	
 }

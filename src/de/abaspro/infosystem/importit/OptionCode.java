@@ -7,6 +7,7 @@ public class OptionCode {
 	private Boolean inOneTransaction;
 	private Boolean deleteTable;
 	private Boolean checkFieldIsModifiable;
+	private Boolean useEnglishVariablen;
 	private int optionsCode;
 
 	
@@ -31,23 +32,25 @@ public class OptionCode {
         // Rollback -> 4
         // Loe Tab  -> 8
         // Modifiable -> 16
+        // use EnglVariablen -> 32
        
-        this.alwaysNew = binoption.substring(4).equals("1");
-        this.nofop = binoption.substring(3,4).equals("1");
-        this.inOneTransaction = binoption.substring(2,3).equals("1");
-        this.deleteTable = binoption.substring(1,2).equals("1");
-        this.checkFieldIsModifiable = binoption.substring(0,1).equals("1");
-
+        this.alwaysNew = binoption.substring(5).equals("1");
+        this.nofop = binoption.substring(4,5).equals("1");
+        this.inOneTransaction = binoption.substring(3,4).equals("1");
+        this.deleteTable = binoption.substring(2,3).equals("1");
+        this.checkFieldIsModifiable = binoption.substring(1,2).equals("1");
+        this.useEnglishVariablen = binoption.substring(0, 1).equals("1");
     }
 
-	public void setOptionCode(Boolean alwaysNew , Boolean nofop , Boolean inOnetransaction , Boolean deletetable , Boolean checkFieldIsModifiable){
+	public void setOptionCode(Boolean alwaysNew , Boolean nofop , Boolean inOnetransaction , Boolean deletetable , Boolean checkFieldIsModifiable, Boolean useEnglishVariablen){
     	
         // Immerneu -> 1
         // NoFop    -> 2
         // Rollback -> 4
         // Loe Tab  -> 8
         // Modifiable -> 16
-  	
+        // use EnglVariablen -> 32
+		
     	Integer optcode=0;   	
     	
     	if (alwaysNew) { optcode = 1; }
@@ -55,7 +58,8 @@ public class OptionCode {
     	if (inOnetransaction) { optcode = optcode + 4; }
     	if (deletetable) { optcode = optcode + 8; }
     	if (checkFieldIsModifiable) { optcode = optcode + 16; }
-    	
+    	if (useEnglishVariablen) {optcode = optcode + 32;}
+		    	
     	setOptionCode(optcode);
     }
 
@@ -92,6 +96,10 @@ public class OptionCode {
 
 	public Boolean getCheckFieldIsModifiable() {
 		return checkFieldIsModifiable;
+	}
+
+	public Boolean getUseEnglishVariablen() {
+		return useEnglishVariablen;
 	}
 
 	

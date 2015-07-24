@@ -377,7 +377,9 @@ public int runFop(String[] arg) throws FOPException
                             }
                             //@notempty  
                               if (Felder[x].indexOf("@notempty")==-1) 
+                            	  
                             {notempty=false;  }
+                              
                             else
                             { notempty=true;
                             }
