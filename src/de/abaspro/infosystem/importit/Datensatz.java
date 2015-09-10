@@ -3,6 +3,8 @@ package de.abaspro.infosystem.importit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 public class Datensatz {
 
 	 private List<Feld> kopfFelder = new ArrayList<Feld>();
@@ -244,9 +246,15 @@ public class Datensatz {
 	 * 
 	 */
 	
-	public void appendError(String errorString) {
+	public void appendError(Exception e) {
 		
-		this.error = this.error + "\n" + errorString;
+		this.error = this.error + "\n" + e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e);
+		
+	}
+	
+public void appendError(String errorString) {
+		
+		this.error = this.error + "\n" + errorString ;
 		
 	}
 	

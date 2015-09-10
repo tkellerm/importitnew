@@ -7,20 +7,21 @@ import java.util.logging.Logger;
 
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantBeginSessionException;
+import de.abas.ceks.jedp.CantChangeFieldValException;
 import de.abas.ceks.jedp.CantChangeSettingException;
+import de.abas.ceks.jedp.CantReadFieldPropertyException;
 import de.abas.ceks.jedp.CantSaveException;
 import de.abas.ceks.jedp.EDPConstants;
-import de.abas.ceks.jedp.EDPEditAction;
-import de.abas.ceks.jedp.EDPEditRefType;
 import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPEditorOption;
 import de.abas.ceks.jedp.EDPFactory;
 import de.abas.ceks.jedp.EDPQuery;
-import de.abas.ceks.jedp.EDPSelection;
+import de.abas.ceks.jedp.EDPRowAddress;
 import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.EDPStoreRowMode;
 import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
+import de.abas.ceks.jedp.InvalidRowOperationException;
 
 public class EdpProcessing {
 
@@ -66,7 +67,7 @@ public class EdpProcessing {
     	  		} catch (CantBeginSessionException ex) 
     	  			{
     	  			Logger.getLogger(Importit21.class.getName()).log(Level.SEVERE, null, ex);
-    	  			throw new ImportitException("FEHLER\n EDP Session kann nicht gestartet werden\n"+ex.getMessage());
+    	  			throw new ImportitException("FEHLER\n EDP Session kann nicht gestartet werden\n" , ex);
     	  			}
                  
               session.setVariableLanguage(EDPVariableLanguage.ENGLISH);
@@ -77,20 +78,6 @@ public class EdpProcessing {
 	        
     }
 	
-
-	private void setfopModeInEdpSession(Boolean zustand ){
-		// FOP Mode in der EDP-Session ein /ausschalten
-		
-        if (zustand)
-        {
-        	this.edpSession.setFOPMode(false);        
-        }
-        else
-        {
-        	this.edpSession.setFOPMode(true);              
-        }
-	}
-
 	public void checkDatensatzList(ArrayList<Datensatz> datensatzList) throws ImportitException {
 		
 		if (datensatzList != null) {
@@ -259,7 +246,7 @@ public class EdpProcessing {
 		
 		} catch (InvalidQueryException e) {
 			closeEdpSession();
-			throw new ImportitException(e.toString() + "\n Selektionsstring: " + krit);
+			throw new ImportitException( "fehlerhafter Selektionsstring: " + krit , e);
 		}
 		
 		return query;
@@ -281,7 +268,6 @@ public class EdpProcessing {
 		
 		if (this.edpSession.isConnected()) {
 			EDPEditor edpEditor = this.edpSession.createEditor();
-			
 			try {
 			if (datensatz.getOptionCode().getAlwaysNew()) {
 				
@@ -321,20 +307,19 @@ public class EdpProcessing {
 				
 			} catch (CantBeginEditException e) {
 			
-				
-				datensatz.appendError(e.toString());
+				datensatz.appendError(e);
 			} catch (ImportitException e) {
 			
-				datensatz.appendError(e.toString());
+				datensatz.appendError(e);
 			} catch (InvalidQueryException e) {
 			
-				datensatz.appendError(e.toString());
+				datensatz.appendError(e);
 			} catch (CantSaveException e) {
 			
-				datensatz.appendError(e.toString());
+				datensatz.appendError(e);
 			} catch (CantChangeSettingException e) {
 				
-				datensatz.appendError(e.toString());
+				datensatz.appendError(e);
 			}finally{
 				if (edpEditor.isActive()) {
 					edpEditor.endEditCancel();
@@ -390,18 +375,100 @@ public class EdpProcessing {
 	private void writeFieldsInEditor(Datensatz datensatz, EDPEditor edpEditor) throws ImportitException {
 		if (edpEditor.isActive()) {
 //			Kopffelder schreiben
+			
 			List<Feld> kopfFelder = datensatz.getKopfFelder();
 			for (Feld feld : kopfFelder) {
 				
+				writefield(datensatz, feld, edpEditor, 0);
 				
-				
-			}
+				}
+//			TabelleFelder schreiben
 			
+			List<DatensatzTabelle> tabellenZeilen = datensatz.getTabellenzeilen();
 			
-			
-		}else {
-			throw new ImportitException("Der Editor war nicht aktiv");
+			if (tabellenZeilen !=null && edpEditor.hasTablePart()) {
+				for (DatensatzTabelle datensatzTabelle : tabellenZeilen) {
+					Integer aktzeile_nurInfo = edpEditor.getCurrentRow();
+					try {
+						edpEditor.insertRow(EDPRowAddress.LAST_ROW);
+					} catch (InvalidRowOperationException e) {
+						throw new ImportitException("Die Zeilen konnten nicht eingefügt werden!" ,e );
+					}
+					Integer rowNumber = edpEditor.getCurrentRow();
+					ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
+					for (Feld feld : tabellenFelder) {
+						writefield(datensatz, feld, edpEditor, rowNumber);
+					
+					}
+				}
+			}				
+			}		
 		}
+
+	/**
+	 * @param datensatz
+	 * @param edpEditor
+	 * @param feld
+	 * @param rowNumber
+	 * @throws ImportitException
+	 */
+	private void writefield(Datensatz datensatz, Feld feld, EDPEditor edpEditor , Integer rowNumber )
+			throws ImportitException {
+		/**
+		 *Falls das Feld mit Skip gekennzeichnet ist wird es ignoriert
+		 */
+		
+		if (!feld.getOption_skip()) {
+			/** 
+			 * Falls die Option notEmpty gesetzt ist, wird geprüft,
+			 * ob der Feldwert leer ist, 
+			 *  wenn ja dann wird da wird das Feld nicht beschrieben
+			 *  wenn die Option nicht gesetzt ist wird der Wert in dem Feld gelöscht  
+			 */  
+			
+			if (!(feld.getOption_notEmpty() && feld.getValue().isEmpty())) {
+				/** 
+				 *Wenn die option modifiable gesetzt ist, wird vor dem Schreiben geprüft, ob das Feld Beschreibbar ist.
+				 *Wenn nicht dann wird der Wert nicht geschrieben.
+				 *
+				 * Beim Schreiben in ein geschütztes Feld wird eine Exception geworfen.
+				 *  
+				 */
+				try {
+						/**
+						 * Das Feld soll nur beschrieben werden, wenn es beschreibbar ist.
+						 * Fall die option modifiable nicht gesetzt ist, wird eine ImportitExecption abgesetzt
+						 * 
+						 */
+					
+						if (edpEditor.fieldIsModifiable(rowNumber, feld.getName())) {
+//									beschreibe das Feld 
+							edpEditor.setFieldVal(rowNumber, feld.getName(), feld.getValue());
+							
+						}else {
+							
+							if (!feld.getOption_modifiable()) {
+								
+								throw new ImportitException("Das Kopffeld " + feld.getName() + "ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
+										+ "für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + "nicht änderbar");
+
+							}
+						}	
+					} catch (CantChangeFieldValException e) {
+						throw new ImportitException("Das Kopffeld " + feld.getName() + "ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
+								+ "für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + "nicht änderbar"  , e);
+						
+					}catch (CantReadFieldPropertyException e) {
+						throw new ImportitException("Für das Kopffeld " + feld.getName() + "ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
+								+ "für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + "die Abasfeldeigenschaften nicht auslesbar"  , e);
+					}
+					
+				}
+				
+			}else {
+	
+				throw new ImportitException("Der Editor war nicht aktiv");
+				}
 		
 	}
 	

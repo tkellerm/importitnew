@@ -1,5 +1,7 @@
 package de.abaspro.infosystem.importit;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 public class ImportitException extends Exception {
 
 	/**
@@ -14,6 +16,17 @@ public class ImportitException extends Exception {
 
 	public ImportitException(String message) {
 		super(message);
+
+	}
+	/**
+	 * 
+	 * nimmt eine ursprüngliche Exception und wird hinter die Message gehängt
+	 * so gehen beim rethrow keine Information verloren 
+	 * @param message Text für eigene Exeption
+	 * @param e
+	 */
+	public ImportitException(String message , Exception e) {
+		super(message + "\n" + e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e));
 
 	}
 

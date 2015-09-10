@@ -1,0 +1,25 @@
+Todo
+
+must :
+
+schreiben der Kopffelder
+
+schreiben der Tabellefelder
+
+implementierung Tippkomanndos
+
+
+Ausgabe der verarbeiten Zeilen in der Tabelle
+
+Fehlerhandling implentieren
+
+Logging 
+
+Tests schreiben
+
+Dokumentation erstellen 
+
+
+can :
+
+Excelvorlage aus Selektion erstellen
