@@ -94,7 +94,7 @@ public class ExcelProcessing {
 				String valueKeyfield = getZellenInhaltString(importSheet2, datensatz.getKeyfield(), row);
 				if ((!datensatz.getValueOfKeyfield().equals(valueKeyfield)) || this.tabellenFelder == null) {
 						//Es fängt ein neuer Datensatz an
-						
+						datensatz = null;
 						datensatz = fuellValueInKopfdatensatz(importSheet2 , row);
 						datensatzListtemp.add(datensatz);
 				}
@@ -109,7 +109,7 @@ public class ExcelProcessing {
 
 
 
-	private void readTableData(Sheet importSheet2, Integer row, Datensatz datensatz) {
+	private void readTableData(Sheet importSheet2, Integer row, Datensatz datensatz) throws ImportitException {
 		
 //		Wenn keine tabellenfelder definiert sind, dürfen auch keine Tabellen gefüllt werden.
 		
@@ -118,14 +118,16 @@ public class ExcelProcessing {
 			List<DatensatzTabelle> tabelle = datensatz.getTabellenzeilen();	
 				DatensatzTabelle datensatzTabelle = new DatensatzTabelle(this.tabellenFelder);
 				ArrayList<Feld> tabrow = datensatzTabelle.getTabellenFelder();
-				tabrow = this.tabellenFelder.getTabellenFelder();
+//				tabrow = this.tabellenFelder.getTabellenFelder();
 				
 				for (Feld feld : tabrow) {
 					feld.setValue(getZellenInhaltString(importSheet2, feld.getColNumber(), row));
 				}
-				
-//				Datensatz an Tabelle anfügen
-				tabelle.add(datensatzTabelle);	
+				if(!datensatzTabelle.isEmpty()){
+//					Datensatz an Tabelle anfügen
+					tabelle.add(datensatzTabelle);						
+				}
+
 			}
 				
 	}
@@ -161,7 +163,8 @@ public class ExcelProcessing {
 	private Datensatz initNewDatensatz() throws ImportitException {
 
 		Datensatz datensatz = new Datensatz();
-		datensatz.setKopfFelder(this.kopfFelder);
+		
+		datensatz.setKopfFelder(getCopyOfKopffelder());
 		datensatz.setDatenbank(this.datenbank);
 		datensatz.setGruppe(this.gruppe);
 		datensatz.setTippkommando(this.tippkommando);
@@ -172,6 +175,20 @@ public class ExcelProcessing {
 
 
 
+	private List<Feld> getCopyOfKopffelder() throws ImportitException {
+		
+		
+		List<Feld> kopfFelderNeu = new ArrayList<Feld>();
+		Feld feldneu;
+		for (Feld feld : this.kopfFelder) {
+			feldneu = new Feld(feld.getCompleteContent(),feld);
+			kopfFelderNeu.add(feldneu);
+		}
+		
+		return kopfFelderNeu;
+	}
+	
+	
 	public ArrayList<Datensatz> getDatensatzList() {
 		return datensatzList;
 	}

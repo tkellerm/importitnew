@@ -6,6 +6,8 @@ package de.abaspro.infosystem.importit;
  */
 public class Feld {
 
+	
+
 	private String  name;
 	private String  value;
 	private String  key;
@@ -25,6 +27,9 @@ public class Feld {
 				+ abasTyp + "]";
 	}
 
+	
+	
+	
 	public String getAbastyp() {
 		return abasTyp;
 	}

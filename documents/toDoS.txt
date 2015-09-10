@@ -2,12 +2,13 @@ Todo
 
 must :
 
-schreiben der Kopffelder
+schreiben der Kopffelder erledigt 10.09.2015
 
-schreiben der Tabellefelder
+schreiben der Tabellefelder erledigt 10.09.2015
 
 implementierung Tippkomanndos
 
+Handling im Infosystem
 
 Ausgabe der verarbeiten Zeilen in der Tabelle
 
@@ -23,3 +24,5 @@ Dokumentation erstellen
 can :
 
 Excelvorlage aus Selektion erstellen
+
+Daten gegen die Abas Typen Prüfen

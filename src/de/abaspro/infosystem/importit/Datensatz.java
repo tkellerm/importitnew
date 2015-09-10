@@ -126,9 +126,7 @@ public class Datensatz {
 			Feld feld = kopfFelder.get(i);
 			feld.setValue("");
 			}
-		
-	
-		
+			
 	}
 
 
@@ -150,7 +148,27 @@ public class Datensatz {
 	public void setDatenbank(Integer datenbank) {
 		this.database = datenbank;
 	}
+	
 
+	public String toString() {
+		
+		String string = this.getDatenbank() + ":" +this.getGruppe() + " " + this.getValueOfKeyfieldToString();
+		
+		return string;
+	}
+
+	private String getValueOfKeyfieldToString(){
+		if (getKopfFelder()!= null) {
+			  
+			Feld feld = getKopfFelder().get(this.keyfield);
+			if (feld != null) {
+				return feld.getValue().toString();
+			}
+			
+		}
+		return "";
+		
+	}
 
 	public String getValueOfKeyfield() throws ImportitException {
 		if (getKopfFelder()!= null) {

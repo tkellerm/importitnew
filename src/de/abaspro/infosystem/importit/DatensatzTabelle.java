@@ -37,9 +37,14 @@ public class DatensatzTabelle {
 		}
 	}
 
-	public DatensatzTabelle(DatensatzTabelle datensatzTabelle){
-		
-		this.tabellenFelder = datensatzTabelle.getTabellenFelder();
+	public DatensatzTabelle(DatensatzTabelle datensatzTabelle) throws ImportitException{
+		this.tabellenFelder = new ArrayList<Feld>();
+		Feld feldneu;
+		ArrayList<Feld> tabFelder = datensatzTabelle.getTabellenFelder();
+		for (Feld feld : tabFelder) {
+			feldneu = new Feld(feld.getCompleteContent(),feld);
+			this.tabellenFelder.add(feldneu);
+		}
 	}
 	
 	public DatensatzTabelle(){		
@@ -60,6 +65,20 @@ public class DatensatzTabelle {
 			}
 		}
 	
+	}
+
+
+	public boolean isEmpty() {
+		Boolean isEmpty = true;
+		for (Feld feld : this.tabellenFelder) {
+			if (feld.getValue()!= null) {
+				if (!feld.getValue().isEmpty()) {
+					isEmpty = false;	
+				}
+			}
+		}
+		
+		return isEmpty;
 	}
 	
 }
