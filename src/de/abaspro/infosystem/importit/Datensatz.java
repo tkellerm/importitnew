@@ -270,6 +270,13 @@ public class Datensatz {
 		
 	}
 	
+public void appendError(String errorMessage , Exception e) {
+		
+		appendError(errorMessage);
+		appendError(e);
+		
+	}
+	
 public void appendError(String errorString) {
 		
 		this.error = this.error + "\n" + errorString ;
