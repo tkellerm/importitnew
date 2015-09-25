@@ -13,5 +13,6 @@
 	<classpathentry kind="lib" path="includejar/poi-3.9-20121203.jar"/>
 	<classpathentry kind="lib" path="/S3Java/lib/jxl.jar"/>
 	<classpathentry kind="lib" path="includejar/commons-lang3-3.4.jar"/>
+	<classpathentry kind="lib" path="/Client/lib/abas-db.jar" sourcepath="/Client/lib/abas-db-src.zip"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

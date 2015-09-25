@@ -23,6 +23,7 @@ import de.abas.ceks.jedp.EDPStoreRowMode;
 import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
+import de.abas.erp.common.type.enums.EnumTypeCommands;
 
 public class EdpProcessing {
 
@@ -103,9 +104,7 @@ public class EdpProcessing {
 						}
 				    	
 					}
-				    
-					
-				
+
 				closeEdpSession();
 			}else {
 				throw new ImportitException("Die übergebene Datensatzliste ist leer");
@@ -119,22 +118,123 @@ public class EdpProcessing {
 		
 	}
 
-	private boolean checkDatensatzStruktur(Datensatz datensatz) throws ImportitException {
+	private boolean checkDatensatzStruktur(Datensatz datensatz){
 
 		//		prüfe Datenbank, ob vorhanden
+		boolean dbok = checkDBorEditorCommdands(datensatz);
+//		Wenn es ein Tipkommanndo gibt muss noch die Datenbank gesucht werden damit die Felder gecheckt werden können
 		
 				
-		List<Feld> kopfFelder = datensatz.getKopfFelder();
+		List<Feld> kopfFelder     = datensatz.getKopfFelder();
 		List<Feld> tabellenFelder = datensatz.getTabellenFelder();
 	
-		boolean kopfok = checkListofFeldAndGetabasType(kopfFelder, datensatz.getDatenbank() , datensatz.getGruppe() , false, datensatz.getOptionCode().getUseEnglishVariablen() );
-		boolean tabelleok = checkListofFeldAndGetabasType(tabellenFelder, datensatz.getDatenbank() , datensatz.getGruppe(), true, datensatz.getOptionCode().getUseEnglishVariablen());		
-		if (tabelleok & kopfok) {
+		boolean kopfok    = false;
+		boolean tabelleok = false;
+		try {
+			kopfok = checkListofFeldAndGetabasType(kopfFelder, datensatz.getDatenbank() , datensatz.getGruppe() , false, datensatz.getOptionCode().getUseEnglishVariablen() );
+			tabelleok = checkListofFeldAndGetabasType(tabellenFelder, datensatz.getDatenbank() , datensatz.getGruppe(), true, datensatz.getOptionCode().getUseEnglishVariablen());
+		
+		} catch (ImportitException e) {
+			datensatz.appendError("Die Strukturprüfung war fehlerhaft" , e);
+		}
+				
+		if (tabelleok & kopfok & dbok) {
 			return true;	
 		}else {
 			return false;
 		}
 			
+		
+	}
+
+	private boolean checkDBorEditorCommdands(Datensatz datensatz) {
+		
+		Boolean gefunden = false ;
+		if (datensatz.getTippkommando()!=null && datensatz.getDatenbank() == null) {
+//		Überprüfung der Tipkkommandos
+		
+			
+			EnumTypeCommands[] typeCommands = EnumTypeCommands.values();
+			for (EnumTypeCommands enumTypeCommands : typeCommands) {
+				if (datensatz.getTippkommando() == enumTypeCommands.getCode()) {
+					gefunden = true;
+
+				}
+			}
+			if (gefunden) {
+//				datenbank für Tipkkommando in Datensatz eintragen
+				
+				try {
+					findDatenbankForTipkkommando(datensatz);
+				} catch (ImportitException e) {
+					datensatz.appendError(e);
+				}
+				
+				
+			}else {
+				datensatz.appendError("Das Tippkommando mit der Nummer "
+						+ datensatz.getTippkommando() + " ist nicht definiert");
+			}
+		}
+		
+		if (datensatz.getDatenbank()!= null && datensatz.getGruppe()!= null && datensatz.getTippkommando()!=null ) {
+//			Überprüfung ob Datenbank vorhanden
+			String key = "";
+			int aliveFlag = EDPConstants.ALIVEFLAG_ALIVE;
+			String fieldNames = "";
+			
+//			Vartab Tabellenname
+			String tableName = "12:26";
+			
+			EDPQuery query = this.edpSession.createQuery();
+			String krit = "0:grpDBDescr=(" + datensatz.getDatenbank().toString() + ");0:grpGrpNo=" + datensatz.getGruppe().toString() +    ";" +  ";@englvar=true;@language=en";
+
+			
+				try {
+					
+					query.startQuery(tableName, key, krit, true, aliveFlag, true, true, fieldNames, 0, 10000);
+					query.getLastRecord();
+					if (query.getRecordCount() == 1) {
+						gefunden = true;
+					}
+					
+				} catch (InvalidQueryException e) {
+					datensatz.appendError("Die Suche nach der Datenbank mit dem Suchstring " + krit + "war fehlerhaft" , e);
+
+				}
+				
+			if (!gefunden) {
+				datensatz.appendError("Die Datenbank : Gruppe mit der Nummer "
+						+ datensatz.getDatenbank() + ":"
+						+ datensatz.getGruppe() + " ist nicht definiert");
+			}
+		}
+		
+		return gefunden;
+	}
+
+	private void findDatenbankForTipkkommando(Datensatz datensatz) throws ImportitException {
+		
+		if (datensatz.getTippkommando()!=null) {
+//			EDPSession und EPDEditor für dieses Tippkommando öffnen und aus dem Dialog die Datenbank auslesen
+			
+				startEdpSession();
+				if (this.edpSession != null ) {
+					EDPEditor edpEditor = this.edpSession.createEditor();
+					try {
+						
+						edpEditor.beginEditCmd(datensatz.getTippkommando().toString(), "");
+						datensatz.setDatenbank(edpEditor.getEditDatabaseNr());
+						datensatz.setGruppe(edpEditor.getEditGroupNr());
+						edpEditor.endEditCancel();
+						
+					} catch (CantBeginEditException e) {
+						throw new ImportitException("Das Holen der Datenbank zu dem Tippkommando war nicht möglich ", e );
+						}
+						
+				}
+				
+		}		
 		
 	}
 
@@ -272,47 +372,15 @@ public class EdpProcessing {
 		if (this.edpSession.isConnected()) {
 			EDPEditor edpEditor = this.edpSession.createEditor();
 			try {
-			if (datensatz.getOptionCode().getAlwaysNew()) {
 				
-					edpEditor.beginEditNew(datensatz.getDatenbank().toString(), datensatz.getGruppe().toString());
-					setEditorOption(datensatz , edpEditor);
-					writeFieldsInEditor(datensatz , edpEditor);
-					edpEditor.endEditSave();
+			if (datensatz.getTippkommando()== null ) {
+//				Verarbeitung der normalen Datenbanken
+				writeDatabase(datensatz, edpEditor);
+				
 			}else {
+//				Verarbeitung der TippKommandos
+				writeTippKommandos(datensatz, edpEditor);
 				
-//				selektiere nach dem Schlüsselfeld
-				EDPQuery edpQuery = this.edpSession.createQuery();
-				
-				String tableName = datensatz.getDatenbank().toString() + ":" + datensatz.getGruppe().toString();
-				
-				String key = datensatz.getKeyOfKeyfield();
-				
-				if (key == null) {
-					key="";
-				}
-				String krit = "";
-//				datensatz.getOptionCode().getUseEnglishVariablen()
-				if (datensatz.getOptionCode().getUseEnglishVariablen()) {
-					krit = datensatz.getNameOfKeyfield() + "=" + datensatz.getValueOfKeyfield() + ";@englvar=true;@language=en";
-					edpQuery.startQuery(tableName, key, krit, "idno,swd,id" );
-				}else {
-					krit = datensatz.getNameOfKeyfield() + "=" + datensatz.getValueOfKeyfield() + ";@englvar=false;@language=de";
-					edpQuery.startQuery(tableName, key, krit, "nummer,such,id" );
-				}
-				
-						
-				edpQuery.getLastRecord();
-				int recordCount = edpQuery.getRecordCount();
-				if (recordCount == 1 || recordCount == 0) {
-//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde 	
-					edpEditor.beginEdit(edpQuery.getField("id"));
-					setEditorOption(datensatz , edpEditor);
-					writeFieldsInEditor(datensatz , edpEditor);
-					edpEditor.endEditSave();
-				}else {
-					
-					datensatz.appendError("Selektion auf Datensatz war nicht eindeutig! Folgende Selektion wurde verwendet :" + krit);
-				}
 				
 			}
 				
@@ -339,6 +407,79 @@ public class EdpProcessing {
 			
 		}
 		
+	}
+
+	private void writeTippKommandos(Datensatz datensatz, EDPEditor edpEditor) throws ImportitException, CantChangeSettingException, CantSaveException, CantBeginEditException {
+		// TODO Auto-generated method stub
+		edpEditor.beginEditCmd(datensatz.getTippkommando().toString(), "");
+		setEditorOption(datensatz, edpEditor);
+		writeFieldsInEditor(datensatz, edpEditor);
+		edpEditor.endEditSave();
+	}
+
+	/**
+	 * @param datensatz
+	 * @param edpEditor
+	 * @throws CantBeginEditException
+	 * @throws CantChangeSettingException
+	 * @throws ImportitException
+	 * @throws CantSaveException
+	 * @throws InvalidQueryException
+	 */
+	private void writeDatabase(Datensatz datensatz, EDPEditor edpEditor)
+			throws CantBeginEditException, CantChangeSettingException,
+			ImportitException, CantSaveException, InvalidQueryException {
+		if (datensatz.getOptionCode().getAlwaysNew()) {
+
+			edpEditor.beginEditNew(datensatz.getDatenbank().toString(),
+					datensatz.getGruppe().toString());
+			setEditorOption(datensatz, edpEditor);
+			writeFieldsInEditor(datensatz, edpEditor);
+			edpEditor.endEditSave();
+		} else {
+
+			//				selektiere nach dem Schlüsselfeld
+			EDPQuery edpQuery = this.edpSession.createQuery();
+
+			String tableName = datensatz.getDatenbank().toString()
+					+ ":" + datensatz.getGruppe().toString();
+
+			String key = datensatz.getKeyOfKeyfield();
+
+			if (key == null) {
+				key = "";
+			}
+			String krit = "";
+			//				datensatz.getOptionCode().getUseEnglishVariablen()
+			if (datensatz.getOptionCode().getUseEnglishVariablen()) {
+				krit = datensatz.getNameOfKeyfield() + "="
+						+ datensatz.getValueOfKeyfield()
+						+ ";@englvar=true;@language=en";
+				edpQuery.startQuery(tableName, key, krit, "idno,swd,id");
+			} else {
+				krit = datensatz.getNameOfKeyfield() + "="
+						+ datensatz.getValueOfKeyfield()
+						+ ";@englvar=false;@language=de";
+				edpQuery.startQuery(tableName, key, krit,
+						"nummer,such,id");
+			}
+
+			edpQuery.getLastRecord();
+			int recordCount = edpQuery.getRecordCount();
+			if (recordCount == 1 || recordCount == 0) {
+				//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde 	
+				edpEditor.beginEdit(edpQuery.getField("id"));
+				setEditorOption(datensatz, edpEditor);
+				writeFieldsInEditor(datensatz, edpEditor);
+				edpEditor.endEditSave();
+			} else {
+
+				datensatz
+						.appendError("Selektion auf Datensatz war nicht eindeutig! Folgende Selektion wurde verwendet :"
+								+ krit);
+			}
+
+		}
 	}
 
 	/**
@@ -384,7 +525,9 @@ public class EdpProcessing {
 	 */
 	
 	private void writeFieldsInEditor(Datensatz datensatz, EDPEditor edpEditor) throws ImportitException {
+		
 		if (edpEditor.isActive()) {
+			
 //			Kopffelder schreiben
 			
 			List<Feld> kopfFelder = datensatz.getKopfFelder();
@@ -393,6 +536,7 @@ public class EdpProcessing {
 				writeField(datensatz, feld, edpEditor, 0);
 				
 				}
+			
 //			TabelleFelder schreiben
 			
 			List<DatensatzTabelle> tabellenZeilen = datensatz.getTabellenzeilen();
