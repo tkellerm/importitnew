@@ -73,10 +73,10 @@ public class ExcelProcessing {
 	private ArrayList<Datensatz> readAllData(Sheet importSheet2) throws ImportitException {
 	
 		ArrayList<Datensatz> datensatzListtemp = new ArrayList<Datensatz>();
-		Integer row = 2;
+		Integer rowstart = 2;
 		Integer col = 0;
 		Datensatz datensatz = null;
-		for (row = row ; row <= getMaxRow(importSheet2); row++) {
+		for (Integer row = rowstart ; row <= getMaxRow(importSheet2); row++) {
 //			prüfen, ob noch gleicher Datensatz normal Col = 0, wenn key - Feldnummer aus kopfffelder holen angegeben dann
 			
 			if (datensatz==null) {
@@ -349,9 +349,9 @@ public class ExcelProcessing {
 		String tippString;
 		int doppelpunkt =dbgroup.indexOf(":");
         
-        if (doppelpunkt == 0){
-        	tippString = dbgroup.substring(0,doppelpunkt);
-        	
+        if (doppelpunkt == 0 || doppelpunkt == -1){
+//        	tippString = dbgroup.substring(0,doppelpunkt);
+        	tippString = dbgroup;
         	if (!tippString.isEmpty() && tippString != null ){
         		
         		try {
