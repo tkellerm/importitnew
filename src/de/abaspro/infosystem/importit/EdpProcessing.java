@@ -13,6 +13,7 @@ import de.abas.ceks.jedp.CantReadFieldPropertyException;
 import de.abas.ceks.jedp.CantReadSettingException;
 import de.abas.ceks.jedp.CantSaveException;
 import de.abas.ceks.jedp.EDPConstants;
+import de.abas.ceks.jedp.EDPEKSArtInfo;
 import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPEditorOption;
 import de.abas.ceks.jedp.EDPFactory;
@@ -20,6 +21,7 @@ import de.abas.ceks.jedp.EDPQuery;
 import de.abas.ceks.jedp.EDPRowAddress;
 import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.EDPStoreRowMode;
+import de.abas.ceks.jedp.EDPTools;
 import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
@@ -80,13 +82,14 @@ public class EdpProcessing {
 	        
     }
 	
+	
 	public void checkDatensatzList(ArrayList<Datensatz> datensatzList) throws ImportitException {
 		
 		if (datensatzList != null) {
 			
 			if (!datensatzList.isEmpty()) {
 			startEdpSession();
-//			Annahme: alles Datensätze in der Liste sind gleich von der Struktur, dann sollte auch nur der Eerste geprüft werden	
+//			Annahme: alles Datensätze in der Liste sind gleich von der Struktur, dann sollte auch nur der Erste geprüft werden	
 //			Sonst ist die Laufzeit zu lange, wenn bei einer großen Excelliste für jeden Datensatz die Struktur geprüft werden soll
 				
 				    Datensatz datensatz = datensatzList.get(0);
@@ -268,6 +271,7 @@ public class EdpProcessing {
 		String varNameVarNameEnglish = "varNameEnglish"; 
 		String varNameVarTypeNew = "varTypeNew";
 		String varNameVarType = "varType";
+		String varNameVarLength = "vitle";
 
 		if (feldListe !=null ) {
 			EDPQuery query;
@@ -313,7 +317,8 @@ public class EdpProcessing {
 						if (abasTyp.isEmpty()) {
 							abasTyp = query.getField(varNameVarType);
 						}
-						feld.setAbastyp(abasTyp);						
+						feld.setAbasTyp(abasTyp);
+						feld.setAbasFieldLength(query.getField(varNameVarLength));
 					}
 				
 			}
@@ -341,8 +346,7 @@ public class EdpProcessing {
 		String tableName = "12:26";
 		
 		EDPQuery query = this.edpSession.createQuery();
-		String krit = "0:grpDBDescr=(" + database.toString() + ");0:grpGrpNo=" + group +    ";" + suchfeld + "~/==\\b[a-z]{2}"  + feldname + "\\b;" + "1:inTab" + "=" + inTab.toString() + ";@englvar=true;@language=en";
-//		String krit = "0:grpDBDescr=(" + database.toString() + ");0:grpGrpNo=" + group +    ";" + suchfeld + "~/==.{2}"  + feldname + "$;" + "inTab" + "=" + inTab.toString() + ";@englvar=true;@language=en;@group=26;@filingmode=Active;@rows=(1)";
+		String krit = "0:grpDBDescr=(" + database.toString() + ");0:grpGrpNo=" + group +    ";" + suchfeld + "~/==\\b[a-z]{2}"  + feldname + "\\b;" + "1:inTab" + "=" + inTab.toString() + ";@englvar=true;@language=en";		
 		
 		try {
 			query.startQuery(tableName, key, krit, true, aliveFlag, true, true, fieldNames, 0, 10000);
@@ -364,7 +368,6 @@ public class EdpProcessing {
 			
 		}
 		closeEdpSession();
-		
 	}
 
 	private void writeDatensatzToAbas(Datensatz datensatz) {
@@ -435,6 +438,9 @@ public class EdpProcessing {
 					datensatz.getGruppe().toString());
 			setEditorOption(datensatz, edpEditor);
 			writeFieldsInEditor(datensatz, edpEditor);
+			edpEditor.saveReload();
+			String abasId = edpEditor.getEditRef();
+			datensatz.setAbasId(abasId);
 			edpEditor.endEditSave();
 		} else {
 
@@ -469,6 +475,8 @@ public class EdpProcessing {
 			if (recordCount == 1 || recordCount == 0) {
 				//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde 	
 				edpEditor.beginEdit(edpQuery.getField("id"));
+				String abasId = edpEditor.getEditRef();
+				datensatz.setAbasId(abasId);
 				setEditorOption(datensatz, edpEditor);
 				writeFieldsInEditor(datensatz, edpEditor);
 				edpEditor.endEditSave();
@@ -612,19 +620,35 @@ public class EdpProcessing {
 						}else {
 							
 							if (!feld.getOption_modifiable() && !datensatz.getNameOfKeyfield().equals(feld.getName())) {
+								if (rowNumber == 0) {
+									throw new ImportitException("Das Kopffeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
+											+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + "nicht änderbar");	
+								}else {
+									throw new ImportitException("Das Tabellenfeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
+											+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " in Zeile " + rowNumber.toString() + " nicht änderbar");
+								}
 								
-								throw new ImportitException("Das Kopffeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
-										+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + "n icht änderbar");
 
 							}
 						}	
 					} catch (CantChangeFieldValException e) {
+						if (rowNumber == 0) {
 						throw new ImportitException("Das Kopffeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
 								+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " nicht änderbar"  , e);
+						}else {
+							throw new ImportitException("Das Tabellenfeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
+									+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " in Zeile " + rowNumber.toString() + " nicht änderbar"  , e);
+						}
 						
 					}catch (CantReadFieldPropertyException e) {
+						if (rowNumber == 0) {
 						throw new ImportitException("Für das Kopffeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
 								+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " die Abasfeldeigenschaften nicht auslesbar"  , e);
+						}else {
+							throw new ImportitException("Für das Tabellenfeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
+									+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " in Zeile " + rowNumber.toString() + " die Abasfeldeigenschaften nicht auslesbar"  , e);
+							
+					}	
 					} catch (CantReadSettingException e) {
 
 						throw new ImportitException(""  , e);
@@ -639,6 +663,82 @@ public class EdpProcessing {
 		
 	}
 	
+	/**
+	 * @param datensatzList
+	 * 
+	 * Prüft ob alle Werte in der Datensatzlist zu den Feld-Werten passen
+	 * Die Prüfung ist in die Klasse CheckDataUtil ausgegliedert.
+	 * Aber von hier wird es wegen den EDP-Einstellungen aufgerufen.  
+	 * @throws ImportitException 
+	 * 
+	 * 
+	 */
 	
+	public void checkDatensatzListValues(ArrayList<Datensatz> datensatzList) throws ImportitException {
+		startEdpSession();
+		
+		for (Datensatz datensatz : datensatzList) {
+			List<Feld> kopfFelder = datensatz.getKopfFelder();
+			for (Feld feld : kopfFelder) {
+				checkData(feld);
+				
+			}
+			
+		}
+		
+		closeEdpSession();
+	}
+
+	private Boolean checkData(Feld feld) {
+		
+		String[] VERWEIS = {"P" , "ID" , "VP" , "VID"};
+		
+		EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(feld.getAbasTyp());
+		
+		int datatyp = edpeksartinfo.getDataType();
+		if (datatyp == EDPTools.EDP_REFERENCE || datatyp == EDPTools.EDP_ROWREFERENCE ) {
+			if (!edpeksartinfo.getERPArt().startsWith("V")) {
+//				normales Verweisfeld
+				
+				
+				
+			}else {
+//				Multiverweisfeld
+				
+			}
+			
+		}
+		
+		return null;
+	}
+		
+		
+		
+		
+		
+private EDPQuery getEDPQueryVerweis(String value, Integer database,
+		Integer group, Boolean inTab) throws ImportitException {
+	
+	if (!this.edpSession.isConnected()) {
+		startEdpSession();
+	}
+	int aliveFlag = EDPConstants.ALIVEFLAG_BOTH;
+	String[] fieldNames = {"id" , "nummer"};
+	String key = "";
+	String tableName = database.toString() + ":" + group.toString();
+	
+	EDPQuery query = this.edpSession.createQuery();
+	String krit = "0:grpDBDescr=(" + database.toString() + ");0:grpGrpNo=" + group + ";@englvar=true;@language=en";		
+	
+	try {
+		query.startQuery(tableName, key, krit, true, aliveFlag, true, true, fieldNames, 0, 10000);
+	
+	} catch (InvalidQueryException e) {
+		closeEdpSession();
+		throw new ImportitException( "fehlerhafter Selektionsstring: " + krit , e);
+	}
+	
+	return query;
+}
 	
 }

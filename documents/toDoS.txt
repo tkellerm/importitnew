@@ -6,9 +6,11 @@ schreiben der Kopffelder erledigt 10.09.2015
 
 schreiben der Tabellefelder erledigt 10.09.2015
 
-implementierung Tippkomanndos
+implementierung Tippkomanndos 25.09.2015
 
-Handling im Infosystem
+Handling im Infosystem 
+
+- Mandantenname einfärben, wenn es nicht dem aktuellen Mandant entspricht.
 
 Ausgabe der verarbeiten Zeilen in der Tabelle
 

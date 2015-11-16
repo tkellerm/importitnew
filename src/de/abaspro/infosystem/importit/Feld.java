@@ -1,5 +1,14 @@
 package de.abaspro.infosystem.importit;
 
+import de.abas.ceks.jedp.ERPType;
+import de.abas.eks.jfop.remote.EKS;
+import de.abas.eks.jfop.remote.FO;
+import de.abas.erp.api.util.AbasDateUtils;
+import de.abas.erp.common.type.AbasDate;
+import de.abas.erp.common.type.AbasType;
+
+
+
 /**
  * @author tkellermann
  *
@@ -19,8 +28,12 @@ public class Feld {
 	private Boolean fieldtoCopy;
 	private Integer colNumber;
 	private String 	abasTyp;
+	private Integer abasFieldLength;
 	
 	
+	
+
+
 	@Override
 	public String toString() {
 		return "Feld [name=" + name + ", value=" + value + ", abasTyp="
@@ -28,16 +41,6 @@ public class Feld {
 	}
 
 	
-	
-	
-	public String getAbastyp() {
-		return abasTyp;
-	}
-
-	public void setAbastyp(String abastyp) {
-		this.abasTyp = abastyp;
-	}
-
 	/**
 	 * @param completeContent
 	 * @param fieldInHead
@@ -101,7 +104,20 @@ public class Feld {
 			
 	}
 
-
+	/**
+	 * 
+	 * @return ergebnis
+	 * 
+	 * Die Funktion prüft, ob der Inhalt des Felds den Vorgaben des Abastyps entspricht.  
+	 * 
+	 * 
+	 */
+	
+	
+	
+	
+	
+	
 
 	private void fillOptions(String completeContent2) {
 	// falls der String leer ist dann das Feld ignorieren
@@ -210,4 +226,51 @@ public class Feld {
 	public Boolean getFieldInHead() {
 		return fieldtoCopy;
 	}
+	
+	/**
+	 * @return the abasTyp
+	 */
+	public String getAbasTyp() {
+		return abasTyp;
+	}
+
+	/**
+	 * @param abasTyp the abasTyp to set
+	 */
+	public void setAbasTyp(String abasTyp) {
+		this.abasTyp = abasTyp;
+	}
+
+	/**
+	 * @return the abasFieldLength
+	 */
+	public Integer getAbasFieldLength() {
+		return abasFieldLength;
+	}
+
+
+
+
+	/**
+	 * @param abasFieldLength the abasFieldLength to set
+	 */
+	public void setAbasFieldLength(Integer abasFieldLength) {
+		this.abasFieldLength = abasFieldLength;
+	}
+
+	/**
+	 * @param abasFieldLength the abasFieldLength to set
+	 * @throws ImportitException 
+	 */
+	public void setAbasFieldLength(String abasFieldLengthString) throws ImportitException {
+		try {
+			Integer abasFieldLength = new Integer(abasFieldLengthString);	
+		} catch (NumberFormatException e) {
+			throw new ImportitException("Falsches Format der Feldlänge" , e);
+		}
+			
+		this.abasFieldLength = abasFieldLength;
+		
+	}
+	
 }

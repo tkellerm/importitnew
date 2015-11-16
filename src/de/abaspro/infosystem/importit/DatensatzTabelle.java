@@ -58,8 +58,8 @@ public class DatensatzTabelle {
 //		Wenn die übergebene Feldliste leer oder null ist dann soll nichts passieren
 		if (tabellenfeldertoCopy!= null) {
 			for (int i = 0; i < this.tabellenFelder.size(); i++) {
-				if (this.tabellenFelder.get(i).getAbastyp().isEmpty()) {
-					this.tabellenFelder.get(i).setAbastyp(tabellenfeldertoCopy.get(i).getAbastyp());	
+				if (this.tabellenFelder.get(i).getAbasTyp().isEmpty()) {
+					this.tabellenFelder.get(i).setAbasTyp(tabellenfeldertoCopy.get(i).getAbasTyp());	
 				}
 
 			}

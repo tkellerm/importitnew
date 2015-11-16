@@ -19,6 +19,7 @@ public class Datensatz {
 	 private Integer tableStartsAtField;
 	 private OptionCode optionCode;
 	 private Integer keyfield;
+	 private String abasId;
 
 	public Integer getTableStartsAtField() {
 		return tableStartsAtField;
@@ -62,6 +63,16 @@ public class Datensatz {
 
 	public void setTippkommando(Integer tippkommando) {
 		this.tippcommand = tippkommando;
+	}
+
+
+	public String getAbasId() {
+		return abasId;
+	}
+
+
+	public void setAbasId(String abasId) {
+		this.abasId = abasId;
 	}
 
 
@@ -243,8 +254,8 @@ public class Datensatz {
 		// aus dem übergebenen Datensatz werden die abastypen in alle anghängten Felder kopiert.
 				
 		for (int i = 0; i < this.kopfFelder.size(); i++) {
-			if (!this.kopfFelder.get(i).getAbastyp().isEmpty()) {
-				this.kopfFelder.get(i).setAbastyp(datensatz.kopfFelder.get(i).getAbastyp());	
+			if (!this.kopfFelder.get(i).getAbasTyp().isEmpty()) {
+				this.kopfFelder.get(i).setAbasTyp(datensatz.kopfFelder.get(i).getAbasTyp());	
 			}
 
 		}
