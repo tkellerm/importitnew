@@ -28,7 +28,7 @@ public class Feld {
 	private Boolean fieldtoCopy;
 	private Integer colNumber;
 	private String 	abasTyp;
-	private Integer abasFieldLength;
+	private long abasFieldLength;
 	
 	
 	
@@ -244,7 +244,7 @@ public class Feld {
 	/**
 	 * @return the abasFieldLength
 	 */
-	public Integer getAbasFieldLength() {
+	public long getAbasFieldLength() {
 		return abasFieldLength;
 	}
 
@@ -252,10 +252,10 @@ public class Feld {
 
 
 	/**
-	 * @param abasFieldLength the abasFieldLength to set
+	 * @param l the abasFieldLength to set
 	 */
-	public void setAbasFieldLength(Integer abasFieldLength) {
-		this.abasFieldLength = abasFieldLength;
+	public void setAbasFieldLength(long l) {
+		this.abasFieldLength = l;
 	}
 
 	/**
@@ -263,8 +263,10 @@ public class Feld {
 	 * @throws ImportitException 
 	 */
 	public void setAbasFieldLength(String abasFieldLengthString) throws ImportitException {
+		
+		Integer abasFieldLength = 0;
 		try {
-			Integer abasFieldLength = new Integer(abasFieldLengthString);	
+			abasFieldLength = new Integer(abasFieldLengthString);	
 		} catch (NumberFormatException e) {
 			throw new ImportitException("Falsches Format der Feldlänge" , e);
 		}

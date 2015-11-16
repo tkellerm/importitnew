@@ -318,7 +318,7 @@ public class EdpProcessing {
 							abasTyp = query.getField(varNameVarType);
 						}
 						feld.setAbasTyp(abasTyp);
-						feld.setAbasFieldLength(query.getField(varNameVarLength));
+						feld.setAbasFieldLength(getAbasFieldLength(abasTyp));
 					}
 				
 			}
@@ -689,6 +689,11 @@ public class EdpProcessing {
 		closeEdpSession();
 	}
 
+	private long getAbasFieldLength(String abasTyp){
+		EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(abasTyp);
+		return edpeksartinfo.getMaxLineLen();
+	}
+	
 	private Boolean checkData(Feld feld) {
 		
 		String[] VERWEIS = {"P" , "ID" , "VP" , "VID"};
