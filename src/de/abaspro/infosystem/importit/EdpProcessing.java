@@ -14,6 +14,7 @@ import de.abas.ceks.jedp.CantReadSettingException;
 import de.abas.ceks.jedp.CantSaveException;
 import de.abas.ceks.jedp.EDPConstants;
 import de.abas.ceks.jedp.EDPEKSArtInfo;
+import de.abas.ceks.jedp.EDPEditAction;
 import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPEditorOption;
 import de.abas.ceks.jedp.EDPFactory;
@@ -432,10 +433,9 @@ public class EdpProcessing {
 			throws CantBeginEditException, CantChangeSettingException,
 			ImportitException, CantSaveException, InvalidQueryException {
 		if (datensatz.getOptionCode().getAlwaysNew()) {
-
+			setEditorOption(datensatz, edpEditor);
 			edpEditor.beginEditNew(datensatz.getDatenbank().toString(),
 					datensatz.getGruppe().toString());
-			setEditorOption(datensatz, edpEditor);
 			writeFieldsInEditor(datensatz, edpEditor);
 			edpEditor.saveReload();
 			String abasId = edpEditor.getEditRef();
@@ -472,6 +472,7 @@ public class EdpProcessing {
 			edpQuery.getLastRecord();
 			int recordCount = edpQuery.getRecordCount();
 			if (recordCount == 1 || recordCount == 0) {
+				setEditorOption(datensatz, edpEditor);
 				if (recordCount == 1) {
 					//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde 	
 					edpEditor.beginEdit(edpQuery.getField("id"));
@@ -479,7 +480,6 @@ public class EdpProcessing {
 					edpEditor.beginEditNew(datensatz.getDatenbank().toString(),
 							datensatz.getGruppe().toString());
 				}
-				setEditorOption(datensatz, edpEditor);
 				writeFieldsInEditor(datensatz, edpEditor);
 				edpEditor.saveReload();
 				String abasId = edpEditor.getEditRef();
@@ -618,6 +618,15 @@ public class EdpProcessing {
 						 * 
 						 */
 					EDPVariableLanguage variableLanguage = edpEditor.getSession().getVariableLanguage();
+					EDPEditAction action = edpEditor.getEditAction();
+					int database = edpEditor.getEditDatabaseNr();
+					boolean aktive = edpEditor.isActive();
+					String cfield = edpEditor.getCurrentFieldName();
+					edpEditor.setFieldVal("name", "test");
+					String test = edpEditor.getFieldVal("name");
+					String fieldtyp = edpEditor.getFieldEDPType("name");
+					
+					String test2 = "2";
 						if (edpEditor.fieldIsModifiable(rowNumber, feld.getName())) {
 //									beschreibe das Feld 
 							
