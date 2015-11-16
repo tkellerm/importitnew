@@ -23,6 +23,7 @@ public class Feld {
 	private Boolean option_notEmpty;
 	private Boolean option_modifiable;
 	private Boolean option_skip;
+	private Boolean option_dontChangeIfEqual;
 	private String  error;
 	private String  completeContent;
 	private Boolean fieldtoCopy;
@@ -64,7 +65,7 @@ public class Feld {
 			this.name = extractValue(completeContent);
 			fillOptions(completeContent);
 		}else {
-	//		Es ist ein normales Feld  und es wird der Strinf in value geschrieben
+	//		Es ist ein normales Feld  und es wird der String in value geschrieben
 			this.value = extractValue(completeContent);
 		}
 		
@@ -93,6 +94,7 @@ public class Feld {
 			this.option_modifiable = headfield.getOption_modifiable();
 			this.option_notEmpty = headfield.getOption_notEmpty();
 			this.option_skip = headfield.getOption_skip();
+			this.option_dontChangeIfEqual = headfield.getOption_dontChangeIfEqual();
 			this.colNumber = headfield.colNumber;
 			this.key = "";
 			this.error = "";
@@ -105,6 +107,22 @@ public class Feld {
 	}
 
 	/**
+	 * @return the option_dontChangeIfEqual
+	 */
+	public Boolean getOption_dontChangeIfEqual() {
+		return option_dontChangeIfEqual;
+	}
+
+
+	/**
+	 * @param option_dontChangeIfEqual the option_dontChangeIfEqual to set
+	 */
+	public void setOption_dontChangeIfEqual(Boolean option_dontChangeIfEqual) {
+		this.option_dontChangeIfEqual = option_dontChangeIfEqual;
+	}
+
+
+	/**
 	 * 
 	 * @return ergebnis
 	 * 
@@ -112,12 +130,7 @@ public class Feld {
 	 * 
 	 * 
 	 */
-	
-	
-	
-	
-	
-	
+
 
 	private void fillOptions(String completeContent2) {
 	// falls der String leer ist dann das Feld ignorieren
@@ -126,6 +139,7 @@ public class Feld {
 			this.option_notEmpty   = completeContent2.contains(ImportOptionen.NOTEMPTY.getSearchstring());
 			this.option_modifiable = completeContent2.contains(ImportOptionen.MODIFIABLE.getSearchstring());
 			this.option_skip       = completeContent2.contains(ImportOptionen.SKIP.getSearchstring());
+			this.option_dontChangeIfEqual = completeContent2.contains(ImportOptionen.DONT_CHANGE_IF_EQUAL.getSearchstring());
 			
 			if (completeContent2.contains(ImportOptionen.KEY.getSearchstring())) {
 		//		Es muss in dem FELD @KEY=NAME_OF_KEY

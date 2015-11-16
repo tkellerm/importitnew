@@ -384,7 +384,6 @@ public class EdpProcessing {
 //				Verarbeitung der TippKommandos
 				writeTippKommandos(datensatz, edpEditor);
 				
-				
 			}
 				
 			} catch (CantBeginEditException e) {
@@ -473,12 +472,18 @@ public class EdpProcessing {
 			edpQuery.getLastRecord();
 			int recordCount = edpQuery.getRecordCount();
 			if (recordCount == 1 || recordCount == 0) {
-				//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde 	
-				edpEditor.beginEdit(edpQuery.getField("id"));
-				String abasId = edpEditor.getEditRef();
-				datensatz.setAbasId(abasId);
+				if (recordCount == 1) {
+					//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde 	
+					edpEditor.beginEdit(edpQuery.getField("id"));
+				}else {
+					edpEditor.beginEditNew(datensatz.getDatenbank().toString(),
+							datensatz.getGruppe().toString());
+				}
 				setEditorOption(datensatz, edpEditor);
 				writeFieldsInEditor(datensatz, edpEditor);
+				edpEditor.saveReload();
+				String abasId = edpEditor.getEditRef();
+				datensatz.setAbasId(abasId);
 				edpEditor.endEditSave();
 			} else {
 
@@ -615,7 +620,12 @@ public class EdpProcessing {
 					EDPVariableLanguage variableLanguage = edpEditor.getSession().getVariableLanguage();
 						if (edpEditor.fieldIsModifiable(rowNumber, feld.getName())) {
 //									beschreibe das Feld 
-							edpEditor.setFieldVal(rowNumber, feld.getName(), feld.getValue());
+							
+							if (!(feld.getOption_dontChangeIfEqual() & 
+									edpEditor.getFieldVal(feld.getName()).equals(feld.getValue()))) {
+								edpEditor.setFieldVal(rowNumber, feld.getName(), feld.getValue());	
+							}
+							
 							
 						}else {
 							
