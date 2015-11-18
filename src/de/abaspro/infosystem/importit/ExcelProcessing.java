@@ -123,17 +123,19 @@ public class ExcelProcessing {
 				for (Feld feld : tabrow) {
 					feld.setValue(getZellenInhaltString(importSheet2, feld.getColNumber(), row));
 				}
-				if(!datensatzTabelle.isEmpty()){
+				/**
+				 * row ist der Zeilenzähler in der ExcelTabelle und die Daten beginnen in row 2
+				 * um die Prüfung der Inhalte durchzuführen muss eine Zeile in dem Datensatz mit den Tabellenfeldern vorhanden sein
+				*/
+				if(!datensatzTabelle.isEmpty() || row == 2 ){
 //					Datensatz an Tabelle anfügen
+					
 					tabelle.add(datensatzTabelle);						
 				}
 
 			}
 				
 	}
-
-
-
 
 	/**
 	 * @param importSheet2
