@@ -1,9 +1,13 @@
 package de.abaspro.infosystem.importit;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import de.abas.eks.jfop.annotation.Stateful;
 import de.abas.eks.jfop.remote.FOe;
@@ -22,10 +26,10 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	
 	ArrayList<Datensatz> datensatzList;
 	EdpProcessing edpProcessing;
+	private final static Logger log = Logger.getLogger( Importit21.class );
 	
-	public Importit21() {
+	public Importit21() throws IOException {
 		super(InfosystemImportit.class);
-
 	}
 
 	@Override
@@ -65,10 +69,11 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 			InfosystemImportit infosysImportit = event.getSourceRecord();
 			
 			try {
+				log.debug("Start import der Daten");
 				edpProcessing.importDatensatzList(datensatzList);
+				log.debug("Ende import der Daten");
 			} catch (ImportitException e) {
-				TextBox textBox = new TextBox(getContext(), "Fehler", e.toString());
-				textBox.show();
+				AbasExceptionOutput(e);
 			}
 			
 			infosysImportit.setYok(getimportitDatasets(datensatzList)); 
@@ -97,7 +102,11 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	    @Override
 	    public void after(ButtonEvent<InfosystemImportit> event) throws EventException {
 	      super.after(event);
+	      log.debug("Start prüfen der Daten");
+	      String name = log.getName();
+	      Level loglevel = log.getLevel();
 	      ypruefdatButtonInvoked(event);
+	      log.debug("Ende prüfen der Daten");
 	    }
 	
 	
@@ -106,12 +115,15 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 		private void ypruefdatButtonInvoked(
 				ButtonEvent<InfosystemImportit> event) {
 			InfosystemImportit infosysImportit = event.getSourceRecord();
+			try {
+				
+				edpProcessing.checkDatensatzListValues(datensatzList);
+				
+			} catch (ImportitException e) {
+				
+				AbasExceptionOutput(e);
+			}
 			
-			Boolean ergebnis = CheckDataUtil.checkData("GL2", "1SW");
-			ergebnis = CheckDataUtil.checkData("SW12", "SW");
-			ergebnis = CheckDataUtil.checkData("A79", "x");
-			ergebnis = CheckDataUtil.checkData("PS38", "ROW");
-			ergebnis = CheckDataUtil.checkData("PS38", "TE");
 			
 			
 			
@@ -175,11 +187,9 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 					}
 				} catch (ImportitException e) {
 
-					TextBox textBox = new TextBox(getContext(), "Fehler", e.toString());
-					textBox.show();
+					AbasExceptionOutput(e);
 				} catch (IOException e) {
-					TextBox textBox = new TextBox(getContext(), "Fehler", e.toString());
-					textBox.show();
+					AbasExceptionOutput(e);
 				}
 			}
 			
@@ -212,8 +222,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				
 				
 			} catch (ImportitException e) {
-				TextBox textBox = new TextBox(getContext(), "Fehler", e.toString());
-				textBox.show();
+				AbasExceptionOutput(e);
 			}
 	      
 	    }
@@ -250,6 +259,10 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 		return numberOfOk;
 	}
 
-	
+	private void AbasExceptionOutput(Exception e){
+		TextBox textBox = new TextBox(getContext(), "Fehler", e.toString());
+		textBox.show();
+		
+	}
 	
 }

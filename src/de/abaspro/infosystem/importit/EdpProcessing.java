@@ -1,10 +1,18 @@
 package de.abaspro.infosystem.importit;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+
+
+
+import sun.nio.cs.ext.Big5;
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantBeginSessionException;
 import de.abas.ceks.jedp.CantChangeFieldValException;
@@ -26,7 +34,12 @@ import de.abas.ceks.jedp.EDPTools;
 import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
+import de.abas.eks.jfop.remote.FOe;
+import de.abas.erp.common.type.AbasDate;
 import de.abas.erp.common.type.enums.EnumTypeCommands;
+import de.abas.erp.db.schema.projectsuitevaluedata.Value;
+import de.abas.jfop.base.buffer.BufferFactory;
+import de.abas.jfop.base.buffer.UserTextBuffer;
 
 public class EdpProcessing {
 
@@ -35,6 +48,7 @@ public class EdpProcessing {
 	private String mandant;
 	private String passwort;
 	private EDPSession edpSession;
+	private final static Logger log = Logger.getLogger( Importit21.class );
 	
 	public EdpProcessing(String server, Integer port, String mandant,
 			String passwort) {
@@ -71,7 +85,7 @@ public class EdpProcessing {
     	  			session.beginSession(server , port, mandant, passwort, "ImportIt_21");
     	  		} catch (CantBeginSessionException ex) 
     	  			{
-    	  			Logger.getLogger(Importit21.class.getName()).log(Level.SEVERE, null, ex);
+    	  			Logger.getLogger(Importit21.class.getName()).log(Level.ERROR, null, ex);
     	  			throw new ImportitException("FEHLER\n EDP Session kann nicht gestartet werden\n" , ex);
     	  			}
                  
@@ -181,7 +195,7 @@ public class EdpProcessing {
 			}
 		}
 		
-		if (datensatz.getDatenbank()!= null && datensatz.getGruppe()!= null && datensatz.getTippkommando()!=null ) {
+		if (datensatz.getDatenbank()!= null && datensatz.getGruppe()!= null ) {
 //			Überprüfung ob Datenbank vorhanden
 			String key = "";
 			int aliveFlag = EDPConstants.ALIVEFLAG_ALIVE;
@@ -189,6 +203,7 @@ public class EdpProcessing {
 			
 //			Vartab Tabellenname
 			String tableName = "12:26";
+			Boolean inTable = false;
 			
 			EDPQuery query = this.edpSession.createQuery();
 			String krit = "0:grpDBDescr=(" + datensatz.getDatenbank().toString() + ");0:grpGrpNo=" + datensatz.getGruppe().toString() +    ";" +  ";@englvar=true;@language=en";
@@ -196,7 +211,7 @@ public class EdpProcessing {
 			
 				try {
 					
-					query.startQuery(tableName, key, krit, true, aliveFlag, true, true, fieldNames, 0, 10000);
+					query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
 					query.getLastRecord();
 					if (query.getRecordCount() == 1) {
 						gefunden = true;
@@ -324,7 +339,7 @@ public class EdpProcessing {
 				
 			}
 			
-			return false;
+			return true;
 			
 		}else if (inTab) {
 //			ein leerer Tabellensatz ist erlaubt
@@ -716,46 +731,161 @@ public class EdpProcessing {
 	private Boolean checkData(Feld feld) {
 		
 		String[] VERWEIS = {"P" , "ID" , "VP" , "VID"};
-		
+		String value = feld.getValue();
+		log.debug("checkData Feld " + feld.getName() + "Zeile " + feld.getColNumber() + " AbasTyp " + feld.getAbasTyp() + " Wert "  + value);
 		EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(feld.getAbasTyp());
 		
 		int datatyp = edpeksartinfo.getDataType();
+		
 		if (datatyp == EDPTools.EDP_REFERENCE || datatyp == EDPTools.EDP_ROWREFERENCE ) {
-			if (!edpeksartinfo.getERPArt().startsWith("V")) {
-//				normales Verweisfeld
-				
-				
+			if (edpeksartinfo.getERPArt().startsWith("V")) {
+//				Multiverweisfeld
+//				werden derzeit nicht überprüft.
 				
 			}else {
-//				Multiverweisfeld
+//				normales Verweisfeld
+				int databaseNumber = edpeksartinfo.getRefDatabaseNr();
+				int groupNumber = edpeksartinfo.getRefGroupNr();
+				 
+				try {
+					EDPQuery query = getEDPQueryVerweis(value, databaseNumber, groupNumber , feld.getColNumber());
+					query.getLastRecord();
+					int recordCount = query.getRecordCount();				
+					if (recordCount == 0) {
+						feld.setError("Es wurde kein Datensatz für den Verweis " + feld.getAbasTyp() + "mit dem Wert " + value + " gefunden!");
+						
+					}else if (recordCount > 1) {
+						feld.setError("Es wurden mehrere Datensätze für den Verweis " + feld.getAbasTyp() + "mit dem Wert " + value + " gefunden!");
+						
+					}else {
+						
+					}
 				
+				
+				} catch (ImportitException e) {
+					feld.setError("Es trat ein Fehler beim Prüfen des Verweises" + feld.getAbasTyp() + " mit dem Wert " + value + " auf");
+					
+				}
 			}
 			
+		}else if (datatyp == EDPTools.EDP_STRING) {
+			Long fieldlength = edpeksartinfo.getMaxLen();
+			Long valueLength = (long)value.length();
+			if (fieldlength < valueLength) {
+				feld.setError("Der Wert " + value + " (" + valueLength + "Zeichen) ist für das Feld " + feld.getName() + " mit der Feldlänge " + fieldlength.toString() + " zu lang ");
+			}
+			
+			
+		}else if (datatyp == EDPTools.EDP_INTEGER) {
+			int integerDigits = edpeksartinfo.getIntegerDigits();
+			
+			try {
+				Integer intValue = new Integer(value);
+				Integer valueLength = intValue.toString().length();
+				if (integerDigits < valueLength) {
+					feld.setError("Der Wert " + value + "ist zu Lang");
+				}
+			} catch (NumberFormatException e) {
+				feld.setError("Der Wert " + value + " konnte nicht in einen Integer-Wert konvertiert werden");
+			}
+			
+		}else if (datatyp == EDPTools.EDP_DOUBLE) {
+			int fractionDigits = edpeksartinfo.getFractionDigits();
+			int integerDigits  = edpeksartinfo.getIntegerDigits();
+			
+			try {
+				BigDecimal bigDecimalValue = new BigDecimal(value);
+				MathContext mc = new MathContext(fractionDigits);
+				BigDecimal roundBigDValue = bigDecimalValue.round(mc);
+				String roundBigDValueStr = roundBigDValue.toString();
+				if (!roundBigDValueStr.equals(value)) {
+					feld.setError("Das Runden auf die geforderten Nachkommastellen ergibt ein falsches Ergebnis org: " 
+							+ value + "gerundeter Wert :" + roundBigDValueStr);
+				}
+				
+			} catch (NumberFormatException e) {
+				feld.setError("Der Wert " + value + " konnte nicht in einen BigDezimal-Wert(Zahl mit Nachkommastellen) konvertiert werden");
+			}
+			
+		}else if (datatyp == EDPTools.EDP_DATE) {
+			if (!checkDataDate(feld)) {
+				feld.setError("Der Wert " + value + " kann nicht in ein Abas-Datum gewandelt werden!");
+			}
+
+		}else if (datatyp == EDPTools.EDP_DATETIME || datatyp == EDPTools.EDP_TIME || datatyp == EDPTools.EDP_WEEK) {
+			if (!checkDataDate(feld)) {
+				feld.setError("Der Wert " + value + " kann nicht in ein Abas-Zeitformat gewandelt werden!");
+			}
+		} 
+		
+		if (feld.getError().isEmpty()) {
+			return true;
+		}else {
+			return false;
 		}
 		
-		return null;
+		
 	}
 		
+	private  Boolean checkDataDate(Feld feld) {
+		String abastyp = feld.getAbasTyp();
+		String value = feld.getValue();
+		Boolean ergebnis=false;
+		BufferFactory bufferFactory = BufferFactory.newInstance(true);
+		UserTextBuffer userTextBuffer = bufferFactory.getUserTextBuffer();
+
+		String varnameErgebnis = "xtergebnis";
+
+		if (!userTextBuffer.isVarDefined(varnameErgebnis)) {
+			userTextBuffer.defineVar("Bool", varnameErgebnis);
+		}
+		userTextBuffer.setValue(varnameErgebnis, "0");
+		
+			String formelStr = "U|" +varnameErgebnis + " = F|isvalue( \""  + value + "\" , \"" + abastyp + "\")";
+			FOe.formula(formelStr);
+			ergebnis = userTextBuffer.getBooleanValue(varnameErgebnis);	
+				
+		
+		return ergebnis;
+	}
 		
 		
 		
 		
 private EDPQuery getEDPQueryVerweis(String value, Integer database,
-		Integer group, Boolean inTab) throws ImportitException {
+		Integer group, Integer rowNumber) throws ImportitException {
 	
 	if (!this.edpSession.isConnected()) {
 		startEdpSession();
 	}
-	int aliveFlag = EDPConstants.ALIVEFLAG_BOTH;
+	
+	
+	
+	int aliveFlag = EDPConstants.ALIVEFLAG_ALIVE;
 	String[] fieldNames = {"id" , "nummer"};
 	String key = "";
-	String tableName = database.toString() + ":" + group.toString();
+	String tableName = "";
+	Boolean inTable;
+	
+//	wenn die Gruppe nicht eindeutig wird eine -1 übergeben
+	
+	if (group == -1) {
+		tableName= database.toString();
+	}else {
+		tableName= database.toString() + ":" + group.toString();	
+	}
+	 
+	if (rowNumber > 0) {
+		inTable = true;
+	}else {
+		inTable =false;
+	}
 	
 	EDPQuery query = this.edpSession.createQuery();
-	String krit = "0:grpDBDescr=(" + database.toString() + ");0:grpGrpNo=" + group + ";@englvar=true;@language=en";		
+	String krit = "@noswd="  + value +  ";@englvar=true;@language=en";		
 	
 	try {
-		query.startQuery(tableName, key, krit, true, aliveFlag, true, true, fieldNames, 0, 10000);
+		query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
 	
 	} catch (InvalidQueryException e) {
 		closeEdpSession();

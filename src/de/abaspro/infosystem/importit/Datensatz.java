@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 
 public class Datensatz {
 
@@ -20,6 +21,10 @@ public class Datensatz {
 	 private OptionCode optionCode;
 	 private Integer keyfield;
 	 private String abasId;
+	 private String errorReport;
+	 private String errordebug;
+	 
+	 private final static Logger log = Logger.getLogger( Importit21.class );
 
 	public Integer getTableStartsAtField() {
 		return tableStartsAtField;
@@ -254,7 +259,8 @@ public class Datensatz {
 		// aus dem übergebenen Datensatz werden die abastypen in alle anghängten Felder kopiert.
 				
 		for (int i = 0; i < this.kopfFelder.size(); i++) {
-			if (!this.kopfFelder.get(i).getAbasTyp().isEmpty()) {
+			String abasTyp = this.kopfFelder.get(i).getAbasTyp();
+			if (this.kopfFelder.get(i).getAbasTyp().isEmpty()) {
 				this.kopfFelder.get(i).setAbasTyp(datensatz.kopfFelder.get(i).getAbasTyp());	
 			}
 
@@ -277,7 +283,8 @@ public class Datensatz {
 	
 	public void appendError(Exception e) {
 		
-		this.error = this.error + "\n" + e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e);
+		this.error = this.error + "\n" + e.getMessage(); 
+		this.errordebug = this.error + "\n" + e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e);
 		
 	}
 	
@@ -294,4 +301,57 @@ public void appendError(String errorString) {
 		
 	}
 	
+
+public String getErrorReport(){
+	String ausgabe;
+//	Fehlermeldungen im Kopf
+	ausgabe = this.error;
+		
+// Fehlermeldungen aus den Kopf Feldern
+	
+	ausgabe = ausgabe + "\n" + "Fehler aus den Kopffeldern : ";
+	
+	for (Feld feld : kopfFelder) {
+		if (feld.getError() != null) {
+			String feldError = feld.getError(); 
+			if (!feldError.isEmpty()) {
+				ausgabe = feld2Ausgabe(ausgabe,  feld);
+			}
+			
+		}
+	}
+	
+//	Fehlermeldungen aus den Tabellenfeldern
+	   
+	for ( DatensatzTabelle tabZeile : tabellenZeilen) {
+		    int aktZeile = tabellenZeilen.indexOf(tabZeile);
+		    ausgabe = "\n" + "Ausgabe Zeile " + aktZeile;
+		    
+			ArrayList<Feld> tabellenFelder = tabZeile.getTabellenFelder();
+			for (Feld feld : tabellenFelder) {
+				ausgabe = feld2Ausgabe(ausgabe,  feld);
+			}
+	}
+	
+	
+	return ausgabe;
+}
+
+
+/**
+ * @param ausgabe
+ * @param rownumber
+ * @param feld
+ * @return
+ */
+private String feld2Ausgabe(String ausgabe,  Feld feld) {
+	String feldError = feld.getError(); 
+	Integer colnumber = feld.getColNumber();
+	if (!feldError.isEmpty()) {
+		ausgabe = "\n" + feld.getName() + " " + colnumber.toString() + " " + "Fehler : " + feldError;
+	}
+	return ausgabe;
+}
+
+
 }
