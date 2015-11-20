@@ -504,8 +504,8 @@ public class EdpProcessing {
 				setEditorOption(datensatz, edpEditor);
 				if (recordCount == 1) {
 					//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde
-					logger.info("Editor starten UPDATE " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString() + " ID:" +edpEditor.getEditRef());
 					edpEditor.beginEdit(edpQuery.getField("id"));
+					logger.info("Editor starten UPDATE " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString() + " ID:" +edpEditor.getEditRef());
 				}else {
 					logger.info("Editor starten NEW " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString());
 					edpEditor.beginEditNew(datensatz.getDatenbank().toString(),
