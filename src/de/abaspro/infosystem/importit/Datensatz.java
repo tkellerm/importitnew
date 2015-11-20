@@ -115,7 +115,7 @@ public class Datensatz {
 			}
 			
 		}
-
+		
 		return keyfield;
 
 	}
@@ -302,20 +302,43 @@ public void appendError(String errorString) {
 	}
 	
 
-public String getErrorReport(){
-	String ausgabe;
+/**
+ * @return the errorReport
+ */
+public String getErrorReport() {
+	return errorReport;
+}
+
+
+/**
+ * @return the errordebug
+ */
+public String getErrordebug() {
+	return errordebug;
+}
+
+
+public void createErrorReport(){
+	this.errorReport="";
 //	Fehlermeldungen im Kopf
-	ausgabe = this.error;
+	if (this.error != null) {
+		text2ErrorReport(this.error);	
+	}
+	
 		
 // Fehlermeldungen aus den Kopf Feldern
 	
-	ausgabe = ausgabe + "\n" + "Fehler aus den Kopffeldern : ";
+	String kopftext =  "Fehler aus den Kopffeldern : ";
 	
 	for (Feld feld : kopfFelder) {
 		if (feld.getError() != null) {
 			String feldError = feld.getError(); 
 			if (!feldError.isEmpty()) {
-				ausgabe = feld2Ausgabe(ausgabe,  feld);
+				if (!kopftext.isEmpty()) {
+					text2ErrorReport(kopftext);
+					kopftext = "";
+				}
+				feld2ErrorReport( feld);
 			}
 			
 		}
@@ -325,16 +348,34 @@ public String getErrorReport(){
 	   
 	for ( DatensatzTabelle tabZeile : tabellenZeilen) {
 		    int aktZeile = tabellenZeilen.indexOf(tabZeile);
-		    ausgabe = "\n" + "Ausgabe Zeile " + aktZeile;
+		    String rowText =  "Ausgabe Zeile " + aktZeile;
 		    
 			ArrayList<Feld> tabellenFelder = tabZeile.getTabellenFelder();
 			for (Feld feld : tabellenFelder) {
-				ausgabe = feld2Ausgabe(ausgabe,  feld);
+				if (feld.getError() != null) {
+					String feldError = feld.getError(); 
+					if (!feldError.isEmpty()) {
+						if (!rowText.isEmpty()) {
+							text2ErrorReport(rowText);
+							rowText = "";
+							}
+						feld2ErrorReport(feld);
+					}
+				}
 			}
 	}
 	
 	
-	return ausgabe;
+	
+}
+
+
+private void text2ErrorReport(String text) {
+	if (this.errorReport.isEmpty()) {
+		this.errorReport =  text;
+	}else {
+		errorReport = errorReport + "\n" + text;	
+	}
 }
 
 
@@ -344,13 +385,15 @@ public String getErrorReport(){
  * @param feld
  * @return
  */
-private String feld2Ausgabe(String ausgabe,  Feld feld) {
+private void feld2ErrorReport( Feld feld) {
 	String feldError = feld.getError(); 
 	Integer colnumber = feld.getColNumber();
+	String ausgabe="";
 	if (!feldError.isEmpty()) {
-		ausgabe = "\n" + feld.getName() + " " + colnumber.toString() + " " + "Fehler : " + feldError;
+		ausgabe =  feld.getName() + " " + colnumber.toString() + " " + "Fehler : " + feldError;
+		text2ErrorReport(ausgabe);
 	}
-	return ausgabe;
+	
 }
 
 
