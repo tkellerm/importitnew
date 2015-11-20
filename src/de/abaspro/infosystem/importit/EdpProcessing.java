@@ -891,7 +891,7 @@ private EDPQuery getEDPQueryVerweis(String value, Integer database,
 	}else {
 		tableName= database.toString() + ":" + group.toString();	
 	}
-	 tableName = "01";
+//	 tableName = "01";
 //	if (rowNumber > 0) {
 //		inTable = true;
 //	}else {
