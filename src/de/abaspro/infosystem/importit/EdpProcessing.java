@@ -754,87 +754,113 @@ public class EdpProcessing {
 		
 		int datatyp = edpeksartinfo.getDataType();
 		
-		if (datatyp == EDPTools.EDP_REFERENCE || datatyp == EDPTools.EDP_ROWREFERENCE ) {
-			if (edpeksartinfo.getERPArt().startsWith("V")) {
-//				Multiverweisfeld
-//				werden derzeit nicht überprüft.
-				
-			}else {
-//				normales Verweisfeld
-				int databaseNumber = edpeksartinfo.getRefDatabaseNr();
-				int groupNumber = edpeksartinfo.getRefGroupNr();
-				 
-				try {
-					EDPQuery query = getEDPQueryVerweis(value, databaseNumber, groupNumber , feld.getColNumber());
-					query.getLastRecord();
-					int recordCount = query.getRecordCount();				
-					if (recordCount == 0) {
-						feld.setError("Es wurde kein Datensatz für den Verweis " + feld.getAbasTyp() + "mit dem Wert " + value + " gefunden!");
-						
-					}else if (recordCount > 1) {
-						feld.setError("Es wurden mehrere Datensätze für den Verweis " + feld.getAbasTyp() + "mit dem Wert " + value + " gefunden!");
-						
-					}else {
-						
-					}
-				
-				
-				} catch (ImportitException e) {
-					feld.setError("Es trat ein Fehler beim Prüfen des Verweises" + feld.getAbasTyp() + " mit dem Wert " + value + " auf");
-					
-				}
-			}
-			
-		}else if (datatyp == EDPTools.EDP_STRING) {
-			Long fieldlength = edpeksartinfo.getMaxLen();
-			Long valueLength = (long)value.length();
-			if (fieldlength < valueLength) {
-				feld.setError("Der Wert " + value + " (" + valueLength + "Zeichen) ist für das Feld " + feld.getName() + " mit der Feldlänge " + fieldlength.toString() + " zu lang ");
-			}
-			
-			
-		}else if (datatyp == EDPTools.EDP_INTEGER) {
-			int integerDigits = edpeksartinfo.getIntegerDigits();
-			
-			try {
-				Integer intValue = new Integer(value);
-				Integer valueLength = intValue.toString().length();
-				if (integerDigits < valueLength) {
-					feld.setError("Der Wert " + value + "ist zu Lang");
-				}
-			} catch (NumberFormatException e) {
-				feld.setError("Der Wert " + value + " konnte nicht in einen Integer-Wert konvertiert werden");
-			}
-			
-		}else if (datatyp == EDPTools.EDP_DOUBLE) {
-			int fractionDigits = edpeksartinfo.getFractionDigits();
-			int integerDigits  = edpeksartinfo.getIntegerDigits();
-			
-			try {
-				BigDecimal bigDecimalValue = new BigDecimal(value);
-				MathContext mc = new MathContext(fractionDigits);
-				BigDecimal roundBigDValue = bigDecimalValue.round(mc);
-				String roundBigDValueStr = roundBigDValue.toString();
-				if (!roundBigDValueStr.equals(value)) {
-					feld.setError("Das Runden auf die geforderten Nachkommastellen ergibt ein falsches Ergebnis org: " 
-							+ value + "gerundeter Wert :" + roundBigDValueStr);
-				}
-				
-			} catch (NumberFormatException e) {
-				feld.setError("Der Wert " + value + " konnte nicht in einen BigDezimal-Wert(Zahl mit Nachkommastellen) konvertiert werden");
-			}
-			
-		}else if (datatyp == EDPTools.EDP_DATE) {
-			if (!checkDataDate(feld)) {
-				feld.setError("Der Wert " + value + " kann nicht in ein Abas-Datum gewandelt werden!");
-			}
+		if (!feld.getOption_skip()) {
+			if (datatyp == EDPTools.EDP_REFERENCE
+					|| datatyp == EDPTools.EDP_ROWREFERENCE) {
+				if (edpeksartinfo.getERPArt().startsWith("V")) {
+					//				Multiverweisfeld
+					//				werden derzeit nicht überprüft.
 
-		}else if (datatyp == EDPTools.EDP_DATETIME || datatyp == EDPTools.EDP_TIME || datatyp == EDPTools.EDP_WEEK) {
-			if (!checkDataDate(feld)) {
-				feld.setError("Der Wert " + value + " kann nicht in ein Abas-Zeitformat gewandelt werden!");
+				} else {
+					//				normales Verweisfeld
+					int databaseNumber = edpeksartinfo.getRefDatabaseNr();
+					int groupNumber = edpeksartinfo.getRefGroupNr();
+
+					try {
+						EDPQuery query = getEDPQueryVerweis(value,
+								databaseNumber, groupNumber,
+								feld.getColNumber());
+						query.getLastRecord();
+						int recordCount = query.getRecordCount();
+						if (recordCount == 0) {
+							feld.setError("Es wurde kein Datensatz für den Verweis "
+									+ feld.getAbasTyp()
+									+ "mit dem Wert "
+									+ value + " gefunden!");
+
+						} else if (recordCount > 1) {
+							feld.setError("Es wurden mehrere Datensätze für den Verweis "
+									+ feld.getAbasTyp()
+									+ "mit dem Wert "
+									+ value + " gefunden!");
+
+						} else {
+
+						}
+
+					} catch (ImportitException e) {
+						feld.setError("Es trat ein Fehler beim Prüfen des Verweises"
+								+ feld.getAbasTyp()
+								+ " mit dem Wert "
+								+ value
+								+ " auf");
+
+					}
+				}
+
+			} else if (datatyp == EDPTools.EDP_STRING) {
+				Long fieldlength = edpeksartinfo.getMaxLen();
+				Long valueLength = (long) value.length();
+				if (fieldlength < valueLength) {
+					feld.setError("Der Wert " + value + " (" + valueLength
+							+ "Zeichen) ist für das Feld " + feld.getName()
+							+ " mit der Feldlänge " + fieldlength.toString()
+							+ " zu lang ");
+				}
+
+			} else if (datatyp == EDPTools.EDP_INTEGER) {
+				int integerDigits = edpeksartinfo.getIntegerDigits();
+
+				try {
+					Integer intValue = new Integer(value);
+					Integer valueLength = intValue.toString().length();
+					if (integerDigits < valueLength) {
+						feld.setError("Der Wert " + value + "ist zu Lang");
+					}
+				} catch (NumberFormatException e) {
+					feld.setError("Der Wert "
+							+ value
+							+ " konnte nicht in einen Integer-Wert konvertiert werden");
+				}
+
+			} else if (datatyp == EDPTools.EDP_DOUBLE) {
+				int fractionDigits = edpeksartinfo.getFractionDigits();
+				int integerDigits = edpeksartinfo.getIntegerDigits();
+
+				try {
+					BigDecimal bigDecimalValue = new BigDecimal(value);
+					MathContext mc = new MathContext(fractionDigits);
+					BigDecimal roundBigDValue = bigDecimalValue.round(mc);
+					String roundBigDValueStr = roundBigDValue.toString();
+					if (!roundBigDValueStr.equals(value)) {
+						feld.setError("Das Runden auf die geforderten Nachkommastellen ergibt ein falsches Ergebnis org: "
+								+ value
+								+ "gerundeter Wert :"
+								+ roundBigDValueStr);
+					}
+
+				} catch (NumberFormatException e) {
+					feld.setError("Der Wert "
+							+ value
+							+ " konnte nicht in einen BigDezimal-Wert(Zahl mit Nachkommastellen) konvertiert werden");
+				}
+
+			} else if (datatyp == EDPTools.EDP_DATE) {
+				if (!checkDataDate(feld)) {
+					feld.setError("Der Wert " + value
+							+ " kann nicht in ein Abas-Datum gewandelt werden!");
+				}
+
+			} else if (datatyp == EDPTools.EDP_DATETIME
+					|| datatyp == EDPTools.EDP_TIME
+					|| datatyp == EDPTools.EDP_WEEK) {
+				if (!checkDataDate(feld)) {
+					feld.setError("Der Wert "
+							+ value
+							+ " kann nicht in ein Abas-Zeitformat gewandelt werden!");
+				}
 			}
-		} 
-		
+		}
 		if (feld.getError().isEmpty()) {
 			return true;
 		}else {
