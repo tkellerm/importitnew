@@ -151,7 +151,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				try {
 					for (Datensatz datensatz : datensatzList) {
 						if (datensatz.getTippkommando()== null) {
-							
+							datensatz.createErrorReport();
 //					Es ist ein Datenbank-Kommando
 							if ((datensatz.getError() != null & infosysImportit.getYshowonlyerrorline()) || 
 									(!infosysImportit.getYshowonlyerrorline()) ) {
