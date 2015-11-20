@@ -12,6 +12,12 @@ import org.apache.log4j.Logger;
 
 
 
+
+
+
+
+
+
 import sun.nio.cs.ext.Big5;
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantBeginSessionException;
@@ -28,15 +34,19 @@ import de.abas.ceks.jedp.EDPEditorOption;
 import de.abas.ceks.jedp.EDPFactory;
 import de.abas.ceks.jedp.EDPQuery;
 import de.abas.ceks.jedp.EDPRowAddress;
+import de.abas.ceks.jedp.EDPSelection;
 import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.EDPStoreRowMode;
 import de.abas.ceks.jedp.EDPTools;
 import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
+import de.abas.ceks.jedp.StandardEDPSelection;
+import de.abas.ceks.jedp.StandardEDPSelectionCriteria;
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.erp.common.type.AbasDate;
 import de.abas.erp.common.type.enums.EnumTypeCommands;
+import de.abas.erp.db.internal.impl.jedp.EDPUtil;
 import de.abas.erp.db.schema.projectsuitevaluedata.Value;
 import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.UserTextBuffer;
@@ -637,16 +647,18 @@ public class EdpProcessing {
 					int database = edpEditor.getEditDatabaseNr();
 					boolean aktive = edpEditor.isActive();
 					String cfield = edpEditor.getCurrentFieldName();
-					edpEditor.setFieldVal("name", "test");
 					String test = edpEditor.getFieldVal("name");
 					String fieldtyp = edpEditor.getFieldEDPType("name");
 					
-					String test2 = "2";
+					String test2 = "3";
 						if (edpEditor.fieldIsModifiable(rowNumber, feld.getName())) {
 //									beschreibe das Feld 
+							String datafieldval = feld.getValue();
+							
+								String edpfieldval= edpEditor.getFieldVal(rowNumber , feld.getName());
 							
 							if (!(feld.getOption_dontChangeIfEqual() & 
-									edpEditor.getFieldVal(feld.getName()).equals(feld.getValue()))) {
+									edpEditor.getFieldVal(rowNumber, feld.getName()).equals(feld.getValue()))) {
 								edpEditor.setFieldVal(rowNumber, feld.getName(), feld.getValue());	
 							}
 							
@@ -713,11 +725,16 @@ public class EdpProcessing {
 		
 		for (Datensatz datensatz : datensatzList) {
 			List<Feld> kopfFelder = datensatz.getKopfFelder();
+			Boolean includeError = false;
 			for (Feld feld : kopfFelder) {
-				checkData(feld);
+				if (!checkData(feld)) {
+					includeError = true;
+				}
 				
 			}
-			
+			if (includeError) {
+				datensatz.createErrorReport();
+			}
 		}
 		
 		closeEdpSession();
@@ -874,19 +891,22 @@ private EDPQuery getEDPQueryVerweis(String value, Integer database,
 	}else {
 		tableName= database.toString() + ":" + group.toString();	
 	}
-	 
-	if (rowNumber > 0) {
-		inTable = true;
-	}else {
-		inTable =false;
-	}
-	
+	 tableName = "01";
+//	if (rowNumber > 0) {
+//		inTable = true;
+//	}else {
+//		inTable =false;
+//	}
+	inTable =false;
 	EDPQuery query = this.edpSession.createQuery();
-	String krit = "@noswd="  + value +  ";@englvar=true;@language=en";		
+	String krit = "@noswd="  + value +  ";@englvar=true;@language=en;@database=" +database.toString();		
+	StandardEDPSelectionCriteria criteria = new StandardEDPSelectionCriteria(krit);
+	StandardEDPSelection edpcriteria = new StandardEDPSelection(tableName, criteria);
 	
 	try {
-		query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
-	
+//		query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
+		query.startQuery(edpcriteria, fieldNames.toString());
+		
 	} catch (InvalidQueryException e) {
 		closeEdpSession();
 		throw new ImportitException( "fehlerhafter Selektionsstring: " + krit , e);
