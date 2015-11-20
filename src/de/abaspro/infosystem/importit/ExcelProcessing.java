@@ -524,21 +524,20 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 //		Hier werden alle Inhaltsmöglichkeiten einer Celle in einen String umgewandelt 
 		Cell cell = sheet.getRow(y).getCell(x);
 		if (cell != null) {
-			
 			if ( cell.getCellType() == Cell.CELL_TYPE_STRING)  {
 				return cell.getStringCellValue();
 			}else {
 		
 				if ( cell.getCellType() == Cell.CELL_TYPE_NUMERIC)  {
-			
-					Double nummericvalue = cell.getNumericCellValue();
-					Integer intvalue = nummericvalue.intValue();
-					if 	(intvalue.doubleValue()  == nummericvalue){
-						return intvalue.toString();
-					}else {
-						return nummericvalue.toString();	
-				}
-				
+					cell.setCellType(Cell.CELL_TYPE_STRING);
+//					Double nummericvalue = cell.getNumericCellValue();
+//					Integer intvalue = nummericvalue.intValue();
+//					if 	(intvalue.doubleValue()  == nummericvalue){
+//						return intvalue.toString();
+//					}else {
+//						return nummericvalue.toString();	
+//				}
+				return cell.getStringCellValue();
 			}else {
 				if ( cell.getCellType() == Cell.CELL_TYPE_BOOLEAN){
 					if (cell.getBooleanCellValue() == true) {
