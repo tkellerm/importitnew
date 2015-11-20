@@ -211,12 +211,15 @@ public class ExcelProcessing {
 //					Zelleninhalt auslesen und Feld Konstruktor übergeben
 					String feldInhalt = getZellenInhaltString(importSheet2, col, row);
 //					Falls das Feld komplettleer ist dann nicht in Feldliste aufnehmen
-					if (!feldInhalt.isEmpty()) {
-						Feld feld = new Feld(feldInhalt , true , col );
+					
+					if (feldInhalt !=null) {
+						if (!feldInhalt.isEmpty()) {
+							Feld feld = new Feld(feldInhalt, true, col);
 
-//						hänge das Feld an die Kopffelder an
-						
-						kopfFelder2.add(feld);	
+							//						hänge das Feld an die Kopffelder an
+
+							kopfFelder2.add(feld);
+						}
 					}
 					
 					
