@@ -26,7 +26,9 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	
 	ArrayList<Datensatz> datensatzList;
 	EdpProcessing edpProcessing;
-	private final static Logger log = Logger.getLogger( Importit21.class );
+	private Logger logger = Logger.getLogger(Importit21.class);
+	
+
 	
 	public Importit21() throws IOException {
 		super(InfosystemImportit.class);
@@ -69,9 +71,9 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 			InfosystemImportit infosysImportit = event.getSourceRecord();
 			
 			try {
-				log.debug("Start import der Daten");
+				logger.debug("Start import der Daten");
 				edpProcessing.importDatensatzList(datensatzList);
-				log.debug("Ende import der Daten");
+				logger.debug("Ende import der Daten");
 			} catch (ImportitException e) {
 				AbasExceptionOutput(e);
 			}
@@ -102,11 +104,11 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	    @Override
 	    public void after(ButtonEvent<InfosystemImportit> event) throws EventException {
 	      super.after(event);
-	      log.debug("Start prüfen der Daten");
-	      String name = log.getName();
-	      Level loglevel = log.getLevel();
+	      logger.debug("Start prüfen der Daten");
+	      String name = logger.getName();
+	      Level loglevel = logger.getLevel();
 	      ypruefdatButtonInvoked(event);
-	      log.debug("Ende prüfen der Daten");
+	      logger.debug("Ende prüfen der Daten");
 	    }
 	
 	
@@ -116,7 +118,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				ButtonEvent<InfosystemImportit> event) {
 			InfosystemImportit infosysImportit = event.getSourceRecord();
 			try {
-				
+				 
 				edpProcessing.checkDatensatzListValues(datensatzList);
 				
 			} catch (ImportitException e) {
@@ -216,17 +218,23 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	    private void ypruefstruktButtonInvoked(ButtonEvent<InfosystemImportit> event) {
 	    	
 	    	InfosystemImportit infosysImportit = event.getSourceRecord();
+	    	infosysImportit.table().clear();
+	    	infosysImportit.setYok(0); 
+			infosysImportit.setYfehler(0);
 	    	try {
 //	    		prüfe noch ob passwort eingeben wurde 
-	    		
+	    		logger.info("Start Excelproccessing");
 				ExcelProcessing excelProcessing = new ExcelProcessing(infosysImportit.getYdatafile());
 				datensatzList = excelProcessing.getDatensatzList();
-				
+				logger.info("Ende Excelproccessing");
+				logger.info("Start checkDatensatzList");
 				edpProcessing = new EdpProcessing(infosysImportit.getYserver(), infosysImportit.getYport(), infosysImportit.getYmandant(), infosysImportit.getYpasswort());
 				edpProcessing.checkDatensatzList(datensatzList);
-				
+				logger.info("Ende checkDatensatzList");
 				String daten = "test2"; 
 				
+				infosysImportit.setYok(getimportitDatasets(datensatzList)); 
+				infosysImportit.setYfehler(geterrorDatasets(datensatzList));
 				
 			} catch (ImportitException e) {
 				AbasExceptionOutput(e);

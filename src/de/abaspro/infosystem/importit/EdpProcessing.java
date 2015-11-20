@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 
 
 
+
 import sun.nio.cs.ext.Big5;
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantBeginSessionException;
@@ -58,7 +59,7 @@ public class EdpProcessing {
 	private String mandant;
 	private String passwort;
 	private EDPSession edpSession;
-	private final static Logger log = Logger.getLogger( Importit21.class );
+	private Logger logger = Logger.getLogger(Importit21.class);
 	
 	public EdpProcessing(String server, Integer port, String mandant,
 			String passwort) {
@@ -413,22 +414,23 @@ public class EdpProcessing {
 			}
 				
 			} catch (CantBeginEditException e) {
-			
+				logger.error(e);
 				datensatz.appendError(e);
 			} catch (ImportitException e) {
-			
+				logger.error(e);
 				datensatz.appendError(e);
 			} catch (InvalidQueryException e) {
-			
+				logger.error(e);
 				datensatz.appendError(e);
 			} catch (CantSaveException e) {
-			
+				logger.error(e);
 				datensatz.appendError(e);
 			} catch (CantChangeSettingException e) {
-				
+				logger.error(e);
 				datensatz.appendError(e);
 			}finally{
 				if (edpEditor.isActive()) {
+					logger.info("Editor beenden");
 					edpEditor.endEditCancel();
 				}
 			}
@@ -459,11 +461,13 @@ public class EdpProcessing {
 			ImportitException, CantSaveException, InvalidQueryException {
 		if (datensatz.getOptionCode().getAlwaysNew()) {
 			setEditorOption(datensatz, edpEditor);
+			logger.info("Editor starten Always NEW " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString());
 			edpEditor.beginEditNew(datensatz.getDatenbank().toString(),
 					datensatz.getGruppe().toString());
 			writeFieldsInEditor(datensatz, edpEditor);
 			edpEditor.saveReload();
 			String abasId = edpEditor.getEditRef();
+			logger.info("Editor save Always NEW " + datensatz.getDatenbank().toString() + ":" + datensatz.getGruppe().toString() + " ID :" + abasId);
 			datensatz.setAbasId(abasId);
 			edpEditor.endEditSave();
 		} else {
@@ -499,15 +503,20 @@ public class EdpProcessing {
 			if (recordCount == 1 || recordCount == 0) {
 				setEditorOption(datensatz, edpEditor);
 				if (recordCount == 1) {
-					//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde 	
+					//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde
+					logger.info("Editor starten UPDATE " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString() + " ID:" +edpEditor.getEditRef());
 					edpEditor.beginEdit(edpQuery.getField("id"));
 				}else {
+					logger.info("Editor starten NEW " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString());
 					edpEditor.beginEditNew(datensatz.getDatenbank().toString(),
 							datensatz.getGruppe().toString());
 				}
 				writeFieldsInEditor(datensatz, edpEditor);
 				edpEditor.saveReload();
 				String abasId = edpEditor.getEditRef();
+				
+				logger.info("Editor save Always NEW " + datensatz.getDatenbank().toString() + ":" + datensatz.getGruppe().toString() + " ID:" + abasId);
+				
 				datensatz.setAbasId(abasId);
 				edpEditor.endEditSave();
 			} else {
@@ -590,6 +599,7 @@ public class EdpProcessing {
 						}
 						
 					} catch (InvalidRowOperationException e) {
+						logger.error(e);
 						throw new ImportitException("Die Zeilen konnten nicht eingefügt werden!" ,e );
 					}
 					Integer rowNumber = edpEditor.getCurrentRow();
@@ -659,14 +669,15 @@ public class EdpProcessing {
 							
 							if (!(feld.getOption_dontChangeIfEqual() & 
 									edpEditor.getFieldVal(rowNumber, feld.getName()).equals(feld.getValue()))) {
-								edpEditor.setFieldVal(rowNumber, feld.getName(), feld.getValue());	
+								edpEditor.setFieldVal(rowNumber, feld.getName(), feld.getValue());
+								logger.debug("Das Feld " + feld.getName() + " mit dem Wert " + feld.getValue() + " wurde in Zeile " + rowNumber.toString() + "geschrieben" );
 							}
 							
 							
 						}else {
 							
 							if (!feld.getOption_modifiable() && !datensatz.getNameOfKeyfield().equals(feld.getName())) {
-								if (rowNumber == 0) {
+								if (rowNumber == 0) {									
 									throw new ImportitException("Das Kopffeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
 											+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + "nicht änderbar");	
 								}else {
@@ -678,7 +689,8 @@ public class EdpProcessing {
 							}
 						}	
 					} catch (CantChangeFieldValException e) {
-						if (rowNumber == 0) {
+						logger.error(e);
+						if (rowNumber == 0) {			
 						throw new ImportitException("Das Kopffeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
 								+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " nicht änderbar"  , e);
 						}else {
@@ -687,6 +699,7 @@ public class EdpProcessing {
 						}
 						
 					}catch (CantReadFieldPropertyException e) {
+						logger.error(e);
 						if (rowNumber == 0) {
 						throw new ImportitException("Für das Kopffeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
 								+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " die Abasfeldeigenschaften nicht auslesbar"  , e);
@@ -703,8 +716,7 @@ public class EdpProcessing {
 				}
 				
 			}else {
-	
-				throw new ImportitException("Der Editor war nicht aktiv");
+				logger.debug("Das Feld " + feld.getName() + " ist als SKIP-Feld gekennzeichnet");				
 				}
 		
 	}
@@ -749,7 +761,7 @@ public class EdpProcessing {
 		
 		String[] VERWEIS = {"P" , "ID" , "VP" , "VID"};
 		String value = feld.getValue();
-		log.debug("checkData Feld " + feld.getName() + "Zeile " + feld.getColNumber() + " AbasTyp " + feld.getAbasTyp() + " Wert "  + value);
+		logger.debug("checkData Feld " + feld.getName() + "Zeile " + feld.getColNumber() + " AbasTyp " + feld.getAbasTyp() + " Wert "  + value);
 		EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(feld.getAbasTyp());
 		
 		int datatyp = edpeksartinfo.getDataType();
