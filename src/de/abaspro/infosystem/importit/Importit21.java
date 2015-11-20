@@ -159,12 +159,19 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 								if (datensatz.getAbasId() != null) {
 									row.setString(row.META.ydatensatz, datensatz.getAbasId());
 								}
-								if (datensatz.getError() == null) {
+								if (datensatz.getErrorReport() == null) {
 									row.setYicon("icon:ok");
 								}else {
 									row.setYicon("icon:stop");
-									row.setYtfehler(datensatz.getError().substring(0, 70));
-									StringReader reader = new StringReader(datensatz.getError());
+									int errorReportlength = datensatz.getErrorReport().length();
+									int fieldLength = row.META.ytfehler.getLength();
+									if (errorReportlength > fieldLength) {
+										row.setYtfehler(datensatz.getErrorReport().substring(0, fieldLength));	
+									}else {
+										row.setYtfehler(datensatz.getErrorReport());
+									}
+									
+									StringReader reader = new StringReader(datensatz.getErrorReport());
 									row.setYkomtext(reader);
 								}
 							}
@@ -227,7 +234,6 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	      
 	    }
 	  }
-
 	
 
 	private int geterrorDatasets(ArrayList<Datensatz> datensatzList2) {
