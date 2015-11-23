@@ -72,7 +72,13 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 			
 			try {
 				logger.debug("Start import der Daten");
-				edpProcessing.importDatensatzList(datensatzList);
+				if (datensatzList!=null) {
+					edpProcessing.importDatensatzList(datensatzList);	
+				}else {
+					TextBox textbox = new TextBox(getContext(), "Fehler", "Bitte die Datei neu einlesen");
+					textbox.show();
+				}
+				
 				logger.debug("Ende import der Daten");
 			} catch (ImportitException e) {
 				AbasExceptionOutput(e);
@@ -121,6 +127,9 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				 
 				edpProcessing.checkDatensatzListValues(datensatzList);
 				
+				infosysImportit.setYok(getimportitDatasets(datensatzList)); 
+				infosysImportit.setYfehler(geterrorDatasets(datensatzList));
+				
 			} catch (ImportitException e) {
 				
 				AbasExceptionOutput(e);
@@ -152,28 +161,30 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 					for (Datensatz datensatz : datensatzList) {
 						if (datensatz.getTippkommando()== null) {
 							datensatz.createErrorReport();
-//					Es ist ein Datenbank-Kommando
-							if ((datensatz.getError() != null & infosysImportit.getYshowonlyerrorline()) || 
+							String errorReport = datensatz.getErrorReport();
+							
+//							Alles ausgeben oder wenn yshowonlyerrorline gesetzt nur die fehlerhaften Datensätze
+							
+							if (!(errorReport.isEmpty() & infosysImportit.getYshowonlyerrorline()) || 
 									(!infosysImportit.getYshowonlyerrorline()) ) {
-//								Alles ausgeben oder wenn yshowonlyerrorline gesetzt nur die fehlerhaften Datensätze 
 								Row row = infosysImportit.table().appendRow();
 								row.setYsel(datensatz.getValueOfKeyfield());
 								if (datensatz.getAbasId() != null) {
 									row.setString(row.META.ydatensatz, datensatz.getAbasId());
 								}
-								if (datensatz.getErrorReport() == null) {
+								if (errorReport.isEmpty()) {
 									row.setYicon("icon:ok");
 								}else {
 									row.setYicon("icon:stop");
-									int errorReportlength = datensatz.getErrorReport().length();
+									int errorReportlength = errorReport.length();
 									int fieldLength = row.META.ytfehler.getLength();
 									if (errorReportlength > fieldLength) {
-										row.setYtfehler(datensatz.getErrorReport().substring(0, fieldLength));	
+										row.setYtfehler(errorReport.substring(0, fieldLength));	
 									}else {
-										row.setYtfehler(datensatz.getErrorReport());
+										row.setYtfehler(errorReport);
 									}
 									
-									StringReader reader = new StringReader(datensatz.getErrorReport());
+									StringReader reader = new StringReader(errorReport);
 									row.setYkomtext(reader);
 								}
 							}
@@ -243,13 +254,12 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	    }
 	  }
 	
-
 	private int geterrorDatasets(ArrayList<Datensatz> datensatzList2) {
 		int numberOfError = 0;
 		for (Datensatz datensatz : datensatzList2) {
-			String error = datensatz.getError();
+			String error = datensatz.getErrorReport();
 			if (error != null) {
-				if (!datensatz.getError().isEmpty()) {
+				if (!datensatz.getErrorReport().isEmpty()) {
 					numberOfError++;
 				}
 			}
@@ -260,9 +270,9 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	private int getimportitDatasets(ArrayList<Datensatz> datensatzList2) {
 		int numberOfOk = 0;
 		for (Datensatz datensatz : datensatzList2) {
-			String error = datensatz.getError();
+			String error = datensatz.getErrorReport();
 			if (error != null) {
-				if (datensatz.getError().isEmpty()) {
+				if (datensatz.getErrorReport().isEmpty()) {
 					numberOfOk++;
 				}
 			}else {
