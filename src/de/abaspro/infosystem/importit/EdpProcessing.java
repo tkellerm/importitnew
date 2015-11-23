@@ -459,6 +459,7 @@ public class EdpProcessing {
 	private void writeDatabase(Datensatz datensatz, EDPEditor edpEditor)
 			throws CantBeginEditException, CantChangeSettingException,
 			ImportitException, CantSaveException, InvalidQueryException {
+		
 		if (datensatz.getOptionCode().getAlwaysNew()) {
 			setEditorOption(datensatz, edpEditor);
 			logger.info("Editor starten Always NEW " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString());
@@ -766,7 +767,7 @@ public class EdpProcessing {
 		
 		int datatyp = edpeksartinfo.getDataType();
 		
-		if (!feld.getOption_skip()) {
+		if (!feld.getOption_skip() & !(feld.getOption_notEmpty() & feld.getValue().isEmpty())) {
 			if (datatyp == EDPTools.EDP_REFERENCE
 					|| datatyp == EDPTools.EDP_ROWREFERENCE) {
 				if (edpeksartinfo.getERPArt().startsWith("V")) {
@@ -925,7 +926,7 @@ private EDPQuery getEDPQueryVerweis(String value, Integer database,
 //	wenn die Gruppe nicht eindeutig wird eine -1 übergeben
 	
 	if (group == -1) {
-		tableName= database.toString();
+		tableName= database.toString() + ":";
 	}else {
 		tableName= database.toString() + ":" + group.toString();	
 	}
@@ -940,6 +941,8 @@ private EDPQuery getEDPQueryVerweis(String value, Integer database,
 	String krit = "@noswd="  + value +  ";@englvar=true;@language=en;@database=" +database.toString();		
 	StandardEDPSelectionCriteria criteria = new StandardEDPSelectionCriteria(krit);
 	StandardEDPSelection edpcriteria = new StandardEDPSelection(tableName, criteria);
+	edpcriteria.setDatabase(database.toString());
+	String selstringedp = edpcriteria.getEDPString();
 	
 	try {
 //		query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);

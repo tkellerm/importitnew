@@ -172,7 +172,9 @@ public class ExcelProcessing {
 		datensatz.setTippkommando(this.tippkommando);
 		datensatz.setOptionCode(this.optionCode);
 		datensatz.setTableStartsAtField(this.tabelleAbFeld);
+		
 		return datensatz;
+		
 	}
 
 
@@ -188,6 +190,7 @@ public class ExcelProcessing {
 		}
 		
 		return kopfFelderNeu;
+		
 	}
 	
 	
