@@ -22,7 +22,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  *
  */
 
-public class ExcelProcessing {
+public class ExcelImportProcessing {
 
 	private org.apache.poi.ss.usermodel.Workbook importWorkbook;
 	private org.apache.poi.ss.usermodel.Workbook errorWorkbook;
@@ -42,7 +42,7 @@ public class ExcelProcessing {
 	private int anzahlDatensaetze;
 	private OptionCode optionCode;
 	
-	public ExcelProcessing(String importFilename) throws ImportitException {
+	public ExcelImportProcessing(String importFilename) throws ImportitException {
 		super();
 		this.kopfFelder = new ArrayList<Feld>();
 		this.tabellenFelder = new DatensatzTabelle();
@@ -232,7 +232,7 @@ public class ExcelProcessing {
 	}
 		
 
-	private DatensatzTabelle readFieldInTable(Sheet importSheet2,	Integer tabelleAbFeld2) {
+	private DatensatzTabelle readFieldInTable(Sheet importSheet2,	Integer tabelleAbFeld2) throws ImportitException {
 //		alle Felder in der Zeile2 durchlaufen, ob Sie in der Datenbank vorhanden sind
 //		Falls ja, dann in Struktur einfügen
 		DatensatzTabelle datensatzTabelle = new DatensatzTabelle();
@@ -245,14 +245,20 @@ public class ExcelProcessing {
 				for (int col = this.tabelleAbFeld; col < getMaxCol(importSheet2) ; col++) {
 					
 //					Zelleninhalt auslesen und Feld Konstruktor übergeben
-					String feldInhalt = getZellenInhaltString(importSheet2, col, row);
-					if (!feldInhalt.isEmpty()) {
-						Feld feld = new Feld(feldInhalt, true , col );
+					
+					String feldInhalt;
+					
+						feldInhalt = getZellenInhaltString(importSheet2, col, row);
+						if (!feldInhalt.isEmpty()) {
+							Feld feld = new Feld(feldInhalt, true , col );
 
-//						hänge das Feld an die Kopffelder an
-						
-						tabellenFelder2.add(feld);	
-					}
+//							hänge das Feld an die Kopffelder an
+							
+							tabellenFelder2.add(feld);	
+						}
+					
+					
+					
 					
 					
 				}
@@ -381,7 +387,7 @@ public class ExcelProcessing {
 		}    
 	}	
 	
-	private Boolean isZelleleer(Sheet sheet, int x, int y) {
+	private Boolean isZelleleer(Sheet sheet, int x, int y) throws ImportitException {
 		// Prüft ob die Zelle leer ist
 		Cell cell = sheet.getRow(y).getCell(x);
 		
@@ -497,7 +503,7 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 	        		}
 	        }
 	
-	private String getdbgroup(Sheet sheet) {
+	private String getdbgroup(Sheet sheet) throws ImportitException {
 	 		
 		
 		return getZellenInhaltString(sheet, 0, 0);
@@ -523,7 +529,7 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 		
 	}
 
-	private String getZellenInhaltString(Sheet sheet, int x, int y) {
+	private String getZellenInhaltString(Sheet sheet, int x, int y) throws ImportitException {
 //		Hier werden alle Inhaltsmöglichkeiten einer Celle in einen String umgewandelt 
 		Cell cell = sheet.getRow(y).getCell(x);
 		if (cell != null) {
@@ -568,7 +574,9 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 												return "";
 											}else {
 												if ( cell.getCachedFormulaResultType() == Cell.CELL_TYPE_ERROR){
-														return null;
+													int fehlerzeile = y +1;
+													int fehlerspalte = x+1;
+													throw new ImportitException("Der Zelleninhalt in der Zeile " + fehlerzeile + " Spalte " + fehlerspalte + " ist vom Typ ERROR!Der Feldwert ist ungültig! Das können wir nicht verabeiten!");
 												}
 											}
 										}
@@ -579,7 +587,9 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 									return "";
 								}else {
 									if ( cell.getCellType() == Cell.CELL_TYPE_ERROR){
-										return null;
+										int fehlerzeile = y +1;
+										int fehlerspalte = x+1;
+										throw new ImportitException("Der Zelleninhalt in der Zeile " + fehlerzeile + " Spalte " + fehlerspalte + " ist vom Typ ERROR!Der Feldwert ist ungültig! Das können wir nicht verabeiten!");
 									}
 									
 								}
@@ -591,6 +601,8 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 				}
 			}
 		
+		}else {
+			throw new ImportitException("Der Zelleninhalt in der Zeile " + x + " Spalte " + y + " ist null");
 		}
 	// Falls irgendein Fall vergessen wurde wird null übertragen
 		return null;
