@@ -91,6 +91,19 @@ public class Datensatz {
 		this.keyfield = checkKeyField(this.kopfFelder);
 	}
 
+	/**
+	 * @return InOneTransaction
+	 * 
+	 * Es wird die zurückgeben ob die Transaktion-Option gesetzt ist.
+	 */
+	
+	public Boolean getOptionTransaction() {
+		
+			OptionCode options = this.getOptionCode();
+	
+			return options.getInOneTransaction();
+			
+	}
 
 	/**
 	 * @param kopfFelder2
