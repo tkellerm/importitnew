@@ -9,14 +9,19 @@ import java.util.ArrayList;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import de.abas.ceks.jedp.TransactionException;
 import de.abas.eks.jfop.annotation.Stateful;
 import de.abas.eks.jfop.remote.FOe;
+import de.abas.erp.api.gui.ButtonSet;
 import de.abas.erp.api.gui.TextBox;
 import de.abas.erp.axi.event.ButtonEvent;
 import de.abas.erp.axi.event.EventException;
 import de.abas.erp.axi.event.EventHandler;
+import de.abas.erp.axi.event.FieldEvent;
 import de.abas.erp.axi.event.ObjectEventHandler;
 import de.abas.erp.axi.event.listener.ButtonListenerAdapter;
+import de.abas.erp.axi.event.listener.FieldListenerAdapter;
+import de.abas.erp.common.type.enums.EnumDialogBox;
 import de.abas.erp.db.SelectableObject;
 import de.abas.erp.db.infosystem.custom.owjava.InfosystemImportit;
 import de.abas.erp.db.infosystem.custom.owjava.InfosystemImportit.Row;
@@ -42,56 +47,136 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	    objectHandler.addListener(InfosystemImportit.META.yintabladen, new IntabladenButtonListener());
 	    objectHandler.addListener(InfosystemImportit.META.ypruefdat, new PruefDatenButtonListener());
 	    objectHandler.addListener(InfosystemImportit.META.yimport, new ImportButtonListener());
-	    
+	    objectHandler.addListener(InfosystemImportit.META.yoptalwaysnew, new OptionsListener());
+	    objectHandler.addListener(InfosystemImportit.META.yoptdeltab, new OptionsListener());
+	    objectHandler.addListener(InfosystemImportit.META.yoptdontchangeifeq, new OptionsListener());
+	    objectHandler.addListener(InfosystemImportit.META.yoptmodifiable, new OptionsListener());
+	    objectHandler.addListener(InfosystemImportit.META.yoptnofop, new OptionsListener());
+	    objectHandler.addListener(InfosystemImportit.META.yopttransaction, new OptionsListener());
+	    objectHandler.addListener(InfosystemImportit.META.yoptuseenglvars, new OptionsListener());
 	  }
 	
-	/**
-	 * @author tkellermann
-	 * 
-	 * Unterklasse für den Start des Datenimports
-	 *
-	 */
-	class ImportButtonListener extends ButtonListenerAdapter<InfosystemImportit>{
+	public class OptionsListener extends FieldListenerAdapter<InfosystemImportit> {
 
-	    @Override
-	    public void after(ButtonEvent<InfosystemImportit> event) throws EventException {
-	      super.after(event);
-	      yimportButtonInvoked(event);
-	    }
-	
-		/**
-		 * @param event
-		 * 
-		 * Daten importieren
-		 * 
-		 */
-		private void yimportButtonInvoked(
-				ButtonEvent<InfosystemImportit> event) {
-			
+		@Override
+		public void exit(FieldEvent<InfosystemImportit> event)
+				throws EventException {
+			super.exit(event);
 			InfosystemImportit infosysImportit = event.getSourceRecord();
 			
-			try {
-				logger.debug("Start import der Daten");
-				if (datensatzList!=null) {
-					edpProcessing.importDatensatzList(datensatzList);	
-				}else {
-					TextBox textbox = new TextBox(getContext(), "Fehler", "Bitte die Datei neu einlesen");
-					textbox.show();
-				}
+			if (datensatzList.size() > 0) {
+				OptionCode optioncode = datensatzList.get(1).getOptionCode();
 				
-				logger.debug("Ende import der Daten");
-			} catch (ImportitException e) {
-				AbasExceptionOutput(e);
+				Boolean alwaysNew 				= infosysImportit.getYoptalwaysnew();
+				Boolean nofop  					= infosysImportit.getYoptnofop();
+				Boolean inOnetransaction 		= infosysImportit.getYopttransaction();
+				Boolean deletetable				= infosysImportit.getYoptdeltab();
+				Boolean checkFieldIsModifiable	= infosysImportit.getYoptmodifiable();
+				Boolean useEnglishVariablen		= infosysImportit.getYoptuseenglvars();
+				Boolean dontChangeIfEqual		= infosysImportit.getYoptdontchangeifeq();
+				
+				optioncode.setOptionCode(alwaysNew, nofop, inOnetransaction, deletetable, checkFieldIsModifiable, useEnglishVariablen, dontChangeIfEqual);
+				showOptions(infosysImportit, datensatzList);
+				
+				dontChangeIfEqual		= infosysImportit.getYoptdontchangeifeq();
+				String t3 = "";
+			}else {
+				TextBox textbox = new TextBox(getContext(), "Fehler", "Es wurde noch kein Datei eingelesen!");
+				textbox.show();
+			}
+				
+
+		}
+
+		
+
+	}
+
+	
+	
+	/**
+		 * @author tkellermann
+		 * 
+		 * Unterklasse für den Start des Datenimports
+		 *
+		 */
+		class ImportButtonListener extends ButtonListenerAdapter<InfosystemImportit>{
+	
+		    @Override
+		    public void after(ButtonEvent<InfosystemImportit> event) throws EventException {
+		      super.after(event);
+		      yimportButtonInvoked(event);
+		    }
+		
+			/**
+			 * @param event
+			 * 
+			 * Die DatensatzList wird importiert
+			 * 
+			 */
+			private void yimportButtonInvoked(
+					ButtonEvent<InfosystemImportit> event) {
+				
+				InfosystemImportit infosysImportit = event.getSourceRecord();
+				
+				try {
+					logger.info("Start import der Daten");
+					if (datensatzList!=null) {
+						if (checkDatensatzListOfTransaction()) {
+							logger.info("Start Transaction");
+							edpProcessing.startTransaction();
+							edpProcessing.importDatensatzListTransaction(datensatzList);
+							
+	//						Abfragen ob die Transaction abgebrochen werden soll
+							
+							TextBox textBox = new TextBox(getContext(), "Entscheidung", "Soll alles zurückgerollt werden!");
+							
+							textBox.setButtons(ButtonSet.NO_YES);
+							EnumDialogBox button = textBox.show();
+							
+							if (button.equals(EnumDialogBox.Yes)) {
+								logger.info("Abbruch der Transaction");
+								edpProcessing.abortTransaction();
+							}else {
+								logger.info("Commit Transaction");
+								edpProcessing.commitTransaction();
+							}									
+							
+						}else {
+							logger.info("Import ohne Transaction");
+							edpProcessing.importDatensatzList(datensatzList);	
+						}
+						
+					}else {
+						TextBox textbox = new TextBox(getContext(), "Fehler", "Bitte die Datei neu einlesen");
+						textbox.show();
+					}
+					
+					logger.info("Ende import der Daten");
+				} catch (ImportitException e) {
+					logger.error(e);
+					AbasExceptionOutput(e);
+					}
+				
+				infosysImportit.setYok(getimportitDatasets(datensatzList)); 
+				infosysImportit.setYfehler(geterrorDatasets(datensatzList));
+				
+				
 			}
 			
-			infosysImportit.setYok(getimportitDatasets(datensatzList)); 
-			infosysImportit.setYfehler(geterrorDatasets(datensatzList));
-			
+			private Boolean checkDatensatzListOfTransaction() throws ImportitException{
+				if (datensatzList.size() >= 1 ) {
+					Datensatz datensatz = datensatzList.get(1);
+					return datensatz.getOptionTransaction();
+				}else {
+					throw new  ImportitException("Es wurde noch keine Datei eingelesen!");
+				}
+			}
+	
 		}
 
 
-	}
-	
+
 	/**
 	 * @author tkellermann
 	 *
@@ -134,12 +219,8 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				
 				AbasExceptionOutput(e);
 			}
-			
-			
-			
-			
-		}
 
+		}
 
 	}
 
@@ -235,23 +316,27 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	    	try {
 //	    		prüfe noch ob passwort eingeben wurde 
 	    		logger.info("Start Excelproccessing");
-				ExcelProcessing excelProcessing = new ExcelProcessing(infosysImportit.getYdatafile());
+				ExcelImportProcessing excelProcessing = new ExcelImportProcessing(infosysImportit.getYdatafile());
 				datensatzList = excelProcessing.getDatensatzList();
 				logger.info("Ende Excelproccessing");
 				logger.info("Start checkDatensatzList");
 				edpProcessing = new EdpProcessing(infosysImportit.getYserver(), infosysImportit.getYport(), infosysImportit.getYmandant(), infosysImportit.getYpasswort());
 				edpProcessing.checkDatensatzList(datensatzList);
 				logger.info("Ende checkDatensatzList");
-				String daten = "test2"; 
 				
 				infosysImportit.setYok(getimportitDatasets(datensatzList)); 
 				infosysImportit.setYfehler(geterrorDatasets(datensatzList));
 				
+				showDatenbankInfos(infosysImportit , datensatzList);
+				showOptions(infosysImportit , datensatzList);
+				
+				
 			} catch (ImportitException e) {
 				AbasExceptionOutput(e);
-			}
-	      
+			}	      
 	    }
+
+		
 	  }
 	
 	private int geterrorDatasets(ArrayList<Datensatz> datensatzList2) {
@@ -281,6 +366,35 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 		}
 		
 		return numberOfOk;
+	}
+
+	private void showOptions(InfosystemImportit infosysImportit, ArrayList<Datensatz> datensatzList) {
+		if (datensatzList.size() >= 1 ) {
+			Datensatz datensatz = datensatzList.get(1);
+			OptionCode optionCode = datensatz.getOptionCode();
+			infosysImportit.setYoptalwaysnew(optionCode.getAlwaysNew());
+			infosysImportit.setYoptnofop(optionCode.getNofop());
+			infosysImportit.setYoptmodifiable(optionCode.getCheckFieldIsModifiable());
+			infosysImportit.setYoptdeltab(optionCode.getDeleteTable());
+			infosysImportit.setYopttransaction(optionCode.getInOneTransaction());
+			infosysImportit.setYoptuseenglvars(optionCode.getUseEnglishVariablen());
+			infosysImportit.setYoptdontchangeifeq(optionCode.getDontChangeIfEqual());
+			infosysImportit.setYoption(optionCode.getOptionsCode());
+			}
+		
+	}
+	
+	private void showDatenbankInfos(InfosystemImportit infosysImportit,
+			ArrayList<Datensatz> datensatzList) {
+
+		if (datensatzList.size() >= 1 ) {
+			Datensatz datensatz = datensatzList.get(1);
+			
+			infosysImportit.setYdb(datensatz.getDatenbank().toString());
+			infosysImportit.setYgruppe(datensatz.getGruppe().toString());
+			infosysImportit.setYtippkommando(datensatz.getTippkommando().toString());
+			infosysImportit.setYtababspalte(datensatz.getTableStartsAtField());			
+		}
 	}
 
 	private void AbasExceptionOutput(Exception e){

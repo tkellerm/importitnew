@@ -19,6 +19,9 @@ import org.apache.log4j.Logger;
 
 
 
+
+
+
 import sun.nio.cs.ext.Big5;
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantBeginSessionException;
@@ -27,6 +30,7 @@ import de.abas.ceks.jedp.CantChangeSettingException;
 import de.abas.ceks.jedp.CantReadFieldPropertyException;
 import de.abas.ceks.jedp.CantReadSettingException;
 import de.abas.ceks.jedp.CantSaveException;
+import de.abas.ceks.jedp.ConnectionLostException;
 import de.abas.ceks.jedp.EDPConstants;
 import de.abas.ceks.jedp.EDPEKSArtInfo;
 import de.abas.ceks.jedp.EDPEditAction;
@@ -44,6 +48,7 @@ import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
 import de.abas.ceks.jedp.StandardEDPSelection;
 import de.abas.ceks.jedp.StandardEDPSelectionCriteria;
+import de.abas.ceks.jedp.TransactionException;
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.erp.common.type.AbasDate;
 import de.abas.erp.common.type.enums.EnumTypeCommands;
@@ -61,19 +66,74 @@ public class EdpProcessing {
 	private EDPSession edpSession;
 	private Logger logger = Logger.getLogger(Importit21.class);
 	
+	/**
+	 * @param server
+	 * @param port
+	 * @param mandant
+	 * @param passwort
+	 * @throws ImportitException
+	 */
 	public EdpProcessing(String server, Integer port, String mandant,
-			String passwort) {
+			String passwort) throws ImportitException {
 		super();
+//		check Parameter
+		
+		
+		checkNotNullandNotEmpty(port, "Bitte Port eintragen!");
+		checkNotNullandNotEmpty(server, "Bitte Server eintragen!");
+		checkNotNullandNotEmpty(mandant,"Bitte Mandant eintragen!");
+		checkNotNullandNotEmpty(passwort, "Bitte Passwort eintragen!");
+		
 		this.server = server;
 		this.port = port;
 		this.mandant = mandant;
 		this.passwort = passwort;
-		this.edpSession = null;
+		this.edpSession = EDPFactory.createEDPSession ();
+	}
+
+	/**
+	 * @param integerVar
+	 * @param errortext
+	 * @throws ImportitException 
+	 * 
+	 * 
+	 * Empty = 0
+	 * 
+	 */
+	private void checkNotNullandNotEmpty(Integer integerVar, String errortext) throws ImportitException {
+		final String fehlerNull = "Darf nicht null sein!";
+		
+		if (integerVar!=null) {
+			if (integerVar == 0) {
+				throw new ImportitException(errortext);
+			}			
+		}else {
+			throw new ImportitException(errortext + fehlerNull);
+		}
+		
+	}
+
+	/**
+	 * @param stringVar
+	 * @param errortext
+	 * @throws ImportitException
+	 */
+	private void checkNotNullandNotEmpty(String stringVar, String errortext)
+			throws ImportitException {
+		final String fehlerNull = "Darf nicht null sein!";
+		if (stringVar != null) {
+			if (stringVar.isEmpty()) {
+				throw new ImportitException(errortext);
+			}
+			
+		}else {
+			throw new ImportitException(errortext + fehlerNull);
+		}
 	}
 	
 	public void startEdpSession() throws ImportitException {
 		
-		this.edpSession = sessionAufbauen(this.server, this.port, this.mandant, this.passwort);
+		sessionAufbauen(this.server, this.port, this.mandant, this.passwort);
 	}
 
 	public void closeEdpSession(){
@@ -84,27 +144,19 @@ public class EdpProcessing {
 		
 	}
 	
-	private EDPSession sessionAufbauen(String server, int port, String mandant, String passwort) throws ImportitException 
+	private void sessionAufbauen(String server, int port, String mandant, String passwort) throws ImportitException 
     { 
-      EDPSession  session = EDPFactory.createEDPSession ();
-      if (server != null && 
-    		  port != 0 && 
-    		  mandant != null && 
-    		  passwort != null) {
-    	  
+      
     	  		try {
-    	  			session.beginSession(server , port, mandant, passwort, "ImportIt_21");
+    	  			this.edpSession.beginSession(server , port, mandant, passwort, "ImportIt_21");
     	  		} catch (CantBeginSessionException ex) 
     	  			{
-    	  			Logger.getLogger(Importit21.class.getName()).log(Level.ERROR, null, ex);
+    	  			logger.error(ex);
     	  			throw new ImportitException("FEHLER\n EDP Session kann nicht gestartet werden\n" , ex);
     	  			}
                  
-              session.setVariableLanguage(EDPVariableLanguage.ENGLISH);
-        return session;
-	}else {
-		throw new ImportitException("Es wurde leider nicht alle Felder (Server , Port , Mandant , Passwort) gefüllt! Dadurch konnte keine EDP-Session aufgebaut werden" );
-	}
+              this.edpSession.setVariableLanguage(EDPVariableLanguage.ENGLISH);
+        
 	        
     }
 	
@@ -164,6 +216,7 @@ public class EdpProcessing {
 			tabelleok = checkListofFeldAndGetabasType(tabellenFelder, datensatz.getDatenbank() , datensatz.getGruppe(), true, datensatz.getOptionCode().getUseEnglishVariablen());
 		
 		} catch (ImportitException e) {
+			logger.error(e);
 			datensatz.appendError("Die Strukturprüfung war fehlerhaft" , e);
 		}
 				
@@ -345,6 +398,7 @@ public class EdpProcessing {
 							abasTyp = query.getField(varNameVarType);
 						}
 						feld.setAbasTyp(abasTyp);
+						logger.info("start Feldlänge für Feld " + feld.getName() + " mit abastyp " + abasTyp ); 
 						feld.setAbasFieldLength(getAbasFieldLength(abasTyp));
 					}
 				
@@ -386,18 +440,39 @@ public class EdpProcessing {
 		return query;
 	}
 
+	/**
+	 * @param datensatzList
+	 * @throws ImportitException
+	 * 
+	 * Es wird eine EDPSession aufgebaut und die Datensatzliste eingelesen.
+	 * Danach wird die EDpSession wieder beendet.
+	 * 
+	 */
 	public void importDatensatzList(ArrayList<Datensatz> datensatzList) throws ImportitException {
 		startEdpSession();
-		
+
 		for (Datensatz datensatz : datensatzList) {
 			writeDatensatzToAbas(datensatz);
-			
-			
 		}
 		closeEdpSession();
 	}
+	/**
+	 * @param datensatzList
+	 * @throws ImportitException
+	 * 
+	 * Es wird das Object datensatzlist eingelesen
+	 * 
+	 * Es wird keine EDPSession aufgebaut und geschlossen dies muss in dem aufrufenden Programmteil erledigt werden 
+	 */
+	public void importDatensatzListTransaction(ArrayList<Datensatz> datensatzList) throws ImportitException {
+		
 
-	private void writeDatensatzToAbas(Datensatz datensatz) {
+		for (Datensatz datensatz : datensatzList) {
+			writeDatensatzToAbas(datensatz);
+		}
+		
+	}
+	private void writeDatensatzToAbas(Datensatz datensatz) throws ImportitException {
 		
 		if (this.edpSession.isConnected()) {
 			EDPEditor edpEditor = this.edpSession.createEditor();
@@ -435,6 +510,8 @@ public class EdpProcessing {
 				}
 			}
 			
+		}else {
+			throw new ImportitException("Die EDPSession ist nicht gestartet");
 		}
 		
 	}
@@ -761,119 +838,132 @@ public class EdpProcessing {
 	private Boolean checkData(Feld feld) {
 		
 		String[] VERWEIS = {"P" , "ID" , "VP" , "VID"};
+		
 		String value = feld.getValue();
-		logger.debug("checkData Feld " + feld.getName() + "Zeile " + feld.getColNumber() + " AbasTyp " + feld.getAbasTyp() + " Wert "  + value);
+		
+		logger.debug("checkData Feld " + feld.getName() + " Zeile " + feld.getColNumber() + " AbasTyp " + feld.getAbasTyp() + " Wert "  + value);
+		
 		EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(feld.getAbasTyp());
 		
 		int datatyp = edpeksartinfo.getDataType();
-		
-		if (!feld.getOption_skip() & !(feld.getOption_notEmpty() & feld.getValue().isEmpty())) {
-			if (datatyp == EDPTools.EDP_REFERENCE
-					|| datatyp == EDPTools.EDP_ROWREFERENCE) {
-				if (edpeksartinfo.getERPArt().startsWith("V")) {
-					//				Multiverweisfeld
-					//				werden derzeit nicht überprüft.
+		if (value != null) {
+			if (!feld.getOption_skip() & !(feld.getOption_notEmpty() & value.isEmpty())) {
+				if (datatyp == EDPTools.EDP_REFERENCE
+						|| datatyp == EDPTools.EDP_ROWREFERENCE) {
+					if (edpeksartinfo.getERPArt().startsWith("V")) {
+						//				Multiverweisfeld
+						//				werden derzeit nicht überprüft.
 
-				} else {
-					//				normales Verweisfeld
-					int databaseNumber = edpeksartinfo.getRefDatabaseNr();
-					int groupNumber = edpeksartinfo.getRefGroupNr();
+					} else {
+						//				normales Verweisfeld
+						int databaseNumber = edpeksartinfo.getRefDatabaseNr();
+						int groupNumber = edpeksartinfo.getRefGroupNr();
 
-					try {
-						EDPQuery query = getEDPQueryVerweis(value,
-								databaseNumber, groupNumber,
-								feld.getColNumber());
-						query.getLastRecord();
-						int recordCount = query.getRecordCount();
-						if (recordCount == 0) {
-							feld.setError("Es wurde kein Datensatz für den Verweis "
+						try {
+							EDPQuery query = getEDPQueryVerweis(value,
+									databaseNumber, groupNumber,
+									feld.getColNumber());
+							query.getLastRecord();
+							int recordCount = query.getRecordCount();
+							if (recordCount == 0) {
+								feld.setError("Es wurde kein Datensatz für den Verweis "
+										+ feld.getAbasTyp()
+										+ "mit dem Wert "
+										+ value + " gefunden!");
+
+							} else if (recordCount > 1) {
+								feld.setError("Es wurden mehrere Datensätze für den Verweis "
+										+ feld.getAbasTyp()
+										+ "mit dem Wert "
+										+ value + " gefunden!");
+
+							} else {
+
+							}
+
+						} catch (ImportitException e) {
+							feld.setError("Es trat ein Fehler beim Prüfen des Verweises"
 									+ feld.getAbasTyp()
-									+ "mit dem Wert "
-									+ value + " gefunden!");
-
-						} else if (recordCount > 1) {
-							feld.setError("Es wurden mehrere Datensätze für den Verweis "
-									+ feld.getAbasTyp()
-									+ "mit dem Wert "
-									+ value + " gefunden!");
-
-						} else {
+									+ " mit dem Wert "
+									+ value
+									+ " auf");
 
 						}
+					}
 
-					} catch (ImportitException e) {
-						feld.setError("Es trat ein Fehler beim Prüfen des Verweises"
-								+ feld.getAbasTyp()
-								+ " mit dem Wert "
+				} else if (datatyp == EDPTools.EDP_STRING) {
+					Long fieldlength = edpeksartinfo.getMaxLen();
+					Long valueLength = (long) value.length();
+					if (fieldlength < valueLength) {
+						feld.setError("Der Wert " + value + " (" + valueLength
+								+ "Zeichen) ist für das Feld " + feld.getName()
+								+ " mit der Feldlänge " + fieldlength.toString()
+								+ " zu lang ");
+					}
+
+				} else if (datatyp == EDPTools.EDP_INTEGER) {
+					int integerDigits = edpeksartinfo.getIntegerDigits();
+
+					try {
+						Integer intValue = new Integer(value);
+						Integer valueLength = intValue.toString().length();
+						if (integerDigits < valueLength) {
+							feld.setError("Der Wert " + value + "ist zu Lang");
+						}
+					} catch (NumberFormatException e) {
+						feld.setError("Der Wert "
 								+ value
-								+ " auf");
-
+								+ " konnte nicht in einen Integer-Wert konvertiert werden");
 					}
-				}
 
-			} else if (datatyp == EDPTools.EDP_STRING) {
-				Long fieldlength = edpeksartinfo.getMaxLen();
-				Long valueLength = (long) value.length();
-				if (fieldlength < valueLength) {
-					feld.setError("Der Wert " + value + " (" + valueLength
-							+ "Zeichen) ist für das Feld " + feld.getName()
-							+ " mit der Feldlänge " + fieldlength.toString()
-							+ " zu lang ");
-				}
+				} else if (datatyp == EDPTools.EDP_DOUBLE) {
+					int fractionDigits = edpeksartinfo.getFractionDigits();
+					int integerDigits = edpeksartinfo.getIntegerDigits();
+					
+					if (value.length() > 0) {
+						try {
+							BigDecimal bigDecimalValue = new BigDecimal(value);
+							MathContext mc = new MathContext(fractionDigits);
+							BigDecimal roundBigDValue = bigDecimalValue.round(mc);
+							String roundBigDValueStr = roundBigDValue.toString();
+							if (!roundBigDValueStr.equals(value)) {
+								feld.setError("Das Runden auf die geforderten Nachkommastellen ergibt ein falsches Ergebnis org: "
+										+ value
+										+ "gerundeter Wert :"
+										+ roundBigDValueStr);
+							}
 
-			} else if (datatyp == EDPTools.EDP_INTEGER) {
-				int integerDigits = edpeksartinfo.getIntegerDigits();
-
-				try {
-					Integer intValue = new Integer(value);
-					Integer valueLength = intValue.toString().length();
-					if (integerDigits < valueLength) {
-						feld.setError("Der Wert " + value + "ist zu Lang");
+						} catch (NumberFormatException e) {
+							feld.setError("Der Wert "
+									+ value
+									+ " konnte nicht in einen BigDezimal-Wert(Zahl mit Nachkommastellen) konvertiert werden");
+						}	
+					}else {
+						
+//						Prüfung macht keinen Sinn bei lerrem Feld und Fehler wäre zu hart
 					}
-				} catch (NumberFormatException e) {
-					feld.setError("Der Wert "
-							+ value
-							+ " konnte nicht in einen Integer-Wert konvertiert werden");
-				}
+					
 
-			} else if (datatyp == EDPTools.EDP_DOUBLE) {
-				int fractionDigits = edpeksartinfo.getFractionDigits();
-				int integerDigits = edpeksartinfo.getIntegerDigits();
+				} else if (datatyp == EDPTools.EDP_DATE) {
+					if (!checkDataDate(feld)) {
+						feld.setError("Der Wert " + value
+								+ " kann nicht in ein Abas-Datum gewandelt werden!");
+					}
 
-				try {
-					BigDecimal bigDecimalValue = new BigDecimal(value);
-					MathContext mc = new MathContext(fractionDigits);
-					BigDecimal roundBigDValue = bigDecimalValue.round(mc);
-					String roundBigDValueStr = roundBigDValue.toString();
-					if (!roundBigDValueStr.equals(value)) {
-						feld.setError("Das Runden auf die geforderten Nachkommastellen ergibt ein falsches Ergebnis org: "
+				} else if (datatyp == EDPTools.EDP_DATETIME
+						|| datatyp == EDPTools.EDP_TIME
+						|| datatyp == EDPTools.EDP_WEEK) {
+					if (!checkDataDate(feld)) {
+						feld.setError("Der Wert "
 								+ value
-								+ "gerundeter Wert :"
-								+ roundBigDValueStr);
+								+ " kann nicht in ein Abas-Zeitformat gewandelt werden!");
 					}
-
-				} catch (NumberFormatException e) {
-					feld.setError("Der Wert "
-							+ value
-							+ " konnte nicht in einen BigDezimal-Wert(Zahl mit Nachkommastellen) konvertiert werden");
 				}
-
-			} else if (datatyp == EDPTools.EDP_DATE) {
-				if (!checkDataDate(feld)) {
-					feld.setError("Der Wert " + value
-							+ " kann nicht in ein Abas-Datum gewandelt werden!");
-				}
-
-			} else if (datatyp == EDPTools.EDP_DATETIME
-					|| datatyp == EDPTools.EDP_TIME
-					|| datatyp == EDPTools.EDP_WEEK) {
-				if (!checkDataDate(feld)) {
-					feld.setError("Der Wert "
-							+ value
-							+ " kann nicht in ein Abas-Zeitformat gewandelt werden!");
-				}
-			}
+			}	
+		}else {
+			feld.setError("Der Wert ist null! Das ist nicht erlaubt");
 		}
+		
 		if (feld.getError().isEmpty()) {
 			return true;
 		}else {
@@ -942,7 +1032,6 @@ private EDPQuery getEDPQueryVerweis(String value, Integer database,
 	StandardEDPSelectionCriteria criteria = new StandardEDPSelectionCriteria(krit);
 	StandardEDPSelection edpcriteria = new StandardEDPSelection(tableName, criteria);
 	edpcriteria.setDatabase(database.toString());
-	String selstringedp = edpcriteria.getEDPString();
 	
 	try {
 //		query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
@@ -955,5 +1044,39 @@ private EDPQuery getEDPQueryVerweis(String value, Integer database,
 	
 	return query;
 }
+
+public void startTransaction() throws ImportitException {
+	startEdpSession();
+	try {
+		this.edpSession.startTransaction();
+	} catch (TransactionException e) {
+		throw new ImportitException("Der Start der Transaction schlug fehl", e);
+	}
+}
+
+public void commitTransaction() throws ImportitException {
+	try {
+		this.edpSession.commitTransaction();
+	} catch (TransactionException e) {		
+		throw new ImportitException("Das Commit der Transaction schlug fehl", e);
+	}finally{
+		closeEdpSession();
+	}
 	
+}
+
+public void abortTransaction() throws ImportitException {
+	try {
+		this.edpSession.abortTransaction();
+	} catch (TransactionException e) {
+		throw new ImportitException("Das Abbruch der Transaction schlug fehl", e);
+		
+	}catch(ConnectionLostException e){
+		throw new ImportitException("Die Verbindung ist abgebrochen", e);
+	}finally{
+		closeEdpSession();
+	}
+	
+}
+
 }

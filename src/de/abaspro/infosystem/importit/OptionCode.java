@@ -8,6 +8,7 @@ public class OptionCode {
 	private Boolean deleteTable;
 	private Boolean checkFieldIsModifiable;
 	private Boolean useEnglishVariablen;
+	private Boolean dontChangeIfEqual;
 	private int optionsCode;
 
 	
@@ -24,8 +25,11 @@ public class OptionCode {
 	
 	private void setOptionCodeToOptionen(Integer optCode) {
     	
-    	String binoption="0000"+Integer.toBinaryString(optCode);
-        binoption=binoption.substring ( (binoption.length()-5) );
+		/*		Anweisung für eine Erweiterung :
+		 * soviele 00000 Nullen wie Optionen  
+		 */		
+    	String binoption="0000000"+Integer.toBinaryString(optCode);
+        binoption=binoption.substring ( (binoption.length()-7) );
         
         // Immerneu -> 1
         // NoFop    -> 2
@@ -33,16 +37,19 @@ public class OptionCode {
         // Loe Tab  -> 8
         // Modifiable -> 16
         // use EnglVariablen -> 32
-       
-        this.alwaysNew = binoption.substring(5).equals("1");
-        this.nofop = binoption.substring(4,5).equals("1");
-        this.inOneTransaction = binoption.substring(3,4).equals("1");
-        this.deleteTable = binoption.substring(2,3).equals("1");
-        this.checkFieldIsModifiable = binoption.substring(1,2).equals("1");
-        this.useEnglishVariablen = binoption.substring(0, 1).equals("1");
+        // dontChangeIfEqual -> 64       
+         
+        this.alwaysNew = binoption.substring(6).equals("1");
+        this.nofop = binoption.substring(5,6).equals("1");
+        this.inOneTransaction = binoption.substring(4,5).equals("1");
+        this.deleteTable = binoption.substring(3,4).equals("1");
+        this.checkFieldIsModifiable = binoption.substring(2,3).equals("1");
+        this.useEnglishVariablen = binoption.substring(1, 2).equals("1");
+        this.dontChangeIfEqual = binoption.substring(0,1).equals("1");
+        
     }
 
-	public void setOptionCode(Boolean alwaysNew , Boolean nofop , Boolean inOnetransaction , Boolean deletetable , Boolean checkFieldIsModifiable, Boolean useEnglishVariablen){
+	public void setOptionCode(Boolean alwaysNew , Boolean nofop , Boolean inOnetransaction , Boolean deletetable , Boolean checkFieldIsModifiable, Boolean useEnglishVariablen, Boolean dontChangeIfEqual){
     	
         // Immerneu -> 1
         // NoFop    -> 2
@@ -50,6 +57,7 @@ public class OptionCode {
         // Loe Tab  -> 8
         // Modifiable -> 16
         // use EnglVariablen -> 32
+		// dontChangeIfEqual -> 64  
 		
     	Integer optcode=0;   	
     	
@@ -59,7 +67,7 @@ public class OptionCode {
     	if (deletetable) { optcode = optcode + 8; }
     	if (checkFieldIsModifiable) { optcode = optcode + 16; }
     	if (useEnglishVariablen) {optcode = optcode + 32;}
-		    	
+    	if (dontChangeIfEqual) {optcode = optcode + 64;}
     	setOptionCode(optcode);
     }
 
@@ -100,6 +108,13 @@ public class OptionCode {
 
 	public Boolean getUseEnglishVariablen() {
 		return useEnglishVariablen;
+	}
+
+	/**
+	 * @return the dontChangeIfEqual
+	 */
+	public Boolean getDontChangeIfEqual() {
+		return dontChangeIfEqual;
 	}
 
 	
