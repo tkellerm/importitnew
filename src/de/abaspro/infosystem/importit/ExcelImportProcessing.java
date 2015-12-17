@@ -538,15 +538,15 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 			}else {
 		
 				if ( cell.getCellType() == Cell.CELL_TYPE_NUMERIC)  {
-					cell.setCellType(Cell.CELL_TYPE_STRING);
-//					Double nummericvalue = cell.getNumericCellValue();
-//					Integer intvalue = nummericvalue.intValue();
-//					if 	(intvalue.doubleValue()  == nummericvalue){
-//						return intvalue.toString();
-//					}else {
-//						return nummericvalue.toString();	
-//				}
-				return cell.getStringCellValue();
+//					cell.setCellType(Cell.CELL_TYPE_STRING);
+					Double nummericvalue = cell.getNumericCellValue();
+					Integer intvalue = nummericvalue.intValue();
+					if 	(intvalue.doubleValue()  == nummericvalue){
+						return intvalue.toString();
+					}else {
+						return nummericvalue.toString();	
+				}
+//				return cell.getStringCellValue();
 			}else {
 				if ( cell.getCellType() == Cell.CELL_TYPE_BOOLEAN){
 					if (cell.getBooleanCellValue() == true) {
@@ -602,7 +602,9 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 			}
 		
 		}else {
-			throw new ImportitException("Der Zelleninhalt in der Zeile " + x + " Spalte " + y + " ist null");
+//			Falls die Zelle null ist soll ein leer-String "" zurückgeben werden.
+			return "";
+//			throw new ImportitException("Der Zelleninhalt in der Zeile " + x + " Spalte " + y + " ist null");
 		}
 	// Falls irgendein Fall vergessen wurde wird null übertragen
 		return null;
