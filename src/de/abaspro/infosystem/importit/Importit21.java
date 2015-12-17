@@ -65,7 +65,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 			InfosystemImportit infosysImportit = event.getSourceRecord();
 			
 			if (datensatzList.size() > 0) {
-				OptionCode optioncode = datensatzList.get(1).getOptionCode();
+				OptionCode optioncode = datensatzList.get(0).getOptionCode();
 				
 				Boolean alwaysNew 				= infosysImportit.getYoptalwaysnew();
 				Boolean nofop  					= infosysImportit.getYoptnofop();
@@ -166,7 +166,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 			
 			private Boolean checkDatensatzListOfTransaction() throws ImportitException{
 				if (datensatzList.size() >= 1 ) {
-					Datensatz datensatz = datensatzList.get(1);
+					Datensatz datensatz = datensatzList.get(0);
 					return datensatz.getOptionTransaction();
 				}else {
 					throw new  ImportitException("Es wurde noch keine Datei eingelesen!");
@@ -344,7 +344,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 		for (Datensatz datensatz : datensatzList2) {
 			String error = datensatz.getErrorReport();
 			if (error != null) {
-				if (!datensatz.getErrorReport().isEmpty()) {
+				if (!error.isEmpty()) {
 					numberOfError++;
 				}
 			}
@@ -357,7 +357,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 		for (Datensatz datensatz : datensatzList2) {
 			String error = datensatz.getErrorReport();
 			if (error != null) {
-				if (datensatz.getErrorReport().isEmpty()) {
+				if (error.isEmpty()) {
 					numberOfOk++;
 				}
 			}else {
@@ -370,7 +370,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 
 	private void showOptions(InfosystemImportit infosysImportit, ArrayList<Datensatz> datensatzList) {
 		if (datensatzList.size() >= 1 ) {
-			Datensatz datensatz = datensatzList.get(1);
+			Datensatz datensatz = datensatzList.get(0);
 			OptionCode optionCode = datensatz.getOptionCode();
 			infosysImportit.setYoptalwaysnew(optionCode.getAlwaysNew());
 			infosysImportit.setYoptnofop(optionCode.getNofop());
@@ -388,11 +388,13 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 			ArrayList<Datensatz> datensatzList) {
 
 		if (datensatzList.size() >= 1 ) {
-			Datensatz datensatz = datensatzList.get(1);
+			Datensatz datensatz = datensatzList.get(0);
 			
 			infosysImportit.setYdb(datensatz.getDatenbank().toString());
 			infosysImportit.setYgruppe(datensatz.getGruppe().toString());
-			infosysImportit.setYtippkommando(datensatz.getTippkommando().toString());
+			if (datensatz.getTippkommando() != null) {
+				infosysImportit.setYtippkommando(datensatz.getTippkommando().toString());	
+			}
 			infosysImportit.setYtababspalte(datensatz.getTableStartsAtField());			
 		}
 	}
