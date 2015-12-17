@@ -190,7 +190,15 @@ public class Feld {
 	}
 	
 	public String getValue() {
-		return value;
+//		Änderung wenn der Typ B oder Boolean ist muss "ja" in "1"  oder "nein" in "0" umgeändert werden.
+		if (this.abasTyp.equals("B")) {
+			if (this.value.equals("ja")|| this.value.equals("yes") || this.value.equals("true")) {
+				return "1";
+			}else if (this.value.equals("nein")|| this.value.equals("no") || this.value.equals("false")) {
+				return "0";
+			}else return this.value;
+			
+		}else return this.value;
 	}
 	
 	public void setValue(String value) {
