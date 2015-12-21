@@ -16,7 +16,7 @@ public class Datensatz {
 	 private Integer database;
 	 private Integer group;
 	 private Integer tippcommand;
-	 private String  error;
+	 private String  importError = "";
 	 private Integer tableStartsAtField;
 	 private OptionCode optionCode;
 	 private Integer keyfield;
@@ -24,7 +24,7 @@ public class Datensatz {
 	 private String errorReport;
 	 private String errordebug;
 	 
-	 private final static Logger log = Logger.getLogger( Importit21.class );
+	 private final static Logger log = Logger.getLogger( Importit21.class);
 
 	public Integer getTableStartsAtField() {
 		return tableStartsAtField;
@@ -115,6 +115,7 @@ public class Datensatz {
 	 * Als Rückgabewert wird die Spaltenummer zurückgegeben 
 	 * 
 	 */
+	
 	private Integer checkKeyField(List<Feld> kopfFelder2) throws ImportitException {
 		
 		Integer keyfield = 0;
@@ -159,13 +160,13 @@ public class Datensatz {
 	}
 
 
-	public String getError() {
-		return error;
+	public String getImportError() {
+		return importError;
 	}
 
 
-	public void setError(String error) {
-		this.error = error;
+	public void setImportError(String error) {
+		this.importError = error;
 	}
 
 
@@ -296,8 +297,8 @@ public class Datensatz {
 	
 	public void appendError(Exception e) {
 		
-		this.error = this.error + "\n" + e.getMessage(); 
-		this.errordebug = this.error + "\n" + e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e);
+		this.importError = this.importError + "\n" + e.getMessage(); 
+		this.errordebug = this.importError + "\n" + e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e);
 		
 	}
 	
@@ -310,7 +311,7 @@ public void appendError(String errorMessage , Exception e) {
 	
 public void appendError(String errorString) {
 		
-		this.error = this.error + "\n" + errorString ;
+		this.importError = this.importError + "\n" + errorString ;
 		
 	}
 	
@@ -332,10 +333,13 @@ public String getErrordebug() {
 
 
 public void createErrorReport(){
+	
 	this.errorReport="";
+	
 //	Fehlermeldungen im Kopf
-	if (this.error != null) {
-		text2ErrorReport(this.error);	
+	
+	if (this.importError != null) {
+		text2ErrorReport(this.importError);	
 	}
 	
 		
