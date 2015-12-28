@@ -517,7 +517,7 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 		try{
 		Integer tabAbFeld = Integer.parseInt(getZellenInhaltString(sheet, 1, 0));
 //		Da in Poi die erste Spalte mit 0 zählt muss der Wert 1 abgezogen werden
-		if (tabAbFeld > 2) {
+		if (tabAbFeld > 1) {
 			tabAbFeld = tabAbFeld - 1;
 		}
 		 
