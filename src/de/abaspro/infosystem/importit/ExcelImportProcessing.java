@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -541,10 +543,12 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 //					cell.setCellType(Cell.CELL_TYPE_STRING);
 					Double nummericvalue = cell.getNumericCellValue();
 					Integer intvalue = nummericvalue.intValue();
+					NumberFormat numberformat = new DecimalFormat("#.#########");
+					String fnummericValue = numberformat.format(nummericvalue);
 					if 	(intvalue.doubleValue()  == nummericvalue){
 						return intvalue.toString();
 					}else {
-						return nummericvalue.toString();	
+						return fnummericValue;	
 				}
 //				return cell.getStringCellValue();
 			}else {
