@@ -129,7 +129,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 							
 	//						Abfragen ob die Transaction abgebrochen werden soll
 							
-							TextBox textBox = new TextBox(getContext(), "Entscheidung", "Soll alles zurückgerollt werden!");
+							TextBox textBox = new TextBox(getContext(), "Entscheidung", "Es sind " + geterrorDatasets(datensatzList) + " Fehler aufgetreten \nSoll alles zurückgerollt werden!");
 							
 							textBox.setButtons(ButtonSet.NO_YES);
 							EnumDialogBox button = textBox.show();
@@ -273,16 +273,41 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 							
 						}else {
 //							Tippkommando
-							Row row = infosysImportit.table().appendRow();
-							row.setYsel("Tippkommando " + datensatz.getTippkommando() + " "  + "Datensatznummer " + datensatzList.indexOf(datensatz));
-							if (datensatz.getError() == null) {
-								row.setYicon("icon:ok");
-							}else {
-								row.setYicon("icon:stop");
-								row.setYtfehler(datensatz.getError().substring(0, 70));
-								StringReader reader = new StringReader(datensatz.getError());
-								row.setYkomtext(reader);
+							datensatz.createErrorReport();
+							String errorReport = datensatz.getErrorReport();
+							if (!(errorReport.isEmpty() & infosysImportit.getYshowonlyerrorline()) || 
+									(!infosysImportit.getYshowonlyerrorline()) ) {
+								Row row = infosysImportit.table().appendRow();
+								
+								row.setYsel("Tippkommando " + datensatz.getTippkommando() + " "  + "Datensatznummer " + datensatzList.indexOf(datensatz));
+								
+								if (errorReport.isEmpty()) {
+									row.setYicon("icon:ok");
+								}else {
+									row.setYicon("icon:stop");
+									int errorReportlength = errorReport.length();
+									int fieldLength = row.META.ytfehler.getLength();
+									if (errorReportlength > fieldLength) {
+										row.setYtfehler(errorReport.substring(0, fieldLength));	
+									}else {
+										row.setYtfehler(errorReport);
+									}
+									
+									StringReader reader = new StringReader(errorReport);
+									row.setYkomtext(reader);
+								}
 							}
+							
+							
+							
+//							if (datensatz.getImportError() == null) {
+//								row.setYicon("icon:ok");
+//							}else {
+//								row.setYicon("icon:stop");
+//								row.setYtfehler(datensatz.getImportError().substring(0, 70));
+//								StringReader reader = new StringReader(datensatz.getImportError());
+//								row.setYkomtext(reader);
+//							}
 						}
 						
 					}
