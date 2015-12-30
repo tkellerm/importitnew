@@ -7,13 +7,22 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFDataValidation;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import de.abas.erp.common.type.AbasDate;
 
 /**
  * @author tkellermann
@@ -43,6 +52,7 @@ public class ExcelImportProcessing {
 	private Integer tabelleAbFeld; 
 	private int anzahlDatensaetze;
 	private OptionCode optionCode;
+	private Logger logger = Logger.getLogger(Importit21.class);
 	
 	public ExcelImportProcessing(String importFilename) throws ImportitException {
 		super();
@@ -532,8 +542,18 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 	}
 
 	private String getZellenInhaltString(Sheet sheet, int x, int y) throws ImportitException {
-//		Hier werden alle Inhaltsmöglichkeiten einer Celle in einen String umgewandelt 
-		Cell cell = sheet.getRow(y).getCell(x);
+//		Hier werden alle Inhaltsmöglichkeiten einer Celle in einen String umgewandelt
+		Cell cell = null;
+		try {
+			Row row = sheet.getRow(y);
+			if (row != null) {
+				cell = row.getCell(x);
+			}
+		} catch (NullPointerException e) {
+			logger.error("Bei der Zelle Zeile " + y + " Zelle " + x + " tritt eine Nullpointer Exeption auf", e);
+			throw new ImportitException("Bei der Zelle Zeile " + y + " Zelle " + x + " tritt eine Nullpointer Exeption auf"  , e);
+		}
+		
 		if (cell != null) {
 			if ( cell.getCellType() == Cell.CELL_TYPE_STRING)  {
 				return cell.getStringCellValue();
@@ -541,15 +561,23 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 		
 				if ( cell.getCellType() == Cell.CELL_TYPE_NUMERIC)  {
 //					cell.setCellType(Cell.CELL_TYPE_STRING);
-					Double nummericvalue = cell.getNumericCellValue();
-					Integer intvalue = nummericvalue.intValue();
-					NumberFormat numberformat = new DecimalFormat("#.#########");
-					String fnummericValue = numberformat.format(nummericvalue);
-					if 	(intvalue.doubleValue()  == nummericvalue){
-						return intvalue.toString();
+					if (DateUtil.isCellDateFormatted(cell)) {
+						Date date = cell.getDateCellValue();
+						AbasDate abasDate = new AbasDate(date);
+						return abasDate.toString();
 					}else {
-						return fnummericValue;	
-				}
+						Double nummericvalue = cell.getNumericCellValue();
+						Integer intvalue = nummericvalue.intValue();
+						NumberFormat numberformat = new DecimalFormat("#.#########");
+						String fnummericValue = numberformat.format(nummericvalue);
+						if 	(intvalue.doubleValue()  == nummericvalue){
+							return intvalue.toString();
+						}else {
+							return fnummericValue;	
+						}	
+					}
+					
+					
 //				return cell.getStringCellValue();
 			}else {
 				if ( cell.getCellType() == Cell.CELL_TYPE_BOOLEAN){
