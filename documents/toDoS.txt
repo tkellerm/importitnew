@@ -14,13 +14,15 @@ Handling im Infosystem
 
 Ausgabe der verarbeiten Zeilen in der Tabelle
 
-Fehlerhandling implentieren
+Fehlerhandling implementieren
 
 Logging 
 
 Tests schreiben
 
-Dokumentation erstellen 
+Dokumentation erstellen
+
+Sonderbehandlung Kundenartikeleigenschaften 
 
 
 can :
@@ -28,3 +30,8 @@ can :
 Excelvorlage aus Selektion erstellen
 
 Daten gegen die Abas Typen Prüfen
+Suchwort Überprüfen Leerzeichen sonderzeichen usw.
+
+Option zum Runden eines Zahlenwertes auf die erforderliche Nachkommastellen  
+
+Fehlermeldung wenn Strukturprüfung fehlschlägt.
