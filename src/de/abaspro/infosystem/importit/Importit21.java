@@ -420,7 +420,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 			if (datensatz.getTippkommando() != null) {
 				infosysImportit.setYtippkommando(datensatz.getTippkommando().toString());	
 			}
-			infosysImportit.setYtababspalte(datensatz.getTableStartsAtField());			
+			infosysImportit.setYtababspalte(datensatz.getTableStartsAtField() + 1);			
 		}
 	}
 
