@@ -20,6 +20,22 @@ public class DatensatzTabelle {
 		
 	}
 
+	/**
+	 * @param fieldname ist der Feldname in der Tabellen Zeile
+	 * @return den gespeicherten Wert als String
+	 * @throws ImportitException falls das Feld nicht gefunden wurde
+	 */
+	public String getTabellenFieldValue(String fieldname) throws ImportitException{
+		
+		for (Feld feld : tabellenFelder) {
+			if (feld.getName().equals(fieldname)) {
+				return feld.getValue();
+			}
+		}
+		
+		throw new ImportitException("Es wurde das Feld mit dem Namen " + fieldname + " in den Tabellenfeldern nicht gefunden");
+
+	}
 
 	public ArrayList<Feld> getTabellenFelder() {
 		return tabellenFelder;
