@@ -9,10 +9,8 @@ import org.apache.log4j.Logger;
 public class Datensatz {
 
 	 private List<Feld> kopfFelder = new ArrayList<Feld>();
-//	 die Tabellenfelder werden hier nur zum Strukturcheck gespeichert, da es sonst zu einem Problem mit dem Überprüfen der Variablen kommt.
-//	 private List<Feld> tabFelder = new ArrayList<Feld>();
-	 private List<DatensatzTabelle> tabellenZeilen = new ArrayList<DatensatzTabelle>();
-	 
+
+	 private List<DatensatzTabelle> tabellenZeilen = new ArrayList<DatensatzTabelle>();	 
 	 private Integer database;
 	 private Integer group;
 	 private Integer tippcommand;
@@ -21,8 +19,8 @@ public class Datensatz {
 	 private OptionCode optionCode;
 	 private Integer keyfield;
 	 private String abasId;
-	 private String errorReport;
-	 private String errordebug;
+	 private String errorReport = "";
+	 private String errordebug = "";
 	 
 	 private final static Logger log = Logger.getLogger( Importit21.class);
 
@@ -199,6 +197,7 @@ public class Datensatz {
 		return "";
 		
 	}
+	
 
 	public String getValueOfKeyfield() throws ImportitException {
 		if (getKopfFelder()!= null) {
@@ -296,9 +295,18 @@ public class Datensatz {
 	 */
 	
 	public void appendError(Exception e) {
+		if (this.importError.isEmpty()) {
+			this.importError = e.getMessage();
+		}else {
+			this.importError = this.importError + "\n" + e.getMessage();
+		}
 		
-		this.importError = this.importError + "\n" + e.getMessage(); 
-		this.errordebug = this.importError + "\n" + e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e);
+		if (this.errordebug.isEmpty()) {
+			this.errordebug =  e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e);
+		}else {
+			this.errordebug = this.errordebug + "\n" + e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e);
+		}
+		
 		
 	}
 	
@@ -411,6 +419,18 @@ private void feld2ErrorReport( Feld feld) {
 		text2ErrorReport(ausgabe);
 	}
 	
+}
+
+
+public String getValueOfHeadField(String fieldnameart) throws ImportitException {
+	
+	for (Feld feld : kopfFelder) {
+		if (feld.getName().equals(fieldnameart)) {
+			return feld.getValue();
+		}
+		
+	}
+	throw new ImportitException("Es wurde das Feld mit dem Namen " + fieldnameart + "in den Kopffeldern nicht gefunden!");
 }
 
 
