@@ -48,6 +48,7 @@ import org.apache.log4j.Logger;
 
 
 
+
 import sun.nio.cs.ext.Big5;
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantBeginSessionException;
@@ -644,12 +645,8 @@ public class EdpProcessing {
 							
 							if (2013 <= new Integer(abasVersion)   ) {
 								//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde
-								String xtid = "1:id=" + edpQuery.getField("id");
-//								String xtid = "$,,1:id="
-//								edpEditor.beginEdit(edpQuery.getField("id"));
+								String xtid =  edpQuery.getField("id");
 								edpEditor.beginEdit("2:6", xtid);
-//								edpEditor.beginEdit(EDPEditAction.UPDATE, "teil", "kundenartikeleigenschaft", EDPEditRefType.REF, xtid);
-//								edpEditor.beginEdit(xtid);
 								
 								if (edpEditor.getRowCount() > 0 && datensatz.getOptionCode().getDeleteTable()) {
 									edpEditor.deleteAllRows();
@@ -668,7 +665,9 @@ public class EdpProcessing {
 									datensatz.getGruppe().toString());
 						}
 						
-						writeFieldsInEditor(datensatz,datensatzTabelle, edpEditor);
+						
+						final String[] IgnoreFieldNames = {"art" , "artikel" , "product", "kl" , "custVendor" };
+						writeFieldsInEditor(datensatz,datensatzTabelle, edpEditor, IgnoreFieldNames );
 						edpEditor.endEditSave();
 						edpSession.loggingOff();
 						recordCount = getQueryTotalHits(krit,key , datensatz, edpQuery);
@@ -962,46 +961,91 @@ public class EdpProcessing {
 			}		
 		}
 
+	/**
+	 * Die Funktion wird für Datenbanken wie die Kundenartikeleigenschaften für die NeuAnlage benötigt.
+	 * 
+	 * @param datensatz 
+	 * @param datensatzTabelle zu schreibende Zeile
+	 * @param edpEditor der edpeditor
+	 * @throws ImportitException falls fehler Auftauchen
+	 */
 	private void writeFieldsInEditor(Datensatz datensatz,
-			DatensatzTabelle datensatzTabelle, EDPEditor edpEditor) throws ImportitException {
+			DatensatzTabelle datensatzTabelle, EDPEditor edpEditor , String[] ignoreFields ) throws ImportitException {
+
 		if (edpEditor.isActive()) {
-			
-//			Kopffelder schreiben
-			
-			List<Feld> kopfFelder = datensatz.getKopfFelder();
-			for (Feld feld : kopfFelder) {
+			if (edpEditor.getEditAction() == EDPEditAction.NEW  ) {	
+	//			Kopffelder schreiben
 				
-				writeField(datensatz, feld, edpEditor, 0);
-				
-				}
-			
-//			eine Zeile TabelleFelder schreiben
-			
-			
-			
-			if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
-				Integer rowNumbervorher = edpEditor.getRowCount();
-					try {
-						if (rowNumbervorher == 0) {
-							edpEditor.insertRow(1);
-						}else {
-							edpEditor.insertRow(rowNumbervorher + 1);	
-						}
-						
-					} catch (InvalidRowOperationException e) {
-						logger.error(e);
-						throw new ImportitException("Die Zeilen konnten nicht eingefügt werden!" ,e );
-					}
-					Integer rowNumber = edpEditor.getCurrentRow();
-					ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
-					for (Feld feld : tabellenFelder) {
-						writeField(datensatz, feld, edpEditor, rowNumber);
+				List<Feld> kopfFelder = datensatz.getKopfFelder();
+				for (Feld feld : kopfFelder) {
+					
+					writeField(datensatz, feld, edpEditor, 0);
 					
 					}
 				
-			}				
-			}		
+	//			eine Zeile TabelleFelder schreiben
+	
+				if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
+					Integer rowNumbervorher = edpEditor.getRowCount();
+						try {
+							if (rowNumbervorher == 0) {
+								edpEditor.insertRow(1);
+							}else {
+								edpEditor.insertRow(rowNumbervorher + 1);	
+							}
+							
+						} catch (InvalidRowOperationException e) {
+							logger.error(e);
+							throw new ImportitException("Die Zeilen konnten nicht eingefügt werden!" ,e );
+						}
+						Integer rowNumber = edpEditor.getCurrentRow();
+						ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
+						for (Feld feld : tabellenFelder) {
+							writeField(datensatz, feld, edpEditor, rowNumber);
+						
+						}
+					
+				}				
+			}
+		}else if (edpEditor.getEditAction() == EDPEditAction.UPDATE) {
+//			Kopffelder schreiben
+			List<Feld> kopfFelder = datensatz.getKopfFelder();
+			for (Feld feld : kopfFelder) {
+				if (dontIgnoreField(feld, ignoreFields)) {
+					writeField(datensatz, feld, edpEditor, 0);
+				}
+			}
+//			Zeile aktualisieren
+//			eine Zeile TabelleFelder schreiben
+			
+			if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
+					Integer rowNumber = edpEditor.getCurrentRow();
+					ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
+					for (Feld feld : tabellenFelder) {
+							if (dontIgnoreField(feld, ignoreFields)) {
+								writeField(datensatz, feld, edpEditor, rowNumber);	
+							}	
+					}
+				
+			}
+		}	
 		
+	}
+
+	/**
+	 * Prüfen, ob das @param feld in dem Array
+	 * @param ignoreFields vorkommt
+	 * @return wenn ja wird false zurückgegen, ansonsten true
+	 */
+	private boolean dontIgnoreField(Feld feld, String[] ignoreFields) {
+		
+		String fieldName = feld.getName();
+		for (String ignoreField : ignoreFields) {
+			if (ignoreField.equals(fieldName)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
