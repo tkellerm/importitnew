@@ -1,19 +1,17 @@
 package de.abaspro.infosystem.importit;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.management.BadAttributeValueExpException;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+<<<<<<< HEAD
 
 
 
@@ -49,6 +47,8 @@ import org.apache.log4j.Logger;
 
 
 import sun.nio.cs.ext.Big5;
+=======
+>>>>>>> refs/heads/Kundenartikeleigenschaften
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantBeginSessionException;
 import de.abas.ceks.jedp.CantChangeFieldValException;
@@ -60,15 +60,10 @@ import de.abas.ceks.jedp.ConnectionLostException;
 import de.abas.ceks.jedp.EDPConstants;
 import de.abas.ceks.jedp.EDPEKSArtInfo;
 import de.abas.ceks.jedp.EDPEditAction;
-import de.abas.ceks.jedp.EDPEditRefType;
 import de.abas.ceks.jedp.EDPEditor;
-import de.abas.ceks.jedp.EDPEditorOption;
 import de.abas.ceks.jedp.EDPFactory;
 import de.abas.ceks.jedp.EDPQuery;
-import de.abas.ceks.jedp.EDPRowAddress;
-import de.abas.ceks.jedp.EDPSelection;
 import de.abas.ceks.jedp.EDPSession;
-import de.abas.ceks.jedp.EDPStoreRowMode;
 import de.abas.ceks.jedp.EDPTools;
 import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
@@ -77,10 +72,7 @@ import de.abas.ceks.jedp.StandardEDPSelection;
 import de.abas.ceks.jedp.StandardEDPSelectionCriteria;
 import de.abas.ceks.jedp.TransactionException;
 import de.abas.eks.jfop.remote.FOe;
-import de.abas.erp.common.type.AbasDate;
 import de.abas.erp.common.type.enums.EnumTypeCommands;
-import de.abas.erp.db.internal.impl.jedp.EDPUtil;
-import de.abas.erp.db.schema.projectsuitevaluedata.Value;
 import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.UserTextBuffer;
 
@@ -644,12 +636,8 @@ public class EdpProcessing {
 							
 							if (2013 <= new Integer(abasVersion)   ) {
 								//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde
-								String xtid = "1:id=" + edpQuery.getField("id");
-//								String xtid = "$,,1:id="
-//								edpEditor.beginEdit(edpQuery.getField("id"));
+								String xtid =  edpQuery.getField("id");
 								edpEditor.beginEdit("2:6", xtid);
-//								edpEditor.beginEdit(EDPEditAction.UPDATE, "teil", "kundenartikeleigenschaft", EDPEditRefType.REF, xtid);
-//								edpEditor.beginEdit(xtid);
 								
 								if (edpEditor.getRowCount() > 0 && datensatz.getOptionCode().getDeleteTable()) {
 									edpEditor.deleteAllRows();
@@ -897,13 +885,15 @@ public class EdpProcessing {
 			}else {
 				edpEditor.getSession().setFOPMode(true);
 			}
-//			Tabelle löschen 
-			if (optionCode.getDeleteTable()) {
-				
-				edpEditor.setEditorOption(EDPEditorOption.STOREROWMODE, EDPStoreRowMode.DELETE_TAIL.getModeStr());
-			}else {
-				edpEditor.setEditorOption(EDPEditorOption.STOREROWMODE, EDPStoreRowMode.DELETE_NONE.getModeStr());
-			}
+			
+//	Auskommentiert weil beim Schreiben der UPDATE oder der NEW Modus verwendet wird und nicht der Store - Mode			
+////			Tabelle löschen 
+//			if (optionCode.getDeleteTable()) {
+//				
+//				edpEditor.setEditorOption(EDPEditorOption.STOREROWMODE, EDPStoreRowMode.DELETE_TAIL.getModeStr());
+//			}else {
+//				edpEditor.setEditorOption(EDPEditorOption.STOREROWMODE, EDPStoreRowMode.DELETE_NONE.getModeStr());
+//			}
 //			Englische Variablen nutzen
 			if (optionCode.getUseEnglishVariablen()) {
 				edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.ENGLISH);
@@ -963,9 +953,50 @@ public class EdpProcessing {
 		}
 
 	private void writeFieldsInEditor(Datensatz datensatz,
+<<<<<<< HEAD
 			DatensatzTabelle datensatzTabelle, EDPEditor edpEditor) throws ImportitException {
 		if (edpEditor.isActive()) {
 			
+=======
+			DatensatzTabelle datensatzTabelle, EDPEditor edpEditor , String[] ignoreFields ) throws ImportitException {
+
+		if (edpEditor.isActive()) {
+			if (edpEditor.getEditAction() == EDPEditAction.NEW  ) {	
+	//			Kopffelder schreiben
+				
+				List<Feld> kopfFelder = datensatz.getKopfFelder();
+				for (Feld feld : kopfFelder) {
+					
+					writeField(datensatz, feld, edpEditor, 0);
+					
+					}
+				
+	//			eine Zeile TabelleFelder schreiben
+	
+				if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
+					Integer rowNumbervorher = edpEditor.getRowCount();
+						try {
+							if (rowNumbervorher == 0) {
+								edpEditor.insertRow(1);
+							}else {
+								edpEditor.insertRow(rowNumbervorher + 1);	
+							}
+							
+						} catch (InvalidRowOperationException e) {
+							logger.error(e);
+							throw new ImportitException("Die Zeilen konnten nicht eingefügt werden!" ,e );
+						}
+						Integer rowNumber = edpEditor.getCurrentRow();
+						ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
+						for (Feld feld : tabellenFelder) {
+							writeField(datensatz, feld, edpEditor, rowNumber);
+						
+						}
+					
+				}				
+			}
+		}else if (edpEditor.getEditAction() == EDPEditAction.UPDATE) {
+>>>>>>> refs/heads/Kundenartikeleigenschaften
 //			Kopffelder schreiben
 			
 			List<Feld> kopfFelder = datensatz.getKopfFelder();
@@ -998,9 +1029,15 @@ public class EdpProcessing {
 						writeField(datensatz, feld, edpEditor, rowNumber);
 					
 					}
+<<<<<<< HEAD
 				
 			}				
 			}		
+=======
+				
+			}
+		}	
+>>>>>>> refs/heads/Kundenartikeleigenschaften
 		
 	}
 

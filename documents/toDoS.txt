@@ -16,22 +16,28 @@ Ausgabe der verarbeiten Zeilen in der Tabelle
 
 Fehlerhandling implementieren
 
-Logging 
+Logging teilweise 
 
 Tests schreiben
 
 Dokumentation erstellen
 
-Sonderbehandlung Kundenartikeleigenschaften 
+Sonderbehandlung Kundenartikeleigenschaften erledigt 
 
 
 can :
 
 Excelvorlage aus Selektion erstellen
 
-Daten gegen die Abas Typen Prüfen
+Daten gegen die Abas Typen Prüfen teilweise
+
 Suchwort Überprüfen Leerzeichen sonderzeichen usw.
 
 Option zum Runden eines Zahlenwertes auf die erforderliche Nachkommastellen  
 
 Fehlermeldung wenn Strukturprüfung fehlschlägt.
+
+Datenbank als Text angeben Prio 1
+
+
+Dateiauswahl  mit DV0 Achtung win-Verzeichnis hinzufügen "\" in "/" tauschen 
