@@ -11,44 +11,6 @@ import javax.management.BadAttributeValueExpException;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
-<<<<<<< HEAD
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import sun.nio.cs.ext.Big5;
-=======
->>>>>>> refs/heads/Kundenartikeleigenschaften
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantBeginSessionException;
 import de.abas.ceks.jedp.CantChangeFieldValException;
@@ -656,7 +618,8 @@ public class EdpProcessing {
 									datensatz.getGruppe().toString());
 						}
 						
-						writeFieldsInEditor(datensatz,datensatzTabelle, edpEditor);
+						final String[] IgnoreFieldNames = {"art" , "artikel" , "product", "kl" , "custVendor" };
+						writeFieldsInEditor(datensatz,datensatzTabelle, edpEditor, IgnoreFieldNames );
 						edpEditor.endEditSave();
 						edpSession.loggingOff();
 						recordCount = getQueryTotalHits(krit,key , datensatz, edpQuery);
@@ -953,14 +916,10 @@ public class EdpProcessing {
 		}
 
 	private void writeFieldsInEditor(Datensatz datensatz,
-<<<<<<< HEAD
-			DatensatzTabelle datensatzTabelle, EDPEditor edpEditor) throws ImportitException {
-		if (edpEditor.isActive()) {
-			
-=======
 			DatensatzTabelle datensatzTabelle, EDPEditor edpEditor , String[] ignoreFields ) throws ImportitException {
 
 		if (edpEditor.isActive()) {
+			EDPEditAction testaction = edpEditor.getEditAction(); 
 			if (edpEditor.getEditAction() == EDPEditAction.NEW  ) {	
 	//			Kopffelder schreiben
 				
@@ -994,53 +953,47 @@ public class EdpProcessing {
 						}
 					
 				}				
-			}
-		}else if (edpEditor.getEditAction() == EDPEditAction.UPDATE) {
->>>>>>> refs/heads/Kundenartikeleigenschaften
-//			Kopffelder schreiben
-			
-			List<Feld> kopfFelder = datensatz.getKopfFelder();
-			for (Feld feld : kopfFelder) {
-				
-				writeField(datensatz, feld, edpEditor, 0);
-				
+			}else if (edpEditor.getEditAction() == EDPEditAction.UPDATE) {
+//				Kopffelder schreiben
+				List<Feld> kopfFelder = datensatz.getKopfFelder();
+				for (Feld feld : kopfFelder) {
+					if (dontIgnoreField(feld, ignoreFields)) {
+						writeField(datensatz, feld, edpEditor, 0);
+					}
 				}
-			
-//			eine Zeile TabelleFelder schreiben
-			
-			
-			
-			if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
-				Integer rowNumbervorher = edpEditor.getRowCount();
-					try {
-						if (rowNumbervorher == 0) {
-							edpEditor.insertRow(1);
-						}else {
-							edpEditor.insertRow(rowNumbervorher + 1);	
+//				Zeile aktualisieren
+//				eine Zeile TabelleFelder schreiben
+				
+				if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
+						Integer rowNumber = edpEditor.getCurrentRow();
+						ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
+						for (Feld feld : tabellenFelder) {
+								if (dontIgnoreField(feld, ignoreFields)) {
+									writeField(datensatz, feld, edpEditor, rowNumber);	
+								}	
 						}
-						
-					} catch (InvalidRowOperationException e) {
-						logger.error(e);
-						throw new ImportitException("Die Zeilen konnten nicht eingefügt werden!" ,e );
-					}
-					Integer rowNumber = edpEditor.getCurrentRow();
-					ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
-					for (Feld feld : tabellenFelder) {
-						writeField(datensatz, feld, edpEditor, rowNumber);
 					
-					}
-<<<<<<< HEAD
-				
-			}				
-			}		
-=======
-				
+				}
 			}
 		}	
->>>>>>> refs/heads/Kundenartikeleigenschaften
 		
 	}
-
+	
+	/**
+	 * Prüfen, ob das @param feld in dem Array
+	 * @param ignoreFields vorkommt
+	 * @return wenn ja wird false zurückgegen, ansonsten true
+	 */
+	private boolean dontIgnoreField(Feld feld, String[] ignoreFields) {
+		
+		String fieldName = feld.getName();
+		for (String ignoreField : ignoreFields) {
+			if (ignoreField.equals(fieldName)) {
+				return false;
+			}
+		}
+		return true;
+	}
 	/**
 	 * @param datensatz
 	 * @param edpEditor
