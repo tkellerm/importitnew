@@ -11,8 +11,6 @@ import javax.management.BadAttributeValueExpException;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
-
-
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantBeginSessionException;
 import de.abas.ceks.jedp.CantChangeFieldValException;
@@ -930,7 +928,6 @@ public class EdpProcessing {
 			DatensatzTabelle datensatzTabelle, EDPEditor edpEditor , String[] ignoreFields ) throws ImportitException {
 
 		if (edpEditor.isActive()) {
-			EDPEditAction testaction = edpEditor.getEditAction(); 
 			if (edpEditor.getEditAction() == EDPEditAction.NEW  ) {	
 	//			Kopffelder schreiben
 				
@@ -964,27 +961,27 @@ public class EdpProcessing {
 						}
 					
 				}				
-			}else if (edpEditor.getEditAction() == EDPEditAction.UPDATE) {
-//				Kopffelder schreiben
-				List<Feld> kopfFelder = datensatz.getKopfFelder();
-				for (Feld feld : kopfFelder) {
-					if (dontIgnoreField(feld, ignoreFields)) {
-						writeField(datensatz, feld, edpEditor, 0);
+			}
+		}else if (edpEditor.getEditAction() == EDPEditAction.UPDATE) {
+//			Kopffelder schreiben
+			List<Feld> kopfFelder = datensatz.getKopfFelder();
+			for (Feld feld : kopfFelder) {
+				if (dontIgnoreField(feld, ignoreFields)) {
+					writeField(datensatz, feld, edpEditor, 0);
+				}
+			}
+//			Zeile aktualisieren
+//			eine Zeile TabelleFelder schreiben
+			
+			if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
+					Integer rowNumber = edpEditor.getCurrentRow();
+					ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
+					for (Feld feld : tabellenFelder) {
+							if (dontIgnoreField(feld, ignoreFields)) {
+								writeField(datensatz, feld, edpEditor, rowNumber);	
+							}	
 					}
-				}
-//				Zeile aktualisieren
-//				eine Zeile TabelleFelder schreiben
 				
-				if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
-						Integer rowNumber = edpEditor.getCurrentRow();
-						ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
-						for (Feld feld : tabellenFelder) {
-								if (dontIgnoreField(feld, ignoreFields)) {
-									writeField(datensatz, feld, edpEditor, rowNumber);	
-								}	
-						}
-					
-				}
 			}
 		}	
 		
