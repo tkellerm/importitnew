@@ -12,6 +12,7 @@ import javax.management.BadAttributeValueExpException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
+
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantBeginSessionException;
 import de.abas.ceks.jedp.CantChangeFieldValException;
@@ -27,21 +28,15 @@ import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPFactory;
 import de.abas.ceks.jedp.EDPQuery;
 import de.abas.ceks.jedp.EDPSession;
-import de.abas.ceks.jedp.EDPSessionOptions;
 import de.abas.ceks.jedp.EDPTools;
 import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
-import de.abas.ceks.jedp.InvalidSettingValueException;
 import de.abas.ceks.jedp.StandardEDPSelection;
 import de.abas.ceks.jedp.StandardEDPSelectionCriteria;
 import de.abas.ceks.jedp.TransactionException;
-import de.abas.ceks.jedp.internal.session.EDPSessionImpl;
 import de.abas.eks.jfop.remote.FOe;
-import de.abas.erp.common.type.enums.EnumDatabase;
 import de.abas.erp.common.type.enums.EnumTypeCommands;
-import de.abas.erp.db.internal.impl.jedp.EDPImplFactory;
-import de.abas.erp.db.internal.impl.jedp.EDPUtil;
 import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.UserTextBuffer;
 
@@ -190,48 +185,37 @@ public class EdpProcessing {
 	private boolean checkDatensatzStruktur(Datensatz datensatz){
 
 		//		prüfe Datenbank, ob vorhanden
-		
 		boolean dbok = checkDBorEditorCommdands(datensatz);
 //		Wenn es ein Tipkommanndo gibt muss noch die Datenbank gesucht werden damit die Felder gecheckt werden können
 		
 				
-		boolean kopfok = false;
+		List<Feld> kopfFelder     = datensatz.getKopfFelder();
+		List<Feld> tabellenFelder = datensatz.getTabellenFelder();
+	
+		boolean kopfok    = false;
 		boolean tabelleok = false;
-		if (dbok) {
-			List<Feld> kopfFelder = datensatz.getKopfFelder();
-			List<Feld> tabellenFelder = datensatz.getTabellenFelder();
-			kopfok = false;
-			tabelleok = false;
-			try {
-				switch (checkSpecialDB(datensatz)) {
-				case 1:
-					//		Kundenartikeleigenschaften
-					kopfok = checkKundenartikeleigenschaftenKopf(kopfFelder,
-							datensatz.getOptionCode().getUseEnglishVariablen());
-					//				Bei der Kundenartikeleigenschaften sind alle Variablen in der Gruppe 6 gespeichert und dort gibt es keine Tabelle
-					tabelleok = checkListofFeldAndGetabasType(tabellenFelder,
-							2, 6, false, datensatz.getOptionCode()
-									.getUseEnglishVariablen());
-					break;
+		try {
+			switch (checkSpecialDB(datensatz)) {
+			case 1:
+//		Kundenartikeleigenschaften
+				kopfok = checkKundenartikeleigenschaftenKopf(kopfFelder, datensatz.getOptionCode().getUseEnglishVariablen());
+//				Bei der Kundenartikeleigenschaften sind alle Variablen in der Gruppe 6 gespeichert und dort gibt es keine Tabelle
+				tabelleok = checkListofFeldAndGetabasType(tabellenFelder, 2 , 6 , false , datensatz.getOptionCode().getUseEnglishVariablen());
+				break;
 
-				default:
-					//				Alle normalen Datenbanken
-					kopfok = checkListofFeldAndGetabasType(kopfFelder,
-							datensatz.getDatenbank(), datensatz.getGruppe(),
-							false, datensatz.getOptionCode()
-									.getUseEnglishVariablen());
-					tabelleok = checkListofFeldAndGetabasType(tabellenFelder,
-							datensatz.getDatenbank(), datensatz.getGruppe(),
-							true, datensatz.getOptionCode()
-									.getUseEnglishVariablen());
-					break;
-				}
-
-			} catch (ImportitException e) {
-				logger.error(e);
-				datensatz.appendError("Die Strukturprüfung war fehlerhaft", e);
-			}
+			default:
+//				Alle normalen Datenbanken
+				kopfok = checkListofFeldAndGetabasType(kopfFelder, datensatz.getDatenbank() , datensatz.getGruppe() , false, datensatz.getOptionCode().getUseEnglishVariablen() );
+				tabelleok = checkListofFeldAndGetabasType(tabellenFelder, datensatz.getDatenbank() , datensatz.getGruppe(), true, datensatz.getOptionCode().getUseEnglishVariablen());
+				break;
+			}			
+		
+					
+		} catch (ImportitException e) {
+			logger.error(e);
+			datensatz.appendError("Die Strukturprüfung war fehlerhaft" , e);
 		}
+				
 		if (tabelleok & kopfok & dbok) {
 			return true;	
 		}else {
@@ -271,139 +255,66 @@ public class EdpProcessing {
 		Boolean gefunden = false ;
 		if (datensatz.getTippkommando()!=null && datensatz.getDatenbank() == null) {
 //		Überprüfung der Tipkkommandos
+		
 			
 			EnumTypeCommands[] typeCommands = EnumTypeCommands.values();
 			for (EnumTypeCommands enumTypeCommands : typeCommands) {
 				if (datensatz.getTippkommando() == enumTypeCommands.getCode()) {
 					gefunden = true;
+
 				}
 			}
 			if (gefunden) {
 //				datenbank für Tipkkommando in Datensatz eintragen
+				
 				try {
 					findDatenbankForTipkkommando(datensatz);
 				} catch (ImportitException e) {
 					datensatz.appendError(e);
 				}
-
+				
+				
 			}else {
 				datensatz.appendError("Das Tippkommando mit der Nummer "
 						+ datensatz.getTippkommando() + " ist nicht definiert");
 			}
 		}
 		
-		gefunden = checkDatabaseName(datensatz);
-		
-		
-		
-		return gefunden;
-	}
+		if (datensatz.getDatenbank()!= null && datensatz.getGruppe()!= null ) {
+//			Überprüfung ob Datenbank vorhanden
+			String key = "";
+			int aliveFlag = EDPConstants.ALIVEFLAG_ALIVE;
+			String fieldNames = "";
+			
+//			Vartab Tabellenname
+			String tableName = "12:26";
+			Boolean inTable = false;
+			
+			EDPQuery query = this.edpSession.createQuery();
+			String krit = "0:grpDBDescr=(" + datensatz.getDatenbank().toString() + ");0:grpGrpNo=" + datensatz.getGruppe().toString() +    ";" +  ";@englvar=true;@language=en";
 
-	private Boolean checkDatabaseName(Datensatz datensatz) {
-		// prüfen ob datenbank im datensatz gesetzt ist
+			
+				try {
+					
+					query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
+					query.getLastRecord();
+					if (query.getRecordCount() == 1) {
+						gefunden = true;
+					}
+					
+				} catch (InvalidQueryException e) {
+					datensatz.appendError("Die Suche nach der Datenbank mit dem Suchstring " + krit + "war fehlerhaft" , e);
 
-		if (datensatz.getDatenbank() != null && datensatz.getGruppe() != null) {
-
-			String krit = "0:grpDBDescr=("
-					+ datensatz.getDatenbank().toString() + ");0:grpGrpNo="
-					+ datensatz.getGruppe().toString() + ";"
-					+ ";@englvar=true;@language=en";
-
-			if (searchDatabase(datensatz, krit)) {
-				return true;
+				}
 				
-			} else {
+			if (!gefunden) {
 				datensatz.appendError("Die Datenbank : Gruppe mit der Nummer "
 						+ datensatz.getDatenbank() + ":"
 						+ datensatz.getGruppe() + " ist nicht definiert");
-				return false;
 			}
-
-		} else {
-			// Datenbank oder gruppe == null
-			// dies kann bedeuten das es ein Tipkommando ist, oder das die
-			// Datenbanken als String übergeben wurden
-			// daher die Prüfung,ob die beiden String Felder gestetzt sind.
-
-			if (datensatz.getDbString() != null
-					&& datensatz.getDbGroupString() != null) {
-				// Suche über die bediensprachliche Bezeichnung
-				String krit = "0:vdntxt==" + datensatz.getDbString()
-						+ ";0:vgrtxtbspr=="
-						+ datensatz.getDbGroupString() + ";"
-						+ ";@englvar=false;@language=de";
-
-				if (searchDatabase(datensatz, krit)) {
-					return true;
-				} else {
-					// Suche über die Sprachneutrale Bezeichnung
-					krit = "0:DBCmd==" + datensatz.getDbString()
-							+ ";0:grpGrpCmd==" + datensatz.getDbGroupString()
-							+ ";" + ";@englvar=true;@language=en";
-					if (searchDatabase(datensatz, krit)) {
-						return true;
-					} else {
-						datensatz
-								.appendError("Die Datenbank : Gruppe mit den Namen "
-										+ datensatz.getDatenbank()
-										+ ":"
-										+ datensatz.getGruppe()
-										+ " ist nicht definiert");
-						return false;
-					}
-				}
-			}
-
 		}
-
-		return false;
-	}
-
-	/**
-	 * @param datensatz
-	 * @param krit
-	 * @param option 
-	 * @return 
-	 */
-	private boolean searchDatabase(Datensatz datensatz, String krit) {
-		//			Überprüfung ob Datenbank vorhanden
-					String key = "";
-					int aliveFlag = EDPConstants.ALIVEFLAG_ALIVE;
-					String fieldNames = "vdn,vgr,grpDBDescr,grpGrpNo";
-					
-		//			Vartab Tabellenname
-					String tableName = "12:26";
-					Boolean inTable = false;
-					try {
-						this.edpSession.setEnumMode(EDPSessionImpl.ENUMMODE_CODE);
-					} catch (InvalidSettingValueException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					EDPQuery query = this.edpSession.createQuery();
-
-						try {
-							
-							query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
-							query.getLastRecord();
-							if (query.getRecordCount() == 1) {
-							 
-								String dbstring = query.getField("grpDBDescr");
-								
-								dbstring = dbstring.replaceAll("\\(*", "");
-								dbstring = dbstring.replaceAll("\\)*", "");
-								datensatz.setDatenbank(new Integer(dbstring));
-								String gruppe = query.getField("grpGrpNo");
-								gruppe = gruppe.replaceAll(" ", "");
-								datensatz.setGruppe(new Integer(gruppe));
-								return true;
-							}
-							
-						} catch (InvalidQueryException e) {
-							datensatz.appendError("Die Suche nach der Datenbank mit dem Suchstring " + krit + "war fehlerhaft" , e);
-							return false;
-						}
-						return false;
+		
+		return gefunden;
 	}
 
 	private void findDatenbankForTipkkommando(Datensatz datensatz) throws ImportitException {
@@ -709,6 +620,7 @@ public class EdpProcessing {
 									datensatz.getGruppe().toString());
 						}
 						
+						
 						final String[] IgnoreFieldNames = {"art" , "artikel" , "product", "kl" , "custVendor" };
 						writeFieldsInEditor(datensatz,datensatzTabelle, edpEditor, IgnoreFieldNames );
 						edpEditor.endEditSave();
@@ -1006,6 +918,14 @@ public class EdpProcessing {
 			}		
 		}
 
+	/**
+	 * Die Funktion wird für Datenbanken wie die Kundenartikeleigenschaften für die NeuAnlage benötigt.
+	 * 
+	 * @param datensatz 
+	 * @param datensatzTabelle zu schreibende Zeile
+	 * @param edpEditor der edpeditor
+	 * @throws ImportitException falls fehler Auftauchen
+	 */
 	private void writeFieldsInEditor(Datensatz datensatz,
 			DatensatzTabelle datensatzTabelle, EDPEditor edpEditor , String[] ignoreFields ) throws ImportitException {
 
@@ -1069,7 +989,7 @@ public class EdpProcessing {
 		}	
 		
 	}
-	
+
 	/**
 	 * Prüfen, ob das @param feld in dem Array
 	 * @param ignoreFields vorkommt
@@ -1085,6 +1005,7 @@ public class EdpProcessing {
 		}
 		return true;
 	}
+
 	/**
 	 * @param datensatz
 	 * @param edpEditor

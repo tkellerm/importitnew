@@ -210,16 +210,21 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 			InfosystemImportit infosysImportit = event.getSourceRecord();
 			try {
 				 
-				edpProcessing.checkDatensatzListValues(datensatzList);
-				
-				infosysImportit.setYok(getimportitDatasets(datensatzList)); 
-				infosysImportit.setYfehler(geterrorDatasets(datensatzList));
+				if (infosysImportit.getYfehlerstruktur() == 0 ) {
+					edpProcessing.checkDatensatzListValues(datensatzList);
+					infosysImportit.setYok(getimportitDatasets(datensatzList));
+					infosysImportit
+							.setYfehlerdatpruef(geterrorDatasets(datensatzList));
+				}else {
+					throw new ImportitException("Es sind noch Fehler aus der Strukturprüfung vorhanden! Bitte zuerst beheben!");
+				}
 				
 			} catch (ImportitException e) {
 				
 				AbasExceptionOutput(e);
 			}
-
+			TextBox textbox = new TextBox(getContext(), "Fertig", "Datenprüfung abgeschlossen!");
+			textbox.show();
 		}
 
 	}
@@ -338,6 +343,8 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	    	infosysImportit.table().clear();
 	    	infosysImportit.setYok(0); 
 			infosysImportit.setYfehler(0);
+			infosysImportit.setYfehlerdatpruef(0);
+			infosysImportit.setYfehlerstruktur(0);
 	    	try {
 //	    		prüfe noch ob passwort eingeben wurde 
 	    		logger.info("Start Excelproccessing");
@@ -349,12 +356,14 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				edpProcessing.checkDatensatzList(datensatzList);
 				logger.info("Ende checkDatensatzList");
 				
-				infosysImportit.setYok(getimportitDatasets(datensatzList)); 
-				infosysImportit.setYfehler(geterrorDatasets(datensatzList));
+				
+				infosysImportit.setYfehlerstruktur(geterrorDatasets(datensatzList));
 				
 				showDatenbankInfos(infosysImportit , datensatzList);
 				showOptions(infosysImportit , datensatzList);
 				
+				TextBox textbox = new TextBox(getContext(), "Fertig", "Strukturprüfung abgeschlossen!");
+				textbox.show();
 				
 			} catch (ImportitException e) {
 				AbasExceptionOutput(e);
@@ -367,6 +376,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	private int geterrorDatasets(ArrayList<Datensatz> datensatzList2) {
 		int numberOfError = 0;
 		for (Datensatz datensatz : datensatzList2) {
+			datensatz.createErrorReport(); 
 			String error = datensatz.getErrorReport();
 			if (error != null) {
 				if (!error.isEmpty()) {
@@ -380,6 +390,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	private int getimportitDatasets(ArrayList<Datensatz> datensatzList2) {
 		int numberOfOk = 0;
 		for (Datensatz datensatz : datensatzList2) {
+			datensatz.createErrorReport();
 			String error = datensatz.getErrorReport();
 			if (error != null) {
 				if (error.isEmpty()) {
@@ -415,8 +426,14 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 		if (datensatzList.size() >= 1 ) {
 			Datensatz datensatz = datensatzList.get(0);
 			
-			infosysImportit.setYdb(datensatz.getDatenbank().toString());
-			infosysImportit.setYgruppe(datensatz.getGruppe().toString());
+			if (datensatz.getDatenbank() != null ) {
+				infosysImportit.setYdb(datensatz.getDatenbank().toString());
+			}
+			
+			if (datensatz.getGruppe() !=null ) {
+				infosysImportit.setYgruppe(datensatz.getGruppe().toString());
+			}
+			
 			if (datensatz.getTippkommando() != null) {
 				infosysImportit.setYtippkommando(datensatz.getTippkommando().toString());	
 			}

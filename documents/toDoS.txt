@@ -37,7 +37,7 @@ Option zum Runden eines Zahlenwertes auf die erforderliche Nachkommastellen
 
 Fehlermeldung wenn Strukturprüfung fehlschlägt.
 
-Datenbank als Text angeben Prio 1
+Datenbank als Text angeben Prio 1 erledigt.
 
 
 Dateiauswahl  mit DV0 Achtung win-Verzeichnis hinzufügen "\" in "/" tauschen 

@@ -11,15 +11,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFDataValidation;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import de.abas.erp.common.type.AbasDate;
@@ -46,9 +43,12 @@ public class ExcelImportProcessing {
 	
 	private String importFilename; 
 	private String errorFilename;
-	private Integer datenbank;
+	private Integer db;
 	private Integer gruppe;
+	private String dbString;
+	private String dbgroupString;
 	private Integer tippkommando;
+	private String tippkommandoString;
 	private Integer tabelleAbFeld; 
 	private int anzahlDatensaetze;
 	private OptionCode optionCode;
@@ -179,8 +179,10 @@ public class ExcelImportProcessing {
 		Datensatz datensatz = new Datensatz();
 		
 		datensatz.setKopfFelder(getCopyOfKopffelder());
-		datensatz.setDatenbank(this.datenbank);
+		datensatz.setDatenbank(this.db);
+		datensatz.setDbString(this.dbString);
 		datensatz.setGruppe(this.gruppe);
+		datensatz.setDbGroupString(this.dbgroupString);
 		datensatz.setTippkommando(this.tippkommando);
 		datensatz.setOptionCode(this.optionCode);
 		datensatz.setTableStartsAtField(this.tabelleAbFeld);
@@ -341,9 +343,11 @@ public class ExcelImportProcessing {
 	private void pruefeUndHoleInfoAusSheet(Sheet sheet) throws ImportitException {
 		
 			try{
-				
-			this.datenbank         = getdb(sheet);
-			this.gruppe            = getgroup(sheet);
+			this.dbString          = getdbString(sheet); 
+			this.dbgroupString     = getdbgroupString(sheet);
+			this.tippkommandoString = getTippkomanndoString(sheet);
+			this.db                = getdb(sheet);
+			this.gruppe            = getdbgroup(sheet);
 			this.tippkommando      = getTippkomanndo(sheet);
 			this.tabelleAbFeld     = getTabelleab(sheet); 
 			this.optionCode        = new OptionCode(getOptionCodeFromSheet(sheet));
@@ -368,36 +372,47 @@ public class ExcelImportProcessing {
 		return sheet.getLastRowNum();
 }
 	
-	private Integer getTippkomanndo(Sheet sheet) throws ImportitException {
-		
+	private String getTippkomanndoString(Sheet sheet) throws ImportitException {
 //		Es ist ein Tipkommdo, wenn es keinen Doppelpunkt besitzt 		
-		String dbgroup = getdbgroup(sheet);
-		String tippString;
+		String dbgroup = getDbGroupComplete(sheet);
+		
 		int doppelpunkt =dbgroup.indexOf(":");
         
         if (doppelpunkt == 0 || doppelpunkt == -1){
-//        	tippString = dbgroup.substring(0,doppelpunkt);
-        	tippString = dbgroup;
-        	if (!tippString.isEmpty() && tippString != null ){
-        		
-        		try {
-        			return Integer.parseInt(tippString);	
-        			
-				} catch (NumberFormatException e) {
-					
-					throw new ImportitException("Das Tippkommando wurde nicht richtig angegeben, so dass die Umformatierung in einen Integer-Wert nicht funktioniert!");
-				
+        	return dbgroup;
+        }else {
+			return null;
+		}
+	}
+
+
+
+
+	private Integer getTippkomanndo(Sheet sheet) throws ImportitException {
+		
+			String tippString = getTippkomanndoString(sheet);
+			
+        	if (tippString != null) {
+				if (!tippString.isEmpty()) {
+
+					try {
+						return Integer.parseInt(tippString);
+
+					} catch (NumberFormatException e) {
+
+						//					throw new ImportitException("Das Tippkommando wurde nicht richtig angegeben, so dass die Umformatierung in einen Integer-Wert nicht funktioniert!");
+						return null;
+					}
+
+				} else {
+
+					return null;
 				}
-        		
-        	}else {
-        		
+			}else {
 				return null;
 			}
         	
-        }else {
-			return null;
-		}    
-	}	
+        }   	
 	
 	private Boolean isZelleleer(Sheet sheet, int x, int y) throws ImportitException {
 		// Prüft ob die Zelle leer ist
@@ -440,12 +455,12 @@ public class ExcelImportProcessing {
 		
 	}
 	
-private Integer getgroup(Sheet sheet) throws ImportitException {
+private Integer getdbgroup(Sheet sheet) throws ImportitException {
 		
 //		nach dem Doppelpunkt steht die Datenbankgruppe
 //		leerer String wenn es ein Tippkommando ist
 		
-		String dbgroup = getdbgroup(sheet);
+		String dbgroup = getDbGroupComplete(sheet);
 		String groupString;
 		int doppelpunkt =dbgroup.indexOf(":") + 1;
         
@@ -461,8 +476,8 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
         			return Integer.parseInt(groupString);	
         			
 				} catch (NumberFormatException e) {
-					
-					throw new ImportitException("Die Gruppe wurde nicht richtig angegeben, so dass die Umformatierung in einen Integer-Wert nicht funktioniert!");
+					return null;
+//					throw new ImportitException("Die Gruppe wurde nicht richtig angegeben, so dass die Umformatierung in einen Integer-Wert nicht funktioniert!");
 				
 				}
         		
@@ -478,29 +493,59 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
         }
     }
 
+	private String getdbString(Sheet sheet) throws ImportitException{
+		//		vor dem Doppelpunkt steht die Datenbank
+		//		leerer String wenn es ein Tippkommando ist
+				
+				String dbgroup = getDbGroupComplete(sheet);
+				String dbString;
+				
+				int doppelpunkt =dbgroup.indexOf(":");
+		        
+		        if (doppelpunkt>0){
+		        		return dbgroup.substring(0,doppelpunkt);
+		        	}else {
+		        		return null;
+					}
+		
+	}
+	
+	private String getdbgroupString(Sheet sheet) throws ImportitException{
+//		nach dem Doppelpunkt steht die Datenbankgruppe
+//		leerer String wenn es ein Tippkommando ist
+		
+		String dbgroup = getDbGroupComplete(sheet);
+		String groupString;
+		int doppelpunkt =dbgroup.indexOf(":") + 1;
+        
+        if (doppelpunkt>0)
+     
+        {
+
+        	return dbgroup.substring(doppelpunkt,dbgroup.length());
+        }else {
+        	
+			return  null;
+		}
+	}
+
 	private Integer getdb(Sheet sheet) throws ImportitException {
 		
 	//		vor dem Doppelpunkt steht die Datenbank
 	//		leerer String wenn es ein Tippkommando ist
 			
-			String dbgroup = getdbgroup(sheet);
-			String dbString;
-			
-			int doppelpunkt =dbgroup.indexOf(":");
-	        
-	        if (doppelpunkt>0)
-	     
-	        	{
-	        	dbString = dbgroup.substring(0,doppelpunkt);
+				
+	        	String databaseString = this.dbString;
 	        	
-	        	if (!dbString.isEmpty() && dbString != null ){
+	        	if (!databaseString.isEmpty() && databaseString != null ){
 	        		
 	        		try {
-	        			return Integer.parseInt(dbString);	
+	        			return Integer.parseInt(databaseString);	
 	        			
 					} catch (NumberFormatException e) {
 						
-						throw new ImportitException("Die Gruppe wurde nicht richtig angegeben, so dass die Umformatierung in einen Integer-Wert nicht funktioniert!");
+						return null;
+//						throw new ImportitException("Die Gruppe wurde nicht richtig angegeben, so dass die Umformatierung in einen Integer-Wert nicht funktioniert!");
 					
 					}
 	        		
@@ -510,12 +555,10 @@ private Integer getgroup(Sheet sheet) throws ImportitException {
 				}
 	        	 
 	        
-	        	}else {
-	        		return null;
-	        		}
+	        	
 	        }
 	
-	private String getdbgroup(Sheet sheet) throws ImportitException {
+	private String getDbGroupComplete(Sheet sheet) throws ImportitException {
 	 		
 		
 		return getZellenInhaltString(sheet, 0, 0);

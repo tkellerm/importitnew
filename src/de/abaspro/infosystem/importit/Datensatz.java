@@ -12,7 +12,11 @@ public class Datensatz {
 
 	 private List<DatensatzTabelle> tabellenZeilen = new ArrayList<DatensatzTabelle>();	 
 	 private Integer database;
-	 private Integer group;
+	 private String dbString;
+	 
+	 
+	private Integer group;
+	 private String dbGroupString;
 	 private Integer tippcommand;
 	 private String  importError = "";
 	 private Integer tableStartsAtField;
@@ -433,5 +437,26 @@ public String getValueOfHeadField(String fieldnameart) throws ImportitException 
 	throw new ImportitException("Es wurde das Feld mit dem Namen " + fieldnameart + "in den Kopffeldern nicht gefunden!");
 }
 
+
+public void setDbString(String dbString) {
+	this.dbString = dbString;
+	
+}
+
+
+public void setDbGroupString(String dbgroupString) {
+
+	this.dbGroupString = dbgroupString;
+	
+}
+
+public String getDbString() {
+	return dbString;
+}
+
+
+public String getDbGroupString() {
+	return dbGroupString;
+}
 
 }
