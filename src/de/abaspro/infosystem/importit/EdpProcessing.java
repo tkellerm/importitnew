@@ -164,7 +164,7 @@ public class EdpProcessing {
 				    	if (checkDatensatzStruktur(datensatz)) {
 				    		
 							for (Datensatz datensatzIter : datensatzList) {
-								
+								datensatzIter.copyDatabaseinDatensatz(datensatz);
 //								Alle Abastypen aus dem ersten Datensatz in alle Felder füllen
 								datensatzIter.copyAbasTypInDatensatz(datensatz);
 								
@@ -389,7 +389,6 @@ public class EdpProcessing {
 							if (query.getRecordCount() == 1) {
 							 
 								String dbstring = query.getField("grpDBDescr");
-								
 								dbstring = dbstring.replaceAll("\\(*", "");
 								dbstring = dbstring.replaceAll("\\)*", "");
 								datensatz.setDatenbank(new Integer(dbstring));
