@@ -1299,8 +1299,9 @@ public class EdpProcessing {
 				} else if (datatyp == EDPTools.EDP_DOUBLE) {
 					int fractionDigits = edpeksartinfo.getFractionDigits();
 					int integerDigits = edpeksartinfo.getIntegerDigits();
+					Boolean test = value.equals("0");
 					
-					if (value.length() > 0) {
+					if (value.length() > 0 && !value.equals("0")) {
 						try {
 							BigDecimal bigDecimalValue = new BigDecimal(value);
 							BigDecimal roundBigDValue = bigDecimalValue.setScale(fractionDigits, RoundingMode.HALF_UP);
@@ -1322,7 +1323,25 @@ public class EdpProcessing {
 									+ " konnte nicht in einen BigDezimal-Wert(Zahl mit Nachkommastellen) konvertiert werden");
 						} catch (BadAttributeValueExpException e) {
 							throw new ImportitException("Es wurde ein falscher Übergabeparamter in der Programmierung übergeben", e);
-						}	
+						}
+						
+						String vorkommaStellen;
+						if (value.contains(",")) {
+							String[] stringTeile = value.split(",");
+							vorkommaStellen = stringTeile[0];
+						}else if (value.contains(".")) {
+							String[] stringTeile = value.split(".");
+							vorkommaStellen = stringTeile[0];
+						}else {
+							vorkommaStellen = value;
+						}
+						if (vorkommaStellen.length() > integerDigits) {
+							feld.setError("Der Wert " + value + " hat zu viele Vorkommastellen für den AbasTyp " + feld.getAbasTyp() + " für das Feld " + feld.getName());
+							
+							
+						}
+					
+					
 					}else {
 						
 //						Prüfung macht keinen Sinn bei lerrem Feld und Fehler wäre zu hart
