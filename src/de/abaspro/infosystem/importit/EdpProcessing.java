@@ -27,7 +27,6 @@ import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPFactory;
 import de.abas.ceks.jedp.EDPQuery;
 import de.abas.ceks.jedp.EDPSession;
-import de.abas.ceks.jedp.EDPSessionOptions;
 import de.abas.ceks.jedp.EDPTools;
 import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
@@ -38,10 +37,7 @@ import de.abas.ceks.jedp.StandardEDPSelectionCriteria;
 import de.abas.ceks.jedp.TransactionException;
 import de.abas.ceks.jedp.internal.session.EDPSessionImpl;
 import de.abas.eks.jfop.remote.FOe;
-import de.abas.erp.common.type.enums.EnumDatabase;
 import de.abas.erp.common.type.enums.EnumTypeCommands;
-import de.abas.erp.db.internal.impl.jedp.EDPImplFactory;
-import de.abas.erp.db.internal.impl.jedp.EDPUtil;
 import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.UserTextBuffer;
 

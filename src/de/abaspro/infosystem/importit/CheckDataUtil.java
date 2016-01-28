@@ -1,10 +1,5 @@
 package de.abaspro.infosystem.importit;
 
-import java.util.ArrayList;
-
-
-
-
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.UserTextBuffer;

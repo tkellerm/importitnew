@@ -276,7 +276,7 @@ public class Datensatz {
 		// aus dem übergebenen Datensatz werden die abastypen in alle anghängten Felder kopiert.
 				
 		for (int i = 0; i < this.kopfFelder.size(); i++) {
-			String abasTyp = this.kopfFelder.get(i).getAbasTyp();
+			
 			if (this.kopfFelder.get(i).getAbasTyp().isEmpty()) {
 				this.kopfFelder.get(i).setAbasTyp(datensatz.kopfFelder.get(i).getAbasTyp());	
 			}
