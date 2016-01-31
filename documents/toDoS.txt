@@ -39,5 +39,6 @@ Fehlermeldung wenn Strukturprüfung fehlschlägt.
 
 Datenbank als Text angeben Prio 1 erledigt.
 
+leere Zeilen ignorieren erledigt
 
 Dateiauswahl  mit DV0 Achtung win-Verzeichnis hinzufügen "\" in "/" tauschen 

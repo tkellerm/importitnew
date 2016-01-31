@@ -90,30 +90,33 @@ public class ExcelImportProcessing {
 		Datensatz datensatz = null;
 		for (Integer row = rowstart ; row <= getMaxRow(importSheet2); row++) {
 //			prüfen, ob noch gleicher Datensatz normal Col = 0, wenn key - Feldnummer aus kopfffelder holen angegeben dann
-			
-			if (datensatz==null) {
-				
-//				Es wird die erste Datenzeile in der ExcelTabelle gelesen
-				
-				datensatz = fuellValueInKopfdatensatz(importSheet2 , row);
-				
-				datensatzListtemp.add(datensatz);		
-				
-			}else {
-				
-//				Es wird eine weitere Zeile gelesen
-//				prüfen ob noch gleicher Kopfdatensatz Prüfung über keyfeld(ColNumber)
-				String valueKeyfield = getZellenInhaltString(importSheet2, datensatz.getKeyfield(), row);
-				if ((!datensatz.getValueOfKeyfield().equals(valueKeyfield)) || this.tabellenFelder == null) {
-						//Es fängt ein neuer Datensatz an
-						datensatz = null;
-						datensatz = fuellValueInKopfdatensatz(importSheet2 , row);
-						datensatzListtemp.add(datensatz);
-				}
+//			Wenn das erste Feld in der Zeile leer ist wird die Zeile ignoriert
+			if (!getZellenInhaltString(importSheet2, 0, row).isEmpty()) {
+				if (datensatz==null) {
+					
+//					Es wird die erste Datenzeile in der ExcelTabelle gelesen
+					
+					datensatz = fuellValueInKopfdatensatz(importSheet2 , row);
+					
+					datensatzListtemp.add(datensatz);		
+					
+				}else {
+					
+//					Es wird eine weitere Zeile gelesen
+//					prüfen ob noch gleicher Kopfdatensatz Prüfung über keyfeld(ColNumber)
+					String valueKeyfield = getZellenInhaltString(importSheet2, datensatz.getKeyfield(), row);
+					if ((!datensatz.getValueOfKeyfield().equals(valueKeyfield)) || this.tabellenFelder == null) {
+							//Es fängt ein neuer Datensatz an
+							datensatz = null;
+							datensatz = fuellValueInKopfdatensatz(importSheet2 , row);
+							datensatzListtemp.add(datensatz);
+					}
 
+				}
+//				falls es eine Tabelle gibt muss Sie in jeder Zeile ausgelesen werden
+				readTableData(importSheet2 ,row , datensatz);	
 			}
-//			falls es eine Tabelle gibt muss Sie in jeder Zeile ausgelesen werden
-			readTableData(importSheet2 ,row , datensatz);			
+						
 		}
 		
 		return datensatzListtemp;
