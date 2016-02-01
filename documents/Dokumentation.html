@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Dokumentation für Importit21</title>
+</head>
+<body>
+<h1>Dokumentation für Importit21</h1>
+
+
+Das Infosystem IMPORTIT21 dient zum Import von Daten die als Exceldatei im Format .xls .xlsx vorliegen.
+
+
+<h2>Genereller Ablauf</h2>
+
+<p>Die zu importierenden Daten werden in einer formatierten Excel Datei in
+der Samba Freigabe des Mandanten abgelegt.<br>
+z.b. win/tmp/
+</p>
+
+<ol>
+<li>Das Passwort für den Mandanten eingeben</li> 
+<img src="password.jpg">
+<li>Im Infosystem nun den Pfad und Dateinamen der ExcelDatei im Feld
+"Import Excel File" eintragen.<br>
+z.B.: win/tmp/part.xlsx<br>
+<img src="file.jpg"></li>
+<li>Struktur prüfen
+Es wird die folgenden Angaben in der Excel-Datei geprüft:
+<ul>
+  <li>Gibt es die Datenbank bzw. das Tipkomanndo</li>
+  <li>Prüfung der Variablen, ob Sie in der Datenbank vorhanden sind</li>
+</ul> 
+Es werden alle relevanten Zeilen der Excel-Datei eingelesen
+</li>
+</ol>
+ 
+
+
+Die Excel datei wird nun analysiert und die
+Importoptionen und Anzahl der gefundenen Datensätze sogleich in den
+entsprechenden Feldern dargestellt.
+Nach Eintrag von Server, Mandant, EDP Port und Passwort wird mit dem
+Button "importieren" der Datenimport gestartet. In der Statuszeile wird
+der Fortschritt des Imports angezeigt. Sobald der Import beendet ist, wird
+in der Maske das Ergebnis des Imports in den Feldern "ok" und "Fehler" angezeigt.
+Sollten Fehler beim Import aufgetreten sein, so wird desweiteren die Tabelle
+mit den Fehlerhaften Datensätzen aufgebaut und die EDP Fehlermeldung
+im Klartext angezeigt.
+Durch den Button "Fehleranlayse" in der Tabelle kann pro Datensatz der Import
+der Daten direkt in der Maske nachvollzogen werden. Hierbei wird die entsprechende
+Datenmaske von abas-ERP aufgerufen und die konfigurierten Felder ausgefüllt.
+Diese Funktion steht aber nur für insgesamt maximal 3000 Zeichen(Feldname+Feldinhalt) zur Verfügung.
+
+
+
+Formatierung der Excel Datei
+============================
+Die Excel Datei muß entsprechend der Folgenden Definition formatiert sein:
+
+DB:GR              | TABABSPALTE | Optionscode
+Feldnamen@Schlüssel|Feldnamen|Feldnamen|Feldnamen|
+Daten              |Daten    |Daten    |Daten    |
+Daten              |Daten    |Daten    |Daten    |
+Daten              |Daten    |Daten    |Daten    |
+Daten              |Daten    |Daten    |Daten    |
+
+
+DB:GR :
+In Zeile1/SpalteA  wird die Zieldatenbank und Gruppe der Daten angegeben. Die
+Angabe muß EDP konform sein. Also z.B.: "Teil:Artikel"  oder "Verkauf:Auftrag".
+Desweiteren kann auch ein Tippkommando hier hinterlegt werden, zum Beispiel
+"LBUCHUNG" um Lagerbuchungen durchzuführen. Sobald ein ":" in diesem Feld
+vorhanden ist, so wird die Information als Datenbank:Gruppe interpretiert,
+ansonsten als Tippkommando.
+
+TABABSPALTE:
+In Zeile1/SpalteB wird angegeben ab welcher Spalte Tabellendaten  vorhanden sind.
+Die Zählung beginnt hierbei ab 1. Ist also in der Spalte "E" der erste Wert für
+ein Tabellenfeld vorhanden, so wird diese Zelle mit 5 beschrieben. Sind keine
+Tabellenfelder zu importieren, so muß das Feld mit 0 beschrieben werden.
+
+Optionscode:
+In Zeile1/Spalte C kann ein Optionscode angegeben werden. Dieser belegt die
+Importoptionen des Infosystems vor. Durch anwahl der verschiedenen Importoptionen
+wird im Feld Optionscode die entsprechende Zahl angezeigt die in der Exceltabelle übernommen werden kann.
+Damit kann in eine Exceltabelle mit einer Zusammenstellung von Optionen vorbelegt werden.
+
+Feldnamen:
+In Zeile2 ab SpalteB werden die Feldnamen der abas Felder darunterfolgenden
+Daten deklariert. Das heißt diese Zeile ist zugleich die Schlüsselung der
+Daten zu abas Feldern und zugleich stellt Sie die Reihenfolge des Datenimports
+dar.
+
+Feldnamen@Schlüssel:
+In Zeile2/SpalteA wird beim Import in eine Datenbank der Kopfverweis des
+Datensatzes angegeben. Über den hier definierten Feldnamen wird in der Datenbank
+nach einem schon existierenden Datensatz gesucht. Mit "@" kann für diese
+Datenselektion ein Schlüssel mitgegeben werden. Wird mit einem Tippkommando
+gearbeitet, so ist in dieser Zelle der Feldnamen des ersten zubeschreibenden
+Feldes einzutragen. Eine Selektion findet bei einem Tippkomamndo nicht statt.
+
+Feldname@skip:
+Wird der feststehende Text "@skip" hinter einem Feldnamen erkannt, so wird diese Spalte
+generell beim Import übergangen.
+
+Feldname@modifiable:
+Ein "@modifiable" hinter einem Feldnamen bewirkt eine Prüfung dieser Datenspalte auf Modifizierbarkeit
+bevor der Import erfolgt. Diese Spaltenoption ermöglicht einen Import von Datenspalten abhängig der
+Beschreibbarkeit des Feldes in abas-ERP. So ist das Feld "Maschinengruppe" in einer Stückliste nur
+bei Eintrag eines Arbeitsganges beschreibbar. Ein leeres Datenfeld (z.b. bei einem Artikel in der Stückliste)
+würde aber zugleich auch einen nicht zulässigen Schreibversuch bedeuten.
+
+Feldname@notempty:
+Ein "@notempty" hinter einem Feldnamen bewirkt eine Prüfung auf einen leeren Dateninhalt.
+Ist eine Zelle mit dieser Option nicht gefüllt, so wird nicht importiert.
+Eine leere Zelle ohne diese Option würde ansonsten einen eventuell bestehenden Feldinhalt löschen.
+
+Daten:
+Ab der Zeile3 werden die Daten eingetragen. Die Daten müssen abas konform
+vorhanden sein. Ein "." in einem Datumsfeld bewirkt also den Eintrag des
+Tagesdatums im Datensatz in abas-ERP. Wird ein Datum mit 4 stelliger Jahreszahl
+dargestellt, in abas ist das Datenfeld aber mit stelliger Jahreszahl definiert
+so scheitert der Import.Mehrzeilige Texte werden abas konform behandelt, das heißt
+ein Zeilenvorschub wird mit ";" im Text erreicht.
+
+Felder im Infosystem
+====================
+Zugangsdaten
+------------
+
+    Server: Der Namen oder die IP Adresse des Servers
+   Mandant: Der Mandantenname (Loginname für EDP)
+      Port: Der EDP Port des Mandanten
+  Passwort: Das Login Passwort für den Mandanten
+
+Excel
+-----
+Import Excel File: In dieses Feld wird de Pfad und Dateiname zur Excel Datei
+                   eingetragen. Also z.b. owimp/Kunden.xls Der Pfad muss unterhalb
+                   des Mandanten liegen.
+       Error File: Aus dem Import Excel File wird automatisch ein Dateiname der
+                   entstehenden Error Datei gebildet. Aus owimp/Kunden.xls wird
+                   automatisch owimp/Kundenerror.xls. In diese Datei werden die
+                   Datensätze geschrieben die nich timportiert werden konnten.
+                   Diese Datei kann dann als Wiederaufsetzdatei nach bearbeiten der
+                   Daten verwendet werden. Desweiteren werden die EDP Fehler beim
+                   Import mit in diese Datei geschrieben.
+
+Informationen zur Import Datei
+------------------------------
+ Datenbank: Im Feld Datenbank wird die aus der Exceldatei gelesene Datenbank oder
+            das Tippkommando zur Kontrolle dargestellt.
+    Gruppe: In diesem Feld wird die aus der Exceldatei gelesene Datenbankgruppe
+            zur Kontrolle dargestellt.
+Datensätze: Nach Eintrag einer Excel Datei im Feld "Import Excel File" wird in
+            diesem Feld die Anzahl der zu importierenden Datensätze angezeigt.
+
+
+Importoptionen:
+---------------
+       Datensätze neu anlegen: Mit dieser Option wird keine Datenselektion vor dem
+                               Import durchgeführt. Jeder Datensatz wird neu angelegt.
+             FOP deaktivieren: Beim Import werden  EFOPS in den Zielmasken ausgeschaltet.
+       Mit möglichem Rollback: Der Import wird in einer Transaction druchgeführt. Nach
+                               Import der Daten erscheint ein Menü zur Auswahl zwischen
+                               "Daten speichern" und "Daten nicht speichern". Bevor nun
+                               eine Auswahl getroffen wird können die Importierten Daten
+                               kontrolliert werden.Die Daten sind vorhanden in abas-ERP.
+                               Wird "Daten nicht speichern" gewählt, so wird ein Rollback
+                               des gesamten Imports durchgeführt und damit die
+                               urpsrünglichen Daten wieder hergestellt.
+      Tabellendaten ab Spalte: Dieses Feld wird nach der Analyse der Excel Datei automatisch
+                               gefüllt. Es kann aber noch nachträglich überschrieben werden.
+              Tabelle löschen: Dieser Kenner bewirkt ein Löschen der Tabelle der betroffenen
+                               Datensätze bevor Datenimport beginnt.
+Feld Modifizierbarkeit prüfen: Durch diese Option wird jedes Feld vor Beschreibung mit Daten
+                               auf eine vom abas-ERP kern erlaubte Datenänderung geprüft.
+                               Verbietet der abas-ERP kern eine Datenänderung so wird diese
+                               nicht durchgeführt. Eine Fehlermeldung entsteht dabei nicht
+                  Optionscode: In diesem Feld wird eine eindeutige Zahl anhand der gewählten
+                               Importoptionen angezeigt. Diese Zahl kann in der zu importierenden
+                               Exceltabelle in C1 eingetragen werden. Danach werden beim Laden der
+                               Exceltabelle immer die entsprechenden Importoptionen vorbelegt.
+..
+..
+</body>
+</html>

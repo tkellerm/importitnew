@@ -1299,6 +1299,7 @@ public class EdpProcessing {
 					
 					if (value.length() > 0 && !value.equals("0")) {
 						try {
+							value = value.replaceAll(" ", "");
 							BigDecimal bigDecimalValue = new BigDecimal(value);
 							BigDecimal roundBigDValue = bigDecimalValue.setScale(fractionDigits, RoundingMode.HALF_UP);
 							String roundBigDValueStr = roundBigDValue.toString();
@@ -1321,13 +1322,18 @@ public class EdpProcessing {
 							throw new ImportitException("Es wurde ein falscher Übergabeparamter in der Programmierung übergeben", e);
 						}
 						
-						String vorkommaStellen;
+						String vorkommaStellen = "";
 						if (value.contains(",")) {
 							String[] stringTeile = value.split(",");
-							vorkommaStellen = stringTeile[0];
+							if (stringTeile.length > 0) {
+								vorkommaStellen = stringTeile[0];
+							}
 						}else if (value.contains(".")) {
 							String[] stringTeile = value.split(".");
-							vorkommaStellen = stringTeile[0];
+							if (stringTeile.length > 0) {
+								vorkommaStellen = stringTeile[0];	
+							}
+							
 						}else {
 							vorkommaStellen = value;
 						}
