@@ -539,20 +539,23 @@ private Integer getdbgroup(Sheet sheet) throws ImportitException {
 			
 				
 	        	String databaseString = this.dbString;
-	        	
-	        	if (!databaseString.isEmpty() && databaseString != null ){
-	        		
-	        		try {
-	        			return Integer.parseInt(databaseString);	
-	        			
-					} catch (NumberFormatException e) {
+	        	if (databaseString != null ){
+		        	if (!databaseString.isEmpty() ){
+		        		
+		        		try {
+		        			return Integer.parseInt(databaseString);	
+		        			
+						} catch (NumberFormatException e) {
+							
+							return null;
+	//						throw new ImportitException("Die Gruppe wurde nicht richtig angegeben, so dass die Umformatierung in einen Integer-Wert nicht funktioniert!");
 						
+						}
+		        		
+		        		
+		        	}else {
 						return null;
-//						throw new ImportitException("Die Gruppe wurde nicht richtig angegeben, so dass die Umformatierung in einen Integer-Wert nicht funktioniert!");
-					
 					}
-	        		
-	        		
 	        	}else {
 					return null;
 				}
