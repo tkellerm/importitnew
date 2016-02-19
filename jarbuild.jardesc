@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="Client/projects/importitnew/importitnew21.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/importitnew/jarbuild.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
+        <file path="/importitnew/.classpath"/>
+        <file path="/importitnew/documents/toDoS.txt"/>
+        <file path="/importitnew/documents/Dokumentation.html"/>
+        <file path="/importitnew/documents/file.jpg"/>
+        <folder path="/importitnew/includejar"/>
+        <file path="/importitnew/.gitignore"/>
+        <file path="/importitnew/README.md"/>
+        <file path="/importitnew/.project"/>
+        <javaElement handleIdentifier="=importitnew/src"/>
+        <file path="/importitnew/documents/is.importit21.spx"/>
+        <file path="/importitnew/documents/password.jpg"/>
+    </selectedElements>
+</jardesc>
