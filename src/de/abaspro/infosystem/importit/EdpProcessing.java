@@ -1284,7 +1284,7 @@ public class EdpProcessing {
 						Integer intValue = new Integer(value);
 						Integer valueLength = intValue.toString().length();
 						if (integerDigits < valueLength) {
-							feld.setError("Der Wert " + value + "ist zu Lang");
+							feld.setError("Der Wert " + value + "ist zu groß");
 						}
 					} catch (NumberFormatException e) {
 						feld.setError("Der Wert "
