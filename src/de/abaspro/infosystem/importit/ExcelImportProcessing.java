@@ -269,7 +269,7 @@ public class ExcelImportProcessing {
 						if (!feldInhalt.isEmpty()) {
 							Feld feld = new Feld(feldInhalt, true , col );
 
-//							hänge das Feld an die Kopffelder an
+//							hänge das Feld an die Tabellenfelder an
 							
 							tabellenFelder2.add(feld);	
 						}
