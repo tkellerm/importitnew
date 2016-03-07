@@ -1,16 +1,19 @@
 package de.abaspro.infosystem.importit;
 
-import java.io.FileWriter;
+import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import de.abas.ceks.jedp.TransactionException;
+import sun.dc.DuctusRenderingEngine;
 import de.abas.eks.jfop.annotation.Stateful;
+import de.abas.eks.jfop.remote.FO;
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.erp.api.gui.ButtonSet;
 import de.abas.erp.api.gui.TextBox;
@@ -21,19 +24,21 @@ import de.abas.erp.axi.event.FieldEvent;
 import de.abas.erp.axi.event.ObjectEventHandler;
 import de.abas.erp.axi.event.listener.ButtonListenerAdapter;
 import de.abas.erp.axi.event.listener.FieldListenerAdapter;
+import de.abas.erp.common.AbasException;
 import de.abas.erp.common.type.enums.EnumDialogBox;
-import de.abas.erp.db.SelectableObject;
+import de.abas.erp.db.DbContext;
 import de.abas.erp.db.infosystem.custom.owjava.InfosystemImportit;
 import de.abas.erp.db.infosystem.custom.owjava.InfosystemImportit.Row;
-import de.abas.erp.db.selection.Selection;
+import de.abaspro.utils.file.DirEdit;
 @Stateful
 public class Importit21 extends EventHandler<InfosystemImportit> {
 	
-	ArrayList<Datensatz> datensatzList;
-	EdpProcessing edpProcessing;
+	private ArrayList<Datensatz> datensatzList;
+	private EdpProcessing edpProcessing;
 	private Logger logger = Logger.getLogger(Importit21.class);
 	
-
+	static private String docuVerzStr = "java/projects/importitnew/docu";
+	static private String docuVerzAufrufStr = "win/tmp/docu/";
 	
 	public Importit21() throws IOException {
 		super(InfosystemImportit.class);
@@ -54,6 +59,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	    objectHandler.addListener(InfosystemImportit.META.yoptnofop, new OptionsListener());
 	    objectHandler.addListener(InfosystemImportit.META.yopttransaction, new OptionsListener());
 	    objectHandler.addListener(InfosystemImportit.META.yoptuseenglvars, new OptionsListener());
+	    objectHandler.addListener(InfosystemImportit.META.ydoku, new DokuButtonListener());
 	  }
 	
 	public class OptionsListener extends FieldListenerAdapter<InfosystemImportit> {
@@ -79,7 +85,6 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				showOptions(infosysImportit, datensatzList);
 				
 				dontChangeIfEqual		= infosysImportit.getYoptdontchangeifeq();
-				String t3 = "";
 			}else {
 				TextBox textbox = new TextBox(getContext(), "Fehler", "Es wurde noch kein Datei eingelesen!");
 				textbox.show();
@@ -91,6 +96,62 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 		
 
 	}
+
+		class DokuButtonListener  extends ButtonListenerAdapter<InfosystemImportit> {
+
+		@Override
+		public void after(ButtonEvent<InfosystemImportit> event)
+				throws EventException {
+			super.after(event);
+			ydokuButtonInvoked(event);
+		}
+
+		private void ydokuButtonInvoked(ButtonEvent<InfosystemImportit> event) {
+//		doku-Verzeichnis in win/tmp/ kopieren und danach den Browser öffnen
+			InfosystemImportit infosysImportit = event.getSourceRecord();
+			DbContext dbcontext = getContext();
+			String mandantdir = dbcontext.getEnvironmentVariable("DIR_MANDANTDIR");
+			String sharename = dbcontext.getEnvironmentVariable("SHARENAME");
+			File  docuVerz = new File(mandantdir + "/" + docuVerzStr);
+			File docuVerzAufruf = new File(mandantdir + "/" + docuVerzAufrufStr);
+			try {
+				
+			if (!docuVerzAufruf.exists()) {
+				docuVerzAufruf.mkdirs();
+			}
+			
+				if (docuVerz.exists()) {
+					DirEdit.copyDir(docuVerz, docuVerzAufruf);
+
+					if (docuVerzAufruf.exists()) {
+						String path = docuVerzAufruf.toPath().toString();
+						
+//						file://///cebitmaster40/entw-fepco/owdoku/docu/Dokumentation.html
+						String url = "-FILE " +  docuVerzAufrufStr + "Dokumentation.html";
+						FOe.browser(url);
+					}
+				}
+			} catch (IOException e) {
+				abasExceptionOutput(e);
+			}
+		}
+		
+					
+					
+				
+					
+					
+	}
+
+		
+
+		
+		
+				
+
+		
+
+		
 
 	
 	
@@ -155,7 +216,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 					logger.info("Ende import der Daten");
 				} catch (ImportitException e) {
 					logger.error(e);
-					AbasExceptionOutput(e);
+					abasExceptionOutput(e);
 					}
 				
 				infosysImportit.setYok(getimportitDatasets(datensatzList)); 
@@ -221,7 +282,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				
 			} catch (ImportitException e) {
 				
-				AbasExceptionOutput(e);
+				abasExceptionOutput(e);
 			}
 			TextBox textbox = new TextBox(getContext(), "Fertig", "Datenprüfung abgeschlossen!");
 			textbox.show();
@@ -256,14 +317,14 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 								Row row = infosysImportit.table().appendRow();
 								row.setYsel(datensatz.getValueOfKeyfield());
 								if (datensatz.getAbasId() != null) {
-									row.setString(row.META.ydatensatz, datensatz.getAbasId());
+									row.setString(Row.META.ydatensatz, datensatz.getAbasId());
 								}
 								if (errorReport.isEmpty()) {
 									row.setYicon("icon:ok");
 								}else {
 									row.setYicon("icon:stop");
 									int errorReportlength = errorReport.length();
-									int fieldLength = row.META.ytfehler.getLength();
+									int fieldLength = Row.META.ytfehler.getLength();
 									if (errorReportlength > fieldLength) {
 										row.setYtfehler(errorReport.substring(0, fieldLength));	
 									}else {
@@ -291,7 +352,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 								}else {
 									row.setYicon("icon:stop");
 									int errorReportlength = errorReport.length();
-									int fieldLength = row.META.ytfehler.getLength();
+									int fieldLength = Row.META.ytfehler.getLength();
 									if (errorReportlength > fieldLength) {
 										row.setYtfehler(errorReport.substring(0, fieldLength));	
 									}else {
@@ -318,9 +379,9 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 					}
 				} catch (ImportitException e) {
 
-					AbasExceptionOutput(e);
+					abasExceptionOutput(e);
 				} catch (IOException e) {
-					AbasExceptionOutput(e);
+					abasExceptionOutput(e);
 				}
 			}
 			
@@ -366,7 +427,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				textbox.show();
 				
 			} catch (ImportitException e) {
-				AbasExceptionOutput(e);
+				abasExceptionOutput(e);
 			}	      
 	    }
 
@@ -441,7 +502,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 		}
 	}
 
-	private void AbasExceptionOutput(Exception e){
+	private void abasExceptionOutput(Exception e){
 		TextBox textBox = new TextBox(getContext(), "Fehler", e.toString());
 		textBox.show();
 		

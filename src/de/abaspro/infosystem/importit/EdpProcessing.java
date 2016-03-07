@@ -373,8 +373,7 @@ public class EdpProcessing {
 					try {
 						this.edpSession.setEnumMode(EDPSessionImpl.ENUMMODE_CODE);
 					} catch (InvalidSettingValueException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						logger.error(e1);
 					}
 					EDPQuery query = this.edpSession.createQuery();
 
@@ -451,100 +450,64 @@ public class EdpProcessing {
 	 */
 	private boolean checkListofFeldAndGetabasType(List<Feld> feldListe, Integer database , Integer group,  Boolean inTab , Boolean englVarNames ) throws ImportitException {
 		
-		String varNameVarName = "varName";
-		String varNameVarNameNew = "varNameNew";
-		String varNameVarNameEnglish = "varNameEnglish"; 
-		String varNameVarTypeNew = "varTypeNew";
-		String varNameVarType = "varType";
-		String varNameVarLength = "vitle";
-
 		if (feldListe !=null ) {
-			EDPQuery query;
+			if (!edpSession.isConnected()) {
+				startEdpSession();
+			}
+			logger.info("START Hole Vartab für Datenbank " + database + ":" + group);
+			Vartab vartab = new Vartab(edpSession, database , group);
+			logger.info("ENDE Hole Vartab für Datenbank");
+			closeEdpSession();
+			Boolean fehlergefunden = false;
 			for (Feld feld : feldListe) {
-//				die Suche nach der Variablen wird über einen regulären Ausdruck gesucht . "~/==.{2}variablenname$" 
-//				Der Ausdruck besagt das die ersten 2 Stellen ignoriert werden sollen und der String mit dem Veriablennamen beendet ist
-
-					int recordCount=0;
-					if (englVarNames) {
-//						Bei englischen Variablen soll nur nach den englischen gesucht werden
-						
-						query = getEDPQueryVariable(feld.getName() , database , group , varNameVarNameEnglish , inTab);
-						query.getLastRecord();
-						recordCount = query.getRecordCount();
-						
-					}else {
-						
-//						bei der Suche deutschen Variablenamen wird zunächst nach den "neuen Variablen" (vnname) gesucht
-						query = getEDPQueryVariable(feld.getName() , database , group , varNameVarNameNew , inTab);
-						query.getLastRecord();
-						recordCount = query.getRecordCount();
-						
-//						und wenn es keinen Treffer gab nach dem normalen Feld "vname"
-						
-						if (recordCount == 0) {
-							query = getEDPQueryVariable(feld.getName() , database , group , varNameVarName , inTab);
-							query.getLastRecord();
-							recordCount = query.getRecordCount();
-						}
-						
-					}
-						
-					if (recordCount > 1) {
-						closeEdpSession();
-						throw new ImportitException("Es wurde für die Variable " + feld.getName() + " mehrere Treffer gefunden! \n " );
-					}else if (recordCount == 0) {
-						closeEdpSession();
-						throw new ImportitException("Die Variable " + feld.getName() + " ist nicht in der Vartab V-" + database +"-" + group + " vorhanden! \n " );
-					}else {
-//						Falls der neue Typ gesetzt ist, dann zuerst nach ihm suchen 
-						String abasTyp = query.getField(varNameVarTypeNew);
-						
-						if (abasTyp.isEmpty()) {
-							abasTyp = query.getField(varNameVarType);
-						}
-						feld.setAbasTyp(abasTyp);
-						logger.info("start Feldlänge für Feld " + feld.getName() + " mit abastyp " + abasTyp ); 
-						feld.setAbasFieldLength(getAbasFieldLength(abasTyp));
-					}
+				if (!feld.getOption_skip()) {
+					
 				
+					VartabFeld vartabfeld = null; 
+					if (englVarNames) {
+		//					Checke auf englische Variablennamen					
+						vartabfeld = vartab.checkVartabforEnglVarName(feld.getName());
+						
+					}else {
+		//					Checke auf deutsche Variablennamen	
+						vartabfeld = vartab.checkVartabforGermanVarName(feld.getName());					
+					}
+					
+					if (vartabfeld != null) {
+						feld.setAbasTyp(vartabfeld.getAktivType());
+						logger.trace("Feld " + feld.getName() + " mit abastyp " + vartabfeld.getAktivType() + " gefunden" ); 
+						feld.setAbasFieldLength(getAbasFieldLength(vartabfeld.getVarLength()));
+						
+						
+					}else {
+						String fehlertext = "Das Feld mit dem Namen " + feld.getName() + " wurde in der Vartab nicht gefunden";
+						fehlergefunden = true;
+						feld.setError(fehlertext);
+						logger.error(fehlertext);
+					}
+				}	
 			}
 			
-			return true;
+			if (fehlergefunden) {
+				logger.info("Es wurden nicht alle Felder in der Vartab gefunden!");
+				return false;
+			}else {
+				logger.info("Es wurden alle Felder in der Vartab gefunden!");
+				return true;
+			}
 			
-		}else if (inTab) {
-//			ein leerer Tabellensatz ist erlaubt
-			return true;
-		} else {
-			throw new ImportitException("Die übergebene Feldliste für den Kopf war leer! Das funktioniert nicht");
-		}
-			 
+			}else if (inTab) {
+//				ein leerer Tabellensatz ist erlaubt
+				return true;
+			} else {
+				throw new ImportitException("Die übergebene Feldliste für den Kopf war leer! Das funktioniert nicht");
+			}
+		
+	
 	}
-
-	private EDPQuery getEDPQueryVariable(String feldname, Integer database,
-			Integer group, String suchfeld, Boolean inTab) throws ImportitException {
-		
-		if (!this.edpSession.isConnected()) {
-			startEdpSession();
-		}
-		int aliveFlag = EDPConstants.ALIVEFLAG_BOTH;
-		String[] fieldNames = {"varName" , "varNameNew" , "inTab" , "varType" , "varTypeNew"};
-		String key = "";
-		String tableName = "12:26";
-		
-		EDPQuery query = this.edpSession.createQuery();
-		String krit = "0:grpDBDescr=(" + database.toString() + ");0:grpGrpNo=" + group +    ";" + suchfeld + "~/==\\b[a-z]{2}"  + feldname + "\\b;" + "1:inTab" + "=" + inTab.toString() + ";@englvar=true;@language=en";		
-		
-		try {
-			query.startQuery(tableName, key, krit, true, aliveFlag, true, true, fieldNames, 0, 10000);
-		
-		} catch (InvalidQueryException e) {
-			closeEdpSession();
-			throw new ImportitException( "fehlerhafter Selektionsstring: " + krit , e);
-		}
-		
-		return query;
-	}
-
+	
+	
+	
 	/**
 	 * @param datensatzList
 	 * @throws ImportitException
@@ -812,7 +775,6 @@ public class EdpProcessing {
 	}
 
 	private void writeTippKommandos(Datensatz datensatz, EDPEditor edpEditor) throws ImportitException, CantChangeSettingException, CantSaveException, CantBeginEditException {
-		// TODO Auto-generated method stub
 		edpEditor.beginEditCmd(datensatz.getTippkommando().toString(), "");
 		setEditorOption(datensatz, edpEditor);
 		writeFieldsInEditor(datensatz, edpEditor);
@@ -1005,7 +967,7 @@ public class EdpProcessing {
 			DatensatzTabelle datensatzTabelle, EDPEditor edpEditor , String[] ignoreFields ) throws ImportitException {
 
 		if (edpEditor.isActive()) {
-			EDPEditAction testaction = edpEditor.getEditAction(); 
+//			EDPEditAction testaction = edpEditor.getEditAction(); 
 			if (edpEditor.getEditAction() == EDPEditAction.NEW  ) {	
 	//			Kopffelder schreiben
 				
@@ -1119,14 +1081,10 @@ public class EdpProcessing {
 						 * Fall die option modifiable nicht gesetzt ist, wird eine ImportitExecption abgesetzt
 						 * 
 						 */
-						int dnr = edpEditor.getEditDatabaseNr();
-						int grp = edpEditor.getEditGroupNr();
-						String testfieldval = edpEditor.getFieldVal(rowNumber , feld.getName());
+						
 						if (edpEditor.fieldIsModifiable(rowNumber, feld.getName())) {
 //									beschreibe das Feld 
 							String datafieldval = feld.getValue();
-							
-								String edpfieldval= edpEditor.getFieldVal(rowNumber , feld.getName());
 							
 							if (!(feld.getOption_dontChangeIfEqual() & 
 									edpEditor.getFieldVal(rowNumber, feld.getName()).equals(datafieldval))) {
@@ -1227,148 +1185,161 @@ public class EdpProcessing {
 	
 	private Boolean checkData(Feld feld) throws ImportitException {
 		
-		String[] VERWEIS = {"P" , "ID" , "VP" , "VID"};
-		
 		String value = feld.getValue();
-		
-		logger.debug("checkData Feld " + feld.getName() + " Zeile " + feld.getColNumber() + " AbasTyp " + feld.getAbasTyp() + " Wert "  + value);
-		
-		EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(feld.getAbasTyp());
-		
-		int datatyp = edpeksartinfo.getDataType();
-		if (value != null) {
-			if (!feld.getOption_skip() & !(feld.getOption_notEmpty() & value.isEmpty())) {
-				if (datatyp == EDPTools.EDP_REFERENCE
-						|| datatyp == EDPTools.EDP_ROWREFERENCE) {
-					String edpErpArt = edpeksartinfo.getERPArt();
-					if (edpErpArt.startsWith("V")) {
-						
-						if (edpErpArt.equals("VPK1") 	|| 
-							edpErpArt.equals("VPKS1") 	||
-							edpErpArt.equals("VPKT1") 	) {
-//							Verweis auf Fertigungslistenposition 
-							if (value.startsWith("A ")) {
-//								Es ist ein Arbeitsgang
-								EDPEKSArtInfo edpeksartinfoV = new EDPEKSArtInfo("P7:0");
-								checkVerweisFeld(feld, edpeksartinfoV);								
-							}else {
-//								Es ist ein Artikel, Fertigungsmittel oder Dienstleistung
-								EDPEKSArtInfo edpeksartinfoV = new EDPEKSArtInfo("P2:1.2.5");
-								checkVerweisFeld(feld, edpeksartinfoV);
+//		falls Feld ist mit skip gekennzeichnet, nicht prüfen
+		if (!feld.getOption_skip()) {
+			logger.debug("checkData Feld " + feld.getName() + " Zeile "
+					+ feld.getColNumber() + " AbasTyp " + feld.getAbasTyp()
+					+ " Wert " + value);
+			EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(feld.getAbasTyp());
+			int datatyp = edpeksartinfo.getDataType();
+			if (value != null) {
+				if (!(feld.getOption_notEmpty() & value.isEmpty())) {
+					if (datatyp == EDPTools.EDP_REFERENCE
+							|| datatyp == EDPTools.EDP_ROWREFERENCE) {
+						String edpErpArt = edpeksartinfo.getERPArt();
+						if (edpErpArt.startsWith("V")) {
+
+							if (edpErpArt.equals("VPK1")
+									|| edpErpArt.equals("VPKS1")
+									|| edpErpArt.equals("VPKT1")) {
+								//							Verweis auf Fertigungslistenposition 
+								if (value.startsWith("A ")) {
+									//								Es ist ein Arbeitsgang
+									EDPEKSArtInfo edpeksartinfoV = new EDPEKSArtInfo(
+											"P7:0");
+									checkVerweisFeld(feld, edpeksartinfoV);
+								} else {
+									//								Es ist ein Artikel, Fertigungsmittel oder Dienstleistung
+									EDPEKSArtInfo edpeksartinfoV = new EDPEKSArtInfo(
+											"P2:1.2.5");
+									checkVerweisFeld(feld, edpeksartinfoV);
+								}
+
 							}
-							
+
+							//				Multiverweisfelder außer VPK1
+							//				werden derzeit nicht überprüft.
+
+						} else {
+							//				normales Verweisfeld
+							checkVerweisFeld(feld, edpeksartinfo);
 						}
-						
-						//				Multiverweisfelder außer VPK1
-						//				werden derzeit nicht überprüft.
 
-					} else {
-						//				normales Verweisfeld
-						checkVerweisFeld(feld, edpeksartinfo);
-					}
-
-				} else if (datatyp == EDPTools.EDP_STRING) {
-					Long fieldlength = edpeksartinfo.getMaxLen();
-					Long valueLength = (long) value.length();
-					if (fieldlength < valueLength) {
-						feld.setError("Der Wert " + value + " (" + valueLength
-								+ "Zeichen) ist für das Feld " + feld.getName()
-								+ " mit der Feldlänge " + fieldlength.toString()
-								+ " zu lang ");
-					}
-
-				} else if (datatyp == EDPTools.EDP_INTEGER) {
-					int integerDigits = edpeksartinfo.getIntegerDigits();
-
-					try {
-						Integer intValue = new Integer(value);
-						Integer valueLength = intValue.toString().length();
-						if (integerDigits < valueLength) {
-							feld.setError("Der Wert " + value + "ist zu groß");
+					} else if (datatyp == EDPTools.EDP_STRING) {
+						Long fieldlength = edpeksartinfo.getMaxLen();
+						Long valueLength = (long) value.length();
+						if (fieldlength < valueLength) {
+							feld.setError("Der Wert " + value + " ("
+									+ valueLength
+									+ "Zeichen) ist für das Feld "
+									+ feld.getName() + " mit der Feldlänge "
+									+ fieldlength.toString() + " zu lang ");
 						}
-					} catch (NumberFormatException e) {
-						feld.setError("Der Wert "
-								+ value
-								+ " konnte nicht in einen Integer-Wert konvertiert werden");
-					}
 
-				} else if (datatyp == EDPTools.EDP_DOUBLE) {
-					int fractionDigits = edpeksartinfo.getFractionDigits();
-					int integerDigits = edpeksartinfo.getIntegerDigits();
-					Boolean test = value.equals("0");
-					
-					if (value.length() > 0 && !value.equals("0")) {
+					} else if (datatyp == EDPTools.EDP_INTEGER) {
+						int integerDigits = edpeksartinfo.getIntegerDigits();
+
 						try {
-							value = value.replaceAll(" ", "");
-							BigDecimal bigDecimalValue = new BigDecimal(value);
-							BigDecimal roundBigDValue = bigDecimalValue.setScale(fractionDigits, RoundingMode.HALF_UP);
-							String roundBigDValueStr = roundBigDValue.toString();
-							String compValue = fillvaluewithfractionDigit(value, fractionDigits);
-							
-							if (!roundBigDValueStr.equals(compValue)) {
-								feld.setError("Das Runden auf die geforderten Nachkommastellen ergibt ein falsches Ergebnis org: "
-										+ value
-										+ " Vergleichswert "
-										+ compValue
-										+ " gerundeter Wert :"
-										+ roundBigDValueStr);
+							Integer intValue = new Integer(value);
+							Integer valueLength = intValue.toString().length();
+							if (integerDigits < valueLength) {
+								feld.setError("Der Wert " + value
+										+ "ist zu groß");
 							}
-
 						} catch (NumberFormatException e) {
 							feld.setError("Der Wert "
 									+ value
-									+ " konnte nicht in einen BigDezimal-Wert(Zahl mit Nachkommastellen) konvertiert werden");
-						} catch (BadAttributeValueExpException e) {
-							throw new ImportitException("Es wurde ein falscher Übergabeparamter in der Programmierung übergeben", e);
+									+ " konnte nicht in einen Integer-Wert konvertiert werden");
 						}
-						
-						String vorkommaStellen = "";
-						if (value.contains(",")) {
-							String[] stringTeile = value.split(",");
-							if (stringTeile.length > 0) {
-								vorkommaStellen = stringTeile[0];
-							}
-						}else if (value.contains(".")) {
-							String[] stringTeile = value.split(".");
-							if (stringTeile.length > 0) {
-								vorkommaStellen = stringTeile[0];	
-							}
-							
-						}else {
-							vorkommaStellen = value;
-						}
-						if (vorkommaStellen.length() > integerDigits) {
-							feld.setError("Der Wert " + value + " hat zu viele Vorkommastellen für den AbasTyp " + feld.getAbasTyp() + " für das Feld " + feld.getName());
-							
-							
-						}
-					
-					
-					}else {
-						
-//						Prüfung macht keinen Sinn bei lerrem Feld und Fehler wäre zu hart
-					}
-					
 
-				} else if (datatyp == EDPTools.EDP_DATE) {
-					if (!checkDataDate(feld)) {
-						feld.setError("Der Wert " + value
-								+ " kann nicht in ein Abas-Datum gewandelt werden!");
-					}
+					} else if (datatyp == EDPTools.EDP_DOUBLE) {
+						int fractionDigits = edpeksartinfo.getFractionDigits();
+						int integerDigits = edpeksartinfo.getIntegerDigits();
+						
+						if (value.length() > 0 && !value.equals("0")) {
+							try {
+								value = value.replaceAll(" ", "");
+								BigDecimal bigDecimalValue = new BigDecimal(
+										value);
+								BigDecimal roundBigDValue = bigDecimalValue
+										.setScale(fractionDigits,
+												RoundingMode.HALF_UP);
+								String roundBigDValueStr = roundBigDValue
+										.toString();
+								String compValue = fillvaluewithfractionDigit(
+										value, fractionDigits);
 
-				} else if (datatyp == EDPTools.EDP_DATETIME
-						|| datatyp == EDPTools.EDP_TIME
-						|| datatyp == EDPTools.EDP_WEEK) {
-					if (!checkDataDate(feld)) {
-						feld.setError("Der Wert "
-								+ value
-								+ " kann nicht in ein Abas-Zeitformat gewandelt werden!");
+								if (!roundBigDValueStr.equals(compValue)) {
+									feld.setError("Das Runden auf die geforderten Nachkommastellen ergibt ein falsches Ergebnis org: "
+											+ value
+											+ " Vergleichswert "
+											+ compValue
+											+ " gerundeter Wert :"
+											+ roundBigDValueStr);
+								}
+
+							} catch (NumberFormatException e) {
+								feld.setError("Der Wert "
+										+ value
+										+ " konnte nicht in einen BigDezimal-Wert(Zahl mit Nachkommastellen) konvertiert werden");
+							} catch (BadAttributeValueExpException e) {
+								throw new ImportitException(
+										"Es wurde ein falscher Übergabeparamter in der Programmierung übergeben",
+										e);
+							}
+
+							String vorkommaStellen = "";
+							if (value.contains(",")) {
+								String[] stringTeile = value.split(",");
+								if (stringTeile.length > 0) {
+									vorkommaStellen = stringTeile[0];
+								}
+							} else if (value.contains(".")) {
+								String[] stringTeile = value.split(".");
+								if (stringTeile.length > 0) {
+									vorkommaStellen = stringTeile[0];
+								}
+
+							} else {
+								vorkommaStellen = value;
+							}
+							if (vorkommaStellen.length() > integerDigits) {
+								feld.setError("Der Wert "
+										+ value
+										+ " hat zu viele Vorkommastellen für den AbasTyp "
+										+ feld.getAbasTyp() + " für das Feld "
+										+ feld.getName());
+
+							}
+
+						} else {
+
+							//						Prüfung macht keinen Sinn bei lerrem Feld und Fehler wäre zu hart
+						}
+
+					} else if (datatyp == EDPTools.EDP_DATE) {
+						if (!checkDataDate(feld)) {
+							feld.setError("Der Wert "
+									+ value
+									+ " kann nicht in ein Abas-Datum gewandelt werden!");
+						}
+
+					} else if (datatyp == EDPTools.EDP_DATETIME
+							|| datatyp == EDPTools.EDP_TIME
+							|| datatyp == EDPTools.EDP_WEEK) {
+						if (!checkDataDate(feld)) {
+							feld.setError("Der Wert "
+									+ value
+									+ " kann nicht in ein Abas-Zeitformat gewandelt werden!");
+						}
 					}
 				}
-			}	
-		}else {
-			feld.setError("Der Wert ist null! Das ist nicht erlaubt");
+			} else {
+				feld.setError("Der Wert ist null! Das ist nicht erlaubt");
+			}
 		}
+		
 		
 		if (feld.getError().isEmpty()) {
 			return true;
@@ -1517,11 +1488,10 @@ private EDPQuery getEDPQueryVerweis(String value, Integer database,
 	
 	
 	
-	int aliveFlag = EDPConstants.ALIVEFLAG_ALIVE;
 	String[] fieldNames = {"id" , "nummer"};
-	String key = "";
+	
 	String tableName = "";
-	Boolean inTable;
+	
 	
 //	wenn die Gruppe nicht eindeutig wird eine -1 übergeben
 	
@@ -1530,13 +1500,7 @@ private EDPQuery getEDPQueryVerweis(String value, Integer database,
 	}else {
 		tableName= database.toString() + ":" + group.toString();	
 	}
-//	 tableName = "01";
-//	if (rowNumber > 0) {
-//		inTable = true;
-//	}else {
-//		inTable =false;
-//	}
-	inTable =false;
+	
 	EDPQuery query = this.edpSession.createQuery();
 	String krit = "@noswd="  + value +  ";@englvar=true;@language=en;@database=" +database.toString();		
 	StandardEDPSelectionCriteria criteria = new StandardEDPSelectionCriteria(krit);
@@ -1544,7 +1508,7 @@ private EDPQuery getEDPQueryVerweis(String value, Integer database,
 	edpcriteria.setDatabase(database.toString());
 	
 	try {
-//		query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
+
 		query.startQuery(edpcriteria, fieldNames.toString());
 		
 	} catch (InvalidQueryException e) {

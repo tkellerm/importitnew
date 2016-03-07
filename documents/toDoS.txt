@@ -16,11 +16,11 @@ Ausgabe der verarbeiten Zeilen in der Tabelle
 
 Fehlerhandling implementieren
 
-Logging teilweise 
+Logging erledigt 
 
 Tests schreiben
 
-Dokumentation erstellen
+Dokumentation erstellen teilweise es fehlt das einbinden zum anzeigen der Maske
 
 Sonderbehandlung Kundenartikeleigenschaften erledigt 
 
@@ -41,4 +41,6 @@ Datenbank als Text angeben Prio 1 erledigt.
 
 leere Zeilen ignorieren erledigt
 
-Dateiauswahl  mit DV0 Achtung win-Verzeichnis hinzufügen "\" in "/" tauschen 
+Dateiauswahl  mit DV0 Achtung win-Verzeichnis hinzufügen "\" in "/" tauschen
+
+log-Level direkt aus Maske beeinflussen 
