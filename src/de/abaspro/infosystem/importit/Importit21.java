@@ -24,12 +24,25 @@ import de.abas.erp.axi.event.FieldEvent;
 import de.abas.erp.axi.event.ObjectEventHandler;
 import de.abas.erp.axi.event.listener.ButtonListenerAdapter;
 import de.abas.erp.axi.event.listener.FieldListenerAdapter;
+import de.abas.erp.axi.screen.ScreenControl;
 import de.abas.erp.common.AbasException;
 import de.abas.erp.common.type.enums.EnumDialogBox;
 import de.abas.erp.db.DbContext;
 import de.abas.erp.db.infosystem.custom.owjava.InfosystemImportit;
 import de.abas.erp.db.infosystem.custom.owjava.InfosystemImportit.Row;
+import de.abas.jfop.base.Color;
 import de.abaspro.utils.file.DirEdit;
+
+/**
+ * @author tkellermann
+ * 
+ * Infosystem Importit21 dient zum Importieren von Excel-Dateien 
+ * nach abas
+ * 
+ * 
+ * 
+ */
+
 @Stateful
 public class Importit21 extends EventHandler<InfosystemImportit> {
 	
@@ -60,8 +73,36 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	    objectHandler.addListener(InfosystemImportit.META.yopttransaction, new OptionsListener());
 	    objectHandler.addListener(InfosystemImportit.META.yoptuseenglvars, new OptionsListener());
 	    objectHandler.addListener(InfosystemImportit.META.ydoku, new DokuButtonListener());
+	    objectHandler.addListener(InfosystemImportit.META.ymandant, new MandantListener());
 	  }
 	
+	
+	public class MandantListener extends FieldListenerAdapter<InfosystemImportit> {
+		
+		@Override
+		public void exit(FieldEvent<InfosystemImportit> event)
+				throws EventException {
+			super.exit(event);
+			InfosystemImportit infosysImportit = event.getSourceRecord();
+			String eigenerMandant = infosysImportit.getYeigmandant();
+			ScreenControl screencontrol = getScreenCtrl();
+			Color red = Color.RED;
+			Color black = Color.BLACK;
+			Color white = Color.WHITE;
+			
+			if (!infosysImportit.getYmandant().equals(eigenerMandant)) {
+				screencontrol.setColor(infosysImportit, infosysImportit.META.ymandant, black  , red );
+			}else {
+				screencontrol.setColor(infosysImportit, infosysImportit.META.ymandant, black  , white );
+			}
+			
+		}
+		
+		
+	}
+	
+	
+	 
 	public class OptionsListener extends FieldListenerAdapter<InfosystemImportit> {
 
 		@Override
@@ -143,20 +184,10 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 					
 	}
 
-		
 
-		
-		
-				
-
-		
-
-		
-
-	
 	
 	/**
-		 * @author tkellermann
+		 * 
 		 * 
 		 * Unterklasse für den Start des Datenimports
 		 *
