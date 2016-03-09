@@ -10,17 +10,17 @@ implementierung Tippkomanndos 25.09.2015
 
 Handling im Infosystem 
 
-- Mandantenname einfärben, wenn es nicht dem aktuellen Mandant entspricht.
+- Mandantenname einfärben, wenn es nicht dem aktuellen Mandant entspricht. erledigt
 
-Ausgabe der verarbeiten Zeilen in der Tabelle
+Ausgabe der verarbeiten Zeilen in der Tabelle erledigt
 
-Fehlerhandling implementieren
+Fehlerhandling implementieren erledigt.
 
 Logging erledigt 
 
 Tests schreiben
 
-Dokumentation erstellen teilweise es fehlt das einbinden zum anzeigen der Maske
+Dokumentation erstellen erledigt 
 
 Sonderbehandlung Kundenartikeleigenschaften erledigt 
 

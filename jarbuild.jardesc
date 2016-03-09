@@ -12,15 +12,9 @@
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
         <file path="/importitnew/.classpath"/>
-        <file path="/importitnew/documents/toDoS.txt"/>
-        <file path="/importitnew/documents/Dokumentation.html"/>
-        <file path="/importitnew/documents/file.jpg"/>
-        <folder path="/importitnew/includejar"/>
         <file path="/importitnew/.gitignore"/>
         <file path="/importitnew/README.md"/>
         <file path="/importitnew/.project"/>
         <javaElement handleIdentifier="=importitnew/src"/>
-        <file path="/importitnew/documents/is.importit21.spx"/>
-        <file path="/importitnew/documents/password.jpg"/>
     </selectedElements>
 </jardesc>
