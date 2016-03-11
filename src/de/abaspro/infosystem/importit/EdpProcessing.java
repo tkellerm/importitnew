@@ -23,6 +23,7 @@ import de.abas.ceks.jedp.ConnectionLostException;
 import de.abas.ceks.jedp.EDPConstants;
 import de.abas.ceks.jedp.EDPEKSArtInfo;
 import de.abas.ceks.jedp.EDPEditAction;
+import de.abas.ceks.jedp.EDPEditFieldList;
 import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPFactory;
 import de.abas.ceks.jedp.EDPQuery;
@@ -908,8 +909,18 @@ public class EdpProcessing {
 //			Englische Variablen nutzen
 			if (optionCode.getUseEnglishVariablen()) {
 				edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.ENGLISH);
+				edpEditor.setVariableLanguage(EDPVariableLanguage.ENGLISH);
 			}else {
 				edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.GERMAN);
+				edpEditor.setVariableLanguage(EDPVariableLanguage.GERMAN);
+				EDPVariableLanguage varlang = null;
+				try {
+					varlang = edpEditor.getVariableLanguage();
+				} catch (CantReadSettingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				varlang = varlang;
 			}
 		}
 		
@@ -1081,6 +1092,8 @@ public class EdpProcessing {
 						 * Fall die option modifiable nicht gesetzt ist, wird eine ImportitExecption abgesetzt
 						 * 
 						 */
+						
+					
 						
 						if (edpEditor.fieldIsModifiable(rowNumber, feld.getName())) {
 //									beschreibe das Feld 
