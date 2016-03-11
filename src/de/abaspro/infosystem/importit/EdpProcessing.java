@@ -1245,18 +1245,20 @@ public class EdpProcessing {
 
 					} else if (datatyp == EDPTools.EDP_INTEGER) {
 						int integerDigits = edpeksartinfo.getIntegerDigits();
-
-						try {
-							Integer intValue = new Integer(value);
-							Integer valueLength = intValue.toString().length();
-							if (integerDigits < valueLength) {
-								feld.setError("Der Wert " + value
-										+ "ist zu groß");
+//						nur Prüfen wenn nicht leer oder <> 0
+						if (value.length() > 0 && !value.equals("0")) {
+							try {
+								Integer intValue = new Integer(value);
+								Integer valueLength = intValue.toString().length();
+								if (integerDigits < valueLength) {
+									feld.setError("Der Wert " + value
+											+ "ist zu groß");
+								}
+							} catch (NumberFormatException e) {
+								feld.setError("Der Wert "
+										+ value
+										+ " konnte nicht in einen Integer-Wert konvertiert werden");
 							}
-						} catch (NumberFormatException e) {
-							feld.setError("Der Wert "
-									+ value
-									+ " konnte nicht in einen Integer-Wert konvertiert werden");
 						}
 
 					} else if (datatyp == EDPTools.EDP_DOUBLE) {
@@ -1366,36 +1368,38 @@ public class EdpProcessing {
 		String value = feld.getValue();
 		int databaseNumber = edpeksartinfo.getRefDatabaseNr();
 		int groupNumber = edpeksartinfo.getRefGroupNr();
-
-		try {
-			EDPQuery query = getEDPQueryVerweis(value,
-					databaseNumber, groupNumber,
-					feld.getColNumber());
-			query.getLastRecord();
-			int recordCount = query.getRecordCount();
-			if (recordCount == 0) {
-				feld.setError("Es wurde kein Datensatz für den Verweis "
+//		Die Prüfung soll nur ausgeführt werden wenn value <> "" ist
+		if (!value.isEmpty()) {
+			try {
+				EDPQuery query = getEDPQueryVerweis(value,
+						databaseNumber, groupNumber,
+						feld.getColNumber());
+				query.getLastRecord();
+				int recordCount = query.getRecordCount();
+				if (recordCount == 0) {
+					feld.setError("Es wurde kein Datensatz für den Verweis "
+							+ feld.getAbasTyp()
+							+ "mit dem Wert "
+							+ value + " gefunden!");
+	
+				} else if (recordCount > 1) {
+					feld.setError("Es wurden mehrere Datensätze für den Verweis "
+							+ feld.getAbasTyp()
+							+ "mit dem Wert "
+							+ value + " gefunden!");
+	
+				} else {
+	
+				}
+	
+			} catch (ImportitException e) {
+				feld.setError("Es trat ein Fehler beim Prüfen des Verweises"
 						+ feld.getAbasTyp()
-						+ "mit dem Wert "
-						+ value + " gefunden!");
-
-			} else if (recordCount > 1) {
-				feld.setError("Es wurden mehrere Datensätze für den Verweis "
-						+ feld.getAbasTyp()
-						+ "mit dem Wert "
-						+ value + " gefunden!");
-
-			} else {
-
+						+ " mit dem Wert "
+						+ value
+						+ " auf");
+	
 			}
-
-		} catch (ImportitException e) {
-			feld.setError("Es trat ein Fehler beim Prüfen des Verweises"
-					+ feld.getAbasTyp()
-					+ " mit dem Wert "
-					+ value
-					+ " auf");
-
 		}
 	}
 
