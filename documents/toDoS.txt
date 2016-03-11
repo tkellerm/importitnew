@@ -43,4 +43,6 @@ leere Zeilen ignorieren erledigt
 
 Dateiauswahl  mit DV0 Achtung win-Verzeichnis hinzufügen "\" in "/" tauschen
 
-log-Level direkt aus Maske beeinflussen 
+log-Level direkt aus Maske beeinflussen
+
+Verweisprüfung mit eindeutigem Suchwort : Beispiel L-FP1 und L-FP1-F2 

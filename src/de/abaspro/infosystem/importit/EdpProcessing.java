@@ -913,14 +913,7 @@ public class EdpProcessing {
 			}else {
 				edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.GERMAN);
 				edpEditor.setVariableLanguage(EDPVariableLanguage.GERMAN);
-				EDPVariableLanguage varlang = null;
-				try {
-					varlang = edpEditor.getVariableLanguage();
-				} catch (CantReadSettingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				varlang = varlang;
+
 			}
 		}
 		
