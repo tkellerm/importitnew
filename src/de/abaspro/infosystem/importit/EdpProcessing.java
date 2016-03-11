@@ -36,7 +36,6 @@ import de.abas.ceks.jedp.InvalidSettingValueException;
 import de.abas.ceks.jedp.StandardEDPSelection;
 import de.abas.ceks.jedp.StandardEDPSelectionCriteria;
 import de.abas.ceks.jedp.TransactionException;
-import de.abas.ceks.jedp.internal.session.EDPSessionImpl;
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.erp.common.type.enums.EnumTypeCommands;
 import de.abas.jfop.base.buffer.BufferFactory;
@@ -121,6 +120,11 @@ public class EdpProcessing {
 		sessionAufbauen(this.server, this.port, this.mandant, this.passwort);
 	}
 
+public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitException {
+		
+		sessionAufbauen(this.server, this.port, this.mandant, this.passwort, varlanguage);
+	}
+	
 	public void closeEdpSession(){
 		
 		if (this.edpSession.isConnected()) {
@@ -129,7 +133,19 @@ public class EdpProcessing {
 		
 	}
 	
-	private void sessionAufbauen(String server, int port, String mandant, String passwort) throws ImportitException 
+	private void sessionAufbauen(String server, int port, String mandant, String passwort ) throws ImportitException 
+    { 
+      
+    	  		try {
+    	  			this.edpSession.beginSession(server , port, mandant, passwort, "ImportIt_21");
+    	  		} catch (CantBeginSessionException ex) 
+    	  			{
+    	  			logger.error(ex);
+    	  			throw new ImportitException("FEHLER\n EDP Session kann nicht gestartet werden\n" , ex);
+    	  			}
+    }
+	
+	private void sessionAufbauen(String server, int port, String mandant, String passwort , EDPVariableLanguage varlanguage ) throws ImportitException 
     { 
       
     	  		try {
@@ -140,10 +156,11 @@ public class EdpProcessing {
     	  			throw new ImportitException("FEHLER\n EDP Session kann nicht gestartet werden\n" , ex);
     	  			}
                  
-              this.edpSession.setVariableLanguage(EDPVariableLanguage.ENGLISH);
+              this.edpSession.setVariableLanguage(varlanguage);
         
 	        
     }
+	
 	
 	
 	public void checkDatensatzList(ArrayList<Datensatz> datensatzList) throws ImportitException {
@@ -407,7 +424,7 @@ public class EdpProcessing {
 		if (datensatz.getTippkommando()!=null) {
 //			EDPSession und EPDEditor für dieses Tippkommando öffnen und aus dem Dialog die Datenbank auslesen
 			
-				startEdpSession();
+				startEdpSession(EDPVariableLanguage.ENGLISH);
 				if (this.edpSession != null ) {
 					EDPEditor edpEditor = this.edpSession.createEditor();
 					try {
@@ -454,7 +471,7 @@ public class EdpProcessing {
 		
 		if (feldListe !=null ) {
 			if (!edpSession.isConnected()) {
-				startEdpSession();
+				startEdpSession(EDPVariableLanguage.ENGLISH);
 			}
 			logger.info("START Hole Vartab für Datenbank " + database + ":" + group);
 			Vartab vartab = new Vartab(edpSession, database , group);
@@ -910,10 +927,10 @@ public class EdpProcessing {
 //			Englische Variablen nutzen
 			if (optionCode.getUseEnglishVariablen()) {
 				edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.ENGLISH);
-				edpEditor.setVariableLanguage(EDPVariableLanguage.ENGLISH);
+				
 			}else {
 				edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.GERMAN);
-				edpEditor.setVariableLanguage(EDPVariableLanguage.GERMAN);
+				
 
 			}
 		}
