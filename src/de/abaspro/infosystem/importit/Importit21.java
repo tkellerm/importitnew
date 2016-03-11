@@ -31,6 +31,8 @@ import de.abas.erp.db.DbContext;
 import de.abas.erp.db.infosystem.custom.owjava.InfosystemImportit;
 import de.abas.erp.db.infosystem.custom.owjava.InfosystemImportit.Row;
 import de.abas.jfop.base.Color;
+import de.abas.jfop.base.buffer.BufferFactory;
+import de.abas.jfop.base.buffer.UserTextBuffer;
 import de.abaspro.utils.file.DirEdit;
 
 /**
@@ -151,8 +153,15 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 //		doku-Verzeichnis in win/tmp/ kopieren und danach den Browser öffnen
 			InfosystemImportit infosysImportit = event.getSourceRecord();
 			DbContext dbcontext = getContext();
-			String mandantdir = dbcontext.getEnvironmentVariable("DIR_MANDANTDIR");
-			String sharename = dbcontext.getEnvironmentVariable("SHARENAME");
+			
+//			String mandantdir = dbcontext.getEnvironmentVariable("DIR_MANDANTDIR");
+//			String sharename = dbcontext.getEnvironmentVariable("SHARENAME");
+			
+			UserTextBuffer userTextBuffer = BufferFactory.newInstance(true).getUserTextBuffer();
+			userTextBuffer.defineVar("GL50", "xtmandantdir");
+			FOe.formula("U|xtmandantdir = E|MANDANTDIR");
+			String mandantdir = userTextBuffer.getStringValue("xtmandantdir");
+
 			File  docuVerz = new File(mandantdir + "/" + docuVerzStr);
 			File docuVerzAufruf = new File(mandantdir + "/" + docuVerzAufrufStr);
 			try {

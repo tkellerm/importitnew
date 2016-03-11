@@ -371,8 +371,9 @@ public class EdpProcessing {
 		//			Vartab Tabellenname
 					String tableName = "12:26";
 					Boolean inTable = false;
+					int mode = EDPConstants.ENUMPOS_CODE;
 					try {
-						this.edpSession.setEnumMode(EDPSessionImpl.ENUMMODE_CODE);
+						this.edpSession.setEnumMode(mode);
 					} catch (InvalidSettingValueException e1) {
 						logger.error(e1);
 					}
