@@ -18,6 +18,7 @@ public class Datensatz {
 	private Integer group;
 	 private String dbGroupString;
 	 private Integer tippcommand;
+	 private String tippcommandString;
 	 private String  importError = "";
 	 private Integer tableStartsAtField;
 	 private OptionCode optionCode;
@@ -464,6 +465,19 @@ public String getDbString() {
 
 public String getDbGroupString() {
 	return dbGroupString;
+}
+
+
+
+
+
+public String getTippcommandString() {
+	return tippcommandString;
+}
+
+
+public void setTippcommandString(String tippcommandString) {
+	this.tippcommandString = tippcommandString;
 }
 
 }
