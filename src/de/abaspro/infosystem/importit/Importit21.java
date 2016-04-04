@@ -222,7 +222,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				
 				try {
 					logger.info("Start import der Daten");
-					if (datensatzList!=null) {
+					if (checkDatensatzListNotEmpty()) {
 						if (checkDatensatzListOfTransaction()) {
 							logger.info("Start Transaction");
 							edpProcessing.startTransaction();
@@ -249,7 +249,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 						}
 						
 					}else {
-						TextBox textbox = new TextBox(getContext(), "Fehler", "Bitte die Datei neu einlesen");
+						TextBox textbox = new TextBox(getContext(), "Fehler", "Strukturprüfung wurde nicht durchgeführt!");
 						textbox.show();
 					}
 					
@@ -309,23 +309,29 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 		private void ypruefdatButtonInvoked(
 				ButtonEvent<InfosystemImportit> event) {
 			InfosystemImportit infosysImportit = event.getSourceRecord();
-			try {
-				 
-				if (infosysImportit.getYfehlerstruktur() == 0 ) {
-					edpProcessing.checkDatensatzListValues(datensatzList);
-					infosysImportit.setYok(getimportitDatasets(datensatzList));
-					infosysImportit
-							.setYfehlerdatpruef(geterrorDatasets(datensatzList));
-				}else {
-					throw new ImportitException("Es sind noch Fehler aus der Strukturprüfung vorhanden! Bitte zuerst beheben!");
+			if (checkDatensatzListNotEmpty()) {
+				try {
+					 
+					if (infosysImportit.getYfehlerstruktur() == 0 ) {
+						edpProcessing.checkDatensatzListValues(datensatzList);
+						infosysImportit.setYok(getimportitDatasets(datensatzList));
+						infosysImportit
+								.setYfehlerdatpruef(geterrorDatasets(datensatzList));
+					}else {
+						throw new ImportitException("Es sind noch Fehler aus der Strukturprüfung vorhanden! Bitte zuerst beheben!");
+					}
+					
+				} catch (ImportitException e) {
+					
+					abasExceptionOutput(e);
 				}
-				
-			} catch (ImportitException e) {
-				
-				abasExceptionOutput(e);
+				TextBox textbox = new TextBox(getContext(), "Fertig", "Datenprüfung abgeschlossen!");
+				textbox.show();	
+			}else {
+				TextBox textbox = new TextBox(getContext(), "Fehler", "Strukturprüfung wurde nicht durchgeführt!");
+				textbox.show();
 			}
-			TextBox textbox = new TextBox(getContext(), "Fertig", "Datenprüfung abgeschlossen!");
-			textbox.show();
+			
 		}
 
 	}
@@ -345,77 +351,114 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 			
 			infosysImportit.table().clear();
 				try {
-					for (Datensatz datensatz : datensatzList) {
-						if (datensatz.getTippkommando()== null) {
-							datensatz.createErrorReport();
-							String errorReport = datensatz.getErrorReport();
-							
-//							Alles ausgeben oder wenn yshowonlyerrorline gesetzt nur die fehlerhaften Datensätze
-							
-							if (!(errorReport.isEmpty() & infosysImportit.getYshowonlyerrorline()) || 
-									(!infosysImportit.getYshowonlyerrorline()) ) {
-								Row row = infosysImportit.table().appendRow();
-								row.setYsel(datensatz.getValueOfKeyfield());
-								if (datensatz.getAbasId() != null) {
-									row.setString(Row.META.ydatensatz, datensatz.getAbasId());
-								}
-								if (errorReport.isEmpty()) {
-									row.setYicon("icon:ok");
-								}else {
-									row.setYicon("icon:stop");
-									int errorReportlength = errorReport.length();
-									int fieldLength = Row.META.ytfehler.getLength();
-									if (errorReportlength > fieldLength) {
-										row.setYtfehler(errorReport.substring(0, fieldLength));	
-									}else {
-										row.setYtfehler(errorReport);
+					if (checkDatensatzListNotEmpty()) {
+							for (Datensatz datensatz : datensatzList) {
+								if (datensatz.getTippkommando() == null) {
+									datensatz.createErrorReport();
+									String errorReport = datensatz
+											.getErrorReport();
+
+									//							Alles ausgeben oder wenn yshowonlyerrorline gesetzt nur die fehlerhaften Datensätze
+
+									if (!(errorReport.isEmpty() & infosysImportit
+											.getYshowonlyerrorline())
+											|| (!infosysImportit
+													.getYshowonlyerrorline())) {
+										Row row = infosysImportit.table()
+												.appendRow();
+										row.setYsel(datensatz
+												.getValueOfKeyfield());
+										if (datensatz.getAbasId() != null) {
+											row.setString(Row.META.ydatensatz,
+													datensatz.getAbasId());
+										}
+										if (errorReport.isEmpty()) {
+											row.setYicon("icon:ok");
+										} else {
+											row.setYicon("icon:stop");
+											int errorReportlength = errorReport
+													.length();
+											int fieldLength = Row.META.ytfehler
+													.getLength();
+											if (errorReportlength > fieldLength) {
+												row.setYtfehler(errorReport
+														.substring(0,
+																fieldLength));
+											} else {
+												row.setYtfehler(errorReport);
+											}
+
+											StringReader reader = new StringReader(
+													errorReport);
+											row.setYkomtext(reader);
+										}
 									}
-									
-									StringReader reader = new StringReader(errorReport);
-									row.setYkomtext(reader);
-								}
-							}
-							
-							
-						}else {
-//							Tippkommando
-							datensatz.createErrorReport();
-							String errorReport = datensatz.getErrorReport();
-							if (!(errorReport.isEmpty() & infosysImportit.getYshowonlyerrorline()) || 
-									(!infosysImportit.getYshowonlyerrorline()) ) {
-								Row row = infosysImportit.table().appendRow();
-								
-								row.setYsel("Tippkommando " + datensatz.getTippkommando() + " "  + "Datensatznummer " + datensatzList.indexOf(datensatz));
-								
-								if (errorReport.isEmpty()) {
-									row.setYicon("icon:ok");
-								}else {
-									row.setYicon("icon:stop");
-									int errorReportlength = errorReport.length();
-									int fieldLength = Row.META.ytfehler.getLength();
-									if (errorReportlength > fieldLength) {
-										row.setYtfehler(errorReport.substring(0, fieldLength));	
-									}else {
-										row.setYtfehler(errorReport);
+
+								} else {
+									//							Tippkommando
+									datensatz.createErrorReport();
+									String errorReport = datensatz
+											.getErrorReport();
+									if (!(errorReport.isEmpty() & infosysImportit
+											.getYshowonlyerrorline())
+											|| (!infosysImportit
+													.getYshowonlyerrorline())) {
+										Row row = infosysImportit.table()
+												.appendRow();
+
+										row.setYsel("Tippkommando "
+												+ datensatz.getTippkommando()
+												+ " "
+												+ "Datensatznummer "
+												+ datensatzList
+														.indexOf(datensatz));
+
+										if (errorReport.isEmpty()) {
+											row.setYicon("icon:ok");
+										} else {
+											row.setYicon("icon:stop");
+											int errorReportlength = errorReport
+													.length();
+											int fieldLength = Row.META.ytfehler
+													.getLength();
+											if (errorReportlength > fieldLength) {
+												row.setYtfehler(errorReport
+														.substring(0,
+																fieldLength));
+											} else {
+												row.setYtfehler(errorReport);
+											}
+
+											StringReader reader = new StringReader(
+													errorReport);
+											row.setYkomtext(reader);
+										}
 									}
-									
-									StringReader reader = new StringReader(errorReport);
-									row.setYkomtext(reader);
+
+									//							if (datensatz.getImportError() == null) {
+									//								row.setYicon("icon:ok");
+									//							}else {
+									//								row.setYicon("icon:stop");
+									//								row.setYtfehler(datensatz.getImportError().substring(0, 70));
+									//								StringReader reader = new StringReader(datensatz.getImportError());
+									//								row.setYkomtext(reader);
+									//							}
 								}
+
 							}
-							
-							
-							
-//							if (datensatz.getImportError() == null) {
-//								row.setYicon("icon:ok");
-//							}else {
-//								row.setYicon("icon:stop");
-//								row.setYtfehler(datensatz.getImportError().substring(0, 70));
-//								StringReader reader = new StringReader(datensatz.getImportError());
-//								row.setYkomtext(reader);
-//							}
-						}
 						
+					}else {
+						if (infosysImportit.getYdatafile().isEmpty()) {
+							TextBox textBox = new TextBox(getContext(),
+									"Fehler",
+									"Es wurde  keine Excel-Datei eingetragen.");
+							textBox.show();
+						}else {
+							TextBox textBox = new TextBox(getContext(),
+									"Fehler",
+									"Es wurde für die Excel-Datei noch keine Strukturprüfung durchgeführt.");
+							textBox.show();
+						}
 					}
 				} catch (ImportitException e) {
 
@@ -447,7 +490,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 			infosysImportit.setYfehlerdatpruef(0);
 			infosysImportit.setYfehlerstruktur(0);
 	    	try {
-//	    		prüfe noch ob passwort eingeben wurde 
+//	    		prüfe noch ob passwort eingeben wurde  
 	    		logger.info("Start Excelproccessing");
 				ExcelImportProcessing excelProcessing = new ExcelImportProcessing(infosysImportit.getYdatafile());
 				datensatzList = excelProcessing.getDatensatzList();
@@ -476,32 +519,51 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	
 	private int geterrorDatasets(ArrayList<Datensatz> datensatzList2) {
 		int numberOfError = 0;
-		for (Datensatz datensatz : datensatzList2) {
-			datensatz.createErrorReport(); 
-			String error = datensatz.getErrorReport();
-			if (error != null) {
-				if (!error.isEmpty()) {
-					numberOfError++;
+		if (checkDatensatzListNotEmpty()) {
+			for (Datensatz datensatz : datensatzList2) {
+				datensatz.createErrorReport();
+				String error = datensatz.getErrorReport();
+				if (error != null) {
+					if (!error.isEmpty()) {
+						numberOfError++;
+					}
 				}
 			}
 		}
 		return numberOfError;
 	}
 
-	private int getimportitDatasets(ArrayList<Datensatz> datensatzList2) {
-		int numberOfOk = 0;
-		for (Datensatz datensatz : datensatzList2) {
-			datensatz.createErrorReport();
-			String error = datensatz.getErrorReport();
-			if (error != null) {
-				if (error.isEmpty()) {
-					numberOfOk++;
-				}
-			}else {
-				numberOfOk++;
+	/**
+	 * Überprüft ob die Datensatzliste gefüllt ist.
+	 * 
+	 * @return true wenn Datesatz List gefüllt ist.
+	 */
+	private boolean checkDatensatzListNotEmpty() {
+		
+		if (datensatzList != null) {
+			if (datensatzList.size() > 0) {
+				return true;
 			}
 		}
-		
+		return false;	
+			
+	}
+
+	private int getimportitDatasets(ArrayList<Datensatz> datensatzList2) {
+		int numberOfOk = 0;
+		if (checkDatensatzListNotEmpty()) {
+			for (Datensatz datensatz : datensatzList2) {
+				datensatz.createErrorReport();
+				String error = datensatz.getErrorReport();
+				if (error != null) {
+					if (error.isEmpty()) {
+						numberOfOk++;
+					}
+				} else {
+					numberOfOk++;
+				}
+			}
+		}
 		return numberOfOk;
 	}
 
