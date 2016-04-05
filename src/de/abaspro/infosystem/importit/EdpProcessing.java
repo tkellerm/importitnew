@@ -39,6 +39,7 @@ import de.abas.ceks.jedp.TransactionException;
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.erp.common.type.enums.EnumTypeCommands;
 import de.abas.jfop.base.buffer.BufferFactory;
+import de.abas.jfop.base.buffer.GlobalTextBuffer;
 import de.abas.jfop.base.buffer.UserTextBuffer;
 
 public class EdpProcessing {
@@ -283,14 +284,23 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	private boolean checkDBorEditorCommdands(Datensatz datensatz) {
 		
 		Boolean gefunden = false ;
+		
+		
+		if (datensatz.getTippkommando()==null && datensatz.getTippcommandString()!=null) {
+			
+			datensatz.setTippkommando(checkTippCommandString(datensatz.getTippcommandString()));
+			
+		}
 		if (datensatz.getTippkommando()!=null && datensatz.getDatenbank() == null) {
 //		Überprüfung der Tipkkommandos
 			
 			EnumTypeCommands[] typeCommands = EnumTypeCommands.values();
+			
 			for (EnumTypeCommands enumTypeCommands : typeCommands) {
 				if (datensatz.getTippkommando() == enumTypeCommands.getCode()) {
 					gefunden = true;
 				}
+				
 			}
 			if (gefunden) {
 //				datenbank für Tipkkommando in Datensatz eintragen
@@ -311,6 +321,74 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		
 		
 		return gefunden;
+	}
+
+		
+	
+
+	private Integer checkTippCommandString(String tippcommandString) {
+		
+		Integer tippCommandCode = null;
+		
+		Aufzaehlung aufzaehlung = fuellAufzaehlung();
+		
+		if (aufzaehlung.getListOfAufzaehlungItem().size() > 0) {
+			AufzaehlungItem aufzaehlungItem = aufzaehlung.searchItem(tippcommandString);
+			tippCommandCode =  aufzaehlungItem.getNumber();
+		}
+		
+		
+		return tippCommandCode;
+	}
+
+	private Aufzaehlung fuellAufzaehlung() {
+		
+
+		Aufzaehlung aufzaehlung = new Aufzaehlung();
+		ArrayList<AufzaehlungItem> listAufzaehlung = aufzaehlung.getListOfAufzaehlungItem();
+		
+		BufferFactory bufferFactory = BufferFactory.newInstance(true);
+		GlobalTextBuffer globalTextbuffer = bufferFactory.getGlobalTextBuffer();
+		UserTextBuffer userTextBuffer = bufferFactory.getUserTextBuffer();
+		int maxkkomnam = globalTextbuffer.getIntegerValue("cmdNameMax");	
+		for (Integer i = 0; i < maxkkomnam; i++) {
+			
+			String varnameNamebspr = "xtnamebspr";
+			String varnameNameNeutral = "xtnameneutral";
+			String varnameAufzaehlung = "xtaufzaehlung";
+			String namebspr;
+			String nameNeutral;
+			Integer nummer;
+			
+			
+			if (!userTextBuffer.isVarDefined(varnameNamebspr)) {
+				userTextBuffer.defineVar("Text", varnameNamebspr);
+			}
+			if (!userTextBuffer.isVarDefined(varnameNameNeutral)) {
+				userTextBuffer.defineVar("Text", varnameNameNeutral);
+			}
+			
+			if (!userTextBuffer.isVarDefined(varnameAufzaehlung)) {
+				userTextBuffer.defineVar("A198", varnameAufzaehlung);
+			}
+			
+			
+//			userTextBuffer.setValue(varnameAufzaehlung, i);
+			FOe.assign("U|" + varnameAufzaehlung + " = \"(" + i + ")\"" );
+			Boolean mehr = globalTextbuffer.getBooleanValue("success");		
+			if (mehr) {
+				nummer  = i;
+				FOe.formula("U|" + varnameNameNeutral + " = 'U|" + varnameAufzaehlung + "(L=\":\")'" );
+				nameNeutral = userTextBuffer.getStringValue(varnameNameNeutral);
+				namebspr = globalTextbuffer.getStringValue("cmdName" + i);				
+				AufzaehlungItem aufzaehlungsitem = new AufzaehlungItem(nummer, namebspr, nameNeutral);
+				listAufzaehlung.add(aufzaehlungsitem);
+				
+			}
+
+		}
+		
+		return aufzaehlung;
 	}
 
 	private Boolean checkDatabaseName(Datensatz datensatz) {
@@ -963,17 +1041,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			if (tabellenZeilen !=null && edpEditor.hasTablePart()) {
 				for (DatensatzTabelle datensatzTabelle : tabellenZeilen) {
 					Integer rowNumbervorher = edpEditor.getRowCount();
-					try {
-						if (rowNumbervorher == 0) {
-							edpEditor.insertRow(1);
-						}else {
-							edpEditor.insertRow(rowNumbervorher + 1);	
-						}
-						
-					} catch (InvalidRowOperationException e) {
-						logger.error(e);
-						throw new ImportitException("Die Zeilen konnten nicht eingefügt werden!" ,e );
-					}
+					insertRow(datensatz, edpEditor, rowNumbervorher);
 					Integer rowNumber = edpEditor.getCurrentRow();
 					ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
 					for (Feld feld : tabellenFelder) {
@@ -1004,17 +1072,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	
 				if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
 					Integer rowNumbervorher = edpEditor.getRowCount();
-						try {
-							if (rowNumbervorher == 0) {
-								edpEditor.insertRow(1);
-							}else {
-								edpEditor.insertRow(rowNumbervorher + 1);	
-							}
-							
-						} catch (InvalidRowOperationException e) {
-							logger.error(e);
-							throw new ImportitException("Die Zeilen konnten nicht eingefügt werden!" ,e );
-						}
+						insertRow(datensatz, edpEditor, rowNumbervorher);
 						Integer rowNumber = edpEditor.getCurrentRow();
 						ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
 						for (Feld feld : tabellenFelder) {
@@ -1023,6 +1081,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 						}
 					
 				}				
+				
 			}else if (edpEditor.getEditAction() == EDPEditAction.UPDATE) {
 //				Kopffelder schreiben
 				List<Feld> kopfFelder = datensatz.getKopfFelder();
@@ -1048,6 +1107,24 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		}	
 		
 	}
+
+	private void insertRow(Datensatz datensatz, EDPEditor edpEditor,
+			Integer rowNumbervorher) throws ImportitException {
+		try {
+			if (rowNumbervorher == 0) {
+				edpEditor.insertRow(1);
+			}else {
+				if (( datensatz.getTippkommando() != null && rowNumbervorher > 1) || (datensatz.getTippkommando() == null) ) {
+					edpEditor.insertRow(rowNumbervorher + 1);
+				}
+					
+			}
+			
+		} catch (InvalidRowOperationException e) {
+			logger.error(e);
+			throw new ImportitException("Die Zeilen konnten nicht eingefügt werden!" ,e );
+		}
+	}
 	
 	/**
 	 * Prüfen, ob das @param feld in dem Array
@@ -1064,6 +1141,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		}
 		return true;
 	}
+	
 	/**
 	 * @param datensatz
 	 * @param edpEditor
