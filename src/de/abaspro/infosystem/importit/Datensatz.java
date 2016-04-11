@@ -482,6 +482,7 @@ public void setTippcommandString(String tippcommandString) {
 }
 
 
+
 public Boolean getIsimportiert() {
 	return isimportiert;
 }

@@ -42,6 +42,7 @@ import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.GlobalTextBuffer;
 import de.abas.jfop.base.buffer.UserTextBuffer;
 
+
 public class EdpProcessing {
 
 	private String server;
@@ -1053,6 +1054,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 					Integer rowNumbervorher = edpEditor.getRowCount();
 					Integer rowNumber = insertRow(datensatz, edpEditor, rowNumbervorher);
 					
+
 					ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
 					for (Feld feld : tabellenFelder) {
 						writeField(datensatz, feld, edpEditor, rowNumber);
@@ -1084,6 +1086,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 					Integer rowNumbervorher = edpEditor.getRowCount();
 						Integer rowNumber = insertRow(datensatz, edpEditor, rowNumbervorher);
 						
+
 						ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
 						for (Feld feld : tabellenFelder) {
 							writeField(datensatz, feld, edpEditor, rowNumber);
@@ -1118,6 +1121,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		
 	}
 
+
 	private Integer insertRow(Datensatz datensatz, EDPEditor edpEditor,
 			Integer rowNumbervorher) throws ImportitException {
 		try {
@@ -1131,6 +1135,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 					return newRowNumber;
 				}else {
 					return rowNumbervorher;
+
 				}
 					
 			}

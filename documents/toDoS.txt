@@ -45,4 +45,8 @@ Dateiauswahl  mit DV0 Achtung win-Verzeichnis hinzufügen "\" in "/" tauschen
 
 log-Level direkt aus Maske beeinflussen
 
-Verweisprüfung mit eindeutigem Suchwort : Beispiel L-FP1 und L-FP1-F2 
+Verweisprüfung mit eindeutigem Suchwort : Beispiel L-FP1 und L-FP1-F2
+
+Bedienung sicher machen -> Reihenfolge sicherstellen.  
+
+owfw7

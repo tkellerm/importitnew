@@ -3,17 +3,12 @@ package de.abaspro.infosystem.importit;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import sun.dc.DuctusRenderingEngine;
 import de.abas.eks.jfop.annotation.Stateful;
-import de.abas.eks.jfop.remote.FO;
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.erp.api.gui.ButtonSet;
 import de.abas.erp.api.gui.TextBox;
@@ -25,7 +20,6 @@ import de.abas.erp.axi.event.ObjectEventHandler;
 import de.abas.erp.axi.event.listener.ButtonListenerAdapter;
 import de.abas.erp.axi.event.listener.FieldListenerAdapter;
 import de.abas.erp.axi.screen.ScreenControl;
-import de.abas.erp.common.AbasException;
 import de.abas.erp.common.type.enums.EnumDialogBox;
 import de.abas.erp.db.DbContext;
 import de.abas.erp.db.infosystem.custom.owjava.InfosystemImportit;
@@ -405,15 +399,11 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 								Row row = infosysImportit.table().appendRow();
 								
 								row.setYsel("Tippkommando " + datensatz.getTippkommando() + " "  + "Datensatznummer " + datensatzList.indexOf(datensatz));
-								row.setYimportiert(datensatz.getIsimportiert());
+								
 								if (errorReport.isEmpty()) {
 									row.setYicon("icon:ok");
 								}else {
-									if (!row.getYimportiert()) {
-										row.setYicon("icon:stop");
-									}else {
-										row.setYicon("icon:attention");
-									}
+									row.setYicon("icon:stop");
 									int errorReportlength = errorReport.length();
 									int fieldLength = Row.META.ytfehler.getLength();
 									if (errorReportlength > fieldLength) {
