@@ -261,6 +261,11 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				
 				infosysImportit.setYok(getimportitDatasets(datensatzList)); 
 				infosysImportit.setYfehler(geterrorDatasets(datensatzList));
+				if (infosysImportit.getYfehler() == 0) {
+					infosysImportit.setYstatus("Import erfolgreich");
+				}else {
+					infosysImportit.setYstatus("Import fehlerhaft");
+				}
 				
 				
 			}
@@ -324,6 +329,12 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				
 				abasExceptionOutput(e);
 			}
+			if (infosysImportit.getYfehlerdatpruef() == 0) {
+				infosysImportit.setYstatus("Datenprüfung erfolgreich");
+			}else {
+				infosysImportit.setYstatus("Datenprüfung fehlerhaft");
+			}
+			
 			TextBox textbox = new TextBox(getContext(), "Fertig", "Datenprüfung abgeschlossen!");
 			textbox.show();
 		}
@@ -359,10 +370,18 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 								if (datensatz.getAbasId() != null) {
 									row.setString(Row.META.ydatensatz, datensatz.getAbasId());
 								}
+								row.setYimportiert(datensatz.getIsimportiert());
+								
 								if (errorReport.isEmpty()) {
 									row.setYicon("icon:ok");
 								}else {
-									row.setYicon("icon:stop");
+									
+									if (!row.getYimportiert()) {
+										row.setYicon("icon:stop");
+									}else {
+										row.setYicon("icon:attention");
+									}
+									row.setYfehlerda(true);
 									int errorReportlength = errorReport.length();
 									int fieldLength = Row.META.ytfehler.getLength();
 									if (errorReportlength > fieldLength) {
@@ -386,11 +405,15 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 								Row row = infosysImportit.table().appendRow();
 								
 								row.setYsel("Tippkommando " + datensatz.getTippkommando() + " "  + "Datensatznummer " + datensatzList.indexOf(datensatz));
-								
+								row.setYimportiert(datensatz.getIsimportiert());
 								if (errorReport.isEmpty()) {
 									row.setYicon("icon:ok");
 								}else {
-									row.setYicon("icon:stop");
+									if (!row.getYimportiert()) {
+										row.setYicon("icon:stop");
+									}else {
+										row.setYicon("icon:attention");
+									}
 									int errorReportlength = errorReport.length();
 									int fieldLength = Row.META.ytfehler.getLength();
 									if (errorReportlength > fieldLength) {
@@ -462,7 +485,11 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				
 				showDatenbankInfos(infosysImportit , datensatzList);
 				showOptions(infosysImportit , datensatzList);
-				
+				if (infosysImportit.getYfehlerstruktur() == 0) {
+					infosysImportit.setYstatus("Strukturprüfung durchgelaufen");
+				}else {
+					infosysImportit.setYstatus("Strukturprüfung fehlerhaft");
+				}
 				TextBox textbox = new TextBox(getContext(), "Fertig", "Strukturprüfung abgeschlossen!");
 				textbox.show();
 				

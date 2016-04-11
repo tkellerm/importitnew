@@ -15,9 +15,10 @@ public class Datensatz {
 	 private String dbString;
 	 
 	 
-	private Integer group;
+	 private Integer group;
 	 private String dbGroupString;
 	 private Integer tippcommand;
+	 private String tippcommandString;
 	 private String  importError = "";
 	 private Integer tableStartsAtField;
 	 private OptionCode optionCode;
@@ -25,6 +26,7 @@ public class Datensatz {
 	 private String abasId;
 	 private String errorReport = "";
 	 private String errordebug = "";
+	 private Boolean isimportiert = false;
 	 
 	 private final static Logger log = Logger.getLogger( Importit21.class);
 
@@ -464,6 +466,29 @@ public String getDbString() {
 
 public String getDbGroupString() {
 	return dbGroupString;
+}
+
+
+
+
+
+public String getTippcommandString() {
+	return tippcommandString;
+}
+
+
+public void setTippcommandString(String tippcommandString) {
+	this.tippcommandString = tippcommandString;
+}
+
+
+public Boolean getIsimportiert() {
+	return isimportiert;
+}
+
+
+public void setIsimportiert(Boolean isimportiert) {
+	this.isimportiert = isimportiert;
 }
 
 }

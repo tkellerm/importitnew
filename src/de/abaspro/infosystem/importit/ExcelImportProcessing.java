@@ -187,6 +187,7 @@ public class ExcelImportProcessing {
 		datensatz.setGruppe(this.gruppe);
 		datensatz.setDbGroupString(this.dbgroupString);
 		datensatz.setTippkommando(this.tippkommando);
+		datensatz.setTippcommandString(this.tippkommandoString);
 		datensatz.setOptionCode(this.optionCode);
 		datensatz.setTableStartsAtField(this.tabelleAbFeld);
 		
@@ -356,6 +357,7 @@ public class ExcelImportProcessing {
 			this.optionCode        = new OptionCode(getOptionCodeFromSheet(sheet));
 			this.anzahlDatensaetze = getAnzDatenzeilen(this.importSheet);
 			
+
 			}catch (NumberFormatException e){
 				throw new ImportitException("Es war die Datenbank bzw. das Tippkommando im falschen Format angegeben!");
 			}
@@ -572,13 +574,19 @@ private Integer getdbgroup(Sheet sheet) throws ImportitException {
 	}
 	
 	private Integer getTabelleab(Sheet sheet) throws ImportitException {
-		
+		Integer tabAbFeld = 0;
 		try{
-		Integer tabAbFeld = Integer.parseInt(getZellenInhaltString(sheet, 1, 0));
-//		Da in Poi die erste Spalte mit 0 zählt muss der Wert 1 abgezogen werden
-		if (tabAbFeld > 1) {
-			tabAbFeld = tabAbFeld - 1;
-		}
+			String zelleninhalt = getZellenInhaltString(sheet, 1, 0);
+			if (zelleninhalt.length() > 0) {
+				tabAbFeld = Integer.parseInt(zelleninhalt);
+//				Da in Poi die erste Spalte mit 0 zählt muss der Wert 1 abgezogen werden
+				if (tabAbFeld > 1) {
+					tabAbFeld = tabAbFeld - 1;
+				}else {
+					tabAbFeld = 0;
+				}
+			}
+		
 		 
 		return tabAbFeld;
 		}catch (NumberFormatException e) {
