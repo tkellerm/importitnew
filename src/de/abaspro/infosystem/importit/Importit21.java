@@ -3,17 +3,12 @@ package de.abaspro.infosystem.importit;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import sun.dc.DuctusRenderingEngine;
 import de.abas.eks.jfop.annotation.Stateful;
-import de.abas.eks.jfop.remote.FO;
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.erp.api.gui.ButtonSet;
 import de.abas.erp.api.gui.TextBox;
@@ -25,7 +20,6 @@ import de.abas.erp.axi.event.ObjectEventHandler;
 import de.abas.erp.axi.event.listener.ButtonListenerAdapter;
 import de.abas.erp.axi.event.listener.FieldListenerAdapter;
 import de.abas.erp.axi.screen.ScreenControl;
-import de.abas.erp.common.AbasException;
 import de.abas.erp.common.type.enums.EnumDialogBox;
 import de.abas.erp.db.DbContext;
 import de.abas.erp.db.infosystem.custom.owjava.InfosystemImportit;
@@ -174,7 +168,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 					DirEdit.copyDir(docuVerz, docuVerzAufruf);
 
 					if (docuVerzAufruf.exists()) {
-						String path = docuVerzAufruf.toPath().toString();
+						String path = docuVerzAufruf.getPath().toString();
 						
 //						file://///cebitmaster40/entw-fepco/owdoku/docu/Dokumentation.html
 						String url = "-FILE " +  docuVerzAufrufStr + "Dokumentation.html";
