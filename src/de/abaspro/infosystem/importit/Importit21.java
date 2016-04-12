@@ -548,13 +548,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 		int numberOfOk = 0;
 		if (checkDatensatzListNotEmpty()) {
 			for (Datensatz datensatz : datensatzList2) {
-				datensatz.createErrorReport();
-				String error = datensatz.getErrorReport();
-				if (error != null) {
-					if (error.isEmpty()) {
-						numberOfOk++;
-					}
-				} else {
+				if (datensatz.getIsimportiert()) {
 					numberOfOk++;
 				}
 			}
