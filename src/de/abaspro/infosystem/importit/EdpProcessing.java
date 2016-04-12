@@ -35,7 +35,6 @@ import de.abas.ceks.jedp.InvalidSettingValueException;
 import de.abas.ceks.jedp.StandardEDPSelection;
 import de.abas.ceks.jedp.StandardEDPSelectionCriteria;
 import de.abas.ceks.jedp.TransactionException;
-
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.erp.common.type.enums.EnumTypeCommands;
 import de.abas.jfop.base.buffer.BufferFactory;
@@ -709,8 +708,9 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 
 	private void writedatabaseKundenArtikeleigenschaften(Datensatz datensatz,
 			EDPEditor edpEditor) throws ImportitException, InvalidQueryException, CantChangeSettingException, CantBeginEditException, InvalidRowOperationException, CantSaveException, CantReadSettingException {
-		
-			String[] varnames = checkDatensatzKundenartikeleigenschaften(datensatz);
+			
+		datensatz.setIsimportiert(false);
+		String[] varnames = checkDatensatzKundenartikeleigenschaften(datensatz);
 		if (varnames.length == 2) {
 			
 //			Datenbank auf 2 und Gruppe auf 6 setzen
@@ -768,6 +768,9 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 						final String[] IgnoreFieldNames = {"art" , "artikel" , "product", "kl" , "custVendor" };
 						writeFieldsInEditor(datensatz,datensatzTabelle, edpEditor, IgnoreFieldNames );
 						edpEditor.endEditSave();
+						
+						datensatz.setIsimportiert(true);
+						
 						edpSession.loggingOff();
 						recordCount = getQueryTotalHits(krit,key , datensatz, edpQuery);
 						if (recordCount == 0) {
@@ -873,10 +876,12 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	}
 
 	private void writeTippKommandos(Datensatz datensatz, EDPEditor edpEditor) throws ImportitException, CantChangeSettingException, CantSaveException, CantBeginEditException {
+		datensatz.setIsimportiert(false);
 		edpEditor.beginEditCmd(datensatz.getTippkommando().toString(), "");
 		setEditorOption(datensatz, edpEditor);
 		writeFieldsInEditor(datensatz, edpEditor);
 		edpEditor.endEditSave();
+		datensatz.setIsimportiert(true);
 	}
 
 	/**
@@ -895,6 +900,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			throws CantBeginEditException, CantChangeSettingException,
 			ImportitException, CantSaveException, InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException, InvalidRowOperationException {
 		
+		datensatz.setIsimportiert(false);
 		if (datensatz.getOptionCode().getAlwaysNew()) {
 			setEditorOption(datensatz, edpEditor);
 			logger.info("Editor starten Always NEW " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString());
@@ -906,6 +912,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			logger.info("Editor save Always NEW " + datensatz.getDatenbank().toString() + ":" + datensatz.getGruppe().toString() + " ID :" + abasId);
 			datensatz.setAbasId(abasId);
 			edpEditor.endEditSave();
+			datensatz.setIsimportiert(true);
 			
 		} else {
 
@@ -920,6 +927,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			if (key == null) {
 				key = "";
 			}
+			
 			String krit = "";
 			//				datensatz.getOptionCode().getUseEnglishVariablen()
 			if (datensatz.getOptionCode().getUseEnglishVariablen()) {
@@ -965,6 +973,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 				
 				datensatz.setAbasId(abasId);
 				edpEditor.endEditSave();
+				datensatz.setIsimportiert(true);
 			} else {
 
 				datensatz
@@ -1042,8 +1051,9 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			if (tabellenZeilen !=null && edpEditor.hasTablePart()) {
 				for (DatensatzTabelle datensatzTabelle : tabellenZeilen) {
 					Integer rowNumbervorher = edpEditor.getRowCount();
-					insertRow(datensatz, edpEditor, rowNumbervorher);
-					Integer rowNumber = edpEditor.getCurrentRow();
+					Integer rowNumber = insertRow(datensatz, edpEditor, rowNumbervorher);
+					
+
 					ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
 					for (Feld feld : tabellenFelder) {
 						writeField(datensatz, feld, edpEditor, rowNumber);
@@ -1073,8 +1083,9 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	
 				if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
 					Integer rowNumbervorher = edpEditor.getRowCount();
-						insertRow(datensatz, edpEditor, rowNumbervorher);
-						Integer rowNumber = edpEditor.getCurrentRow();
+						Integer rowNumber = insertRow(datensatz, edpEditor, rowNumbervorher);
+						
+
 						ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
 						for (Feld feld : tabellenFelder) {
 							writeField(datensatz, feld, edpEditor, rowNumber);
@@ -1109,14 +1120,21 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		
 	}
 
-	private void insertRow(Datensatz datensatz, EDPEditor edpEditor,
+
+	private Integer insertRow(Datensatz datensatz, EDPEditor edpEditor,
 			Integer rowNumbervorher) throws ImportitException {
 		try {
 			if (rowNumbervorher == 0) {
 				edpEditor.insertRow(1);
+				return 1;
 			}else {
 				if (( datensatz.getTippkommando() != null && rowNumbervorher > 1) || (datensatz.getTippkommando() == null) ) {
-					edpEditor.insertRow(rowNumbervorher + 1);
+					Integer newRowNumber = rowNumbervorher + 1;
+					edpEditor.insertRow(newRowNumber);
+					return newRowNumber;
+				}else {
+					return rowNumbervorher;
+
 				}
 					
 			}

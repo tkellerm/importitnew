@@ -255,6 +255,11 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				
 				infosysImportit.setYok(getimportitDatasets(datensatzList)); 
 				infosysImportit.setYfehler(geterrorDatasets(datensatzList));
+				if (infosysImportit.getYfehler() == 0) {
+					infosysImportit.setYstatus("Import erfolgreich");
+				}else {
+					infosysImportit.setYstatus("Import fehlerhaft");
+				}
 				
 				
 			}
@@ -309,8 +314,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 					if (infosysImportit.getYfehlerstruktur() == 0 ) {
 						edpProcessing.checkDatensatzListValues(datensatzList);
 						infosysImportit.setYok(getimportitDatasets(datensatzList));
-						infosysImportit
-								.setYfehlerdatpruef(geterrorDatasets(datensatzList));
+						infosysImportit.setYfehlerdatpruef(geterrorDatasets(datensatzList));
 					}else {
 						throw new ImportitException("Es sind noch Fehler aus der Strukturprüfung vorhanden! Bitte zuerst beheben!");
 					}
@@ -319,17 +323,20 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 					
 					abasExceptionOutput(e);
 				}
-				TextBox textbox = new TextBox(getContext(), "Fertig", "Datenprüfung abgeschlossen!");
-				textbox.show();	
+				
+			
+			if (infosysImportit.getYfehlerdatpruef() == 0) {
+				infosysImportit.setYstatus("Datenprüfung erfolgreich");
 			}else {
-				TextBox textbox = new TextBox(getContext(), "Fehler", "Strukturprüfung wurde nicht durchgeführt!");
-				textbox.show();
+				infosysImportit.setYstatus("Datenprüfung fehlerhaft");
 			}
 			
+			TextBox textbox = new TextBox(getContext(), "Fertig", "Datenprüfung abgeschlossen!");
+			textbox.show();
 		}
 
 	}
-
+	}
 		class IntabladenButtonListener extends ButtonListenerAdapter<InfosystemImportit>{
 
 	    @Override
@@ -349,31 +356,31 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 							for (Datensatz datensatz : datensatzList) {
 								if (datensatz.getTippkommando() == null) {
 									datensatz.createErrorReport();
-									String errorReport = datensatz
-											.getErrorReport();
+									String errorReport = datensatz.getErrorReport();
 
 									//							Alles ausgeben oder wenn yshowonlyerrorline gesetzt nur die fehlerhaften Datensätze
 
-									if (!(errorReport.isEmpty() & infosysImportit
-											.getYshowonlyerrorline())
-											|| (!infosysImportit
-													.getYshowonlyerrorline())) {
-										Row row = infosysImportit.table()
-												.appendRow();
-										row.setYsel(datensatz
-												.getValueOfKeyfield());
+									if (!(errorReport.isEmpty() & infosysImportit.getYshowonlyerrorline()) ||
+											(!infosysImportit.getYshowonlyerrorline())) {
+										Row row = infosysImportit.table().appendRow();
+										row.setYsel(datensatz.getValueOfKeyfield());
 										if (datensatz.getAbasId() != null) {
-											row.setString(Row.META.ydatensatz,
-													datensatz.getAbasId());
+											row.setString(Row.META.ydatensatz,datensatz.getAbasId());
 										}
+										row.setYimportiert(datensatz.getIsimportiert());
+										
 										if (errorReport.isEmpty()) {
 											row.setYicon("icon:ok");
 										} else {
-											row.setYicon("icon:stop");
-											int errorReportlength = errorReport
-													.length();
-											int fieldLength = Row.META.ytfehler
-													.getLength();
+										
+											if (!row.getYimportiert()) {
+												row.setYicon("icon:stop");
+											}else {
+												row.setYicon("icon:attention");
+											}
+											row.setYfehlerda(true);
+											int errorReportlength = errorReport.length();
+											int fieldLength = Row.META.ytfehler.getLength();
 											if (errorReportlength > fieldLength) {
 												row.setYtfehler(errorReport
 														.substring(0,
@@ -499,7 +506,11 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				
 				showDatenbankInfos(infosysImportit , datensatzList);
 				showOptions(infosysImportit , datensatzList);
-				
+				if (infosysImportit.getYfehlerstruktur() == 0) {
+					infosysImportit.setYstatus("Strukturprüfung durchgelaufen");
+				}else {
+					infosysImportit.setYstatus("Strukturprüfung fehlerhaft");
+				}
 				TextBox textbox = new TextBox(getContext(), "Fertig", "Strukturprüfung abgeschlossen!");
 				textbox.show();
 				
