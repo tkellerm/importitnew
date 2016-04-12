@@ -168,7 +168,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 					DirEdit.copyDir(docuVerz, docuVerzAufruf);
 
 					if (docuVerzAufruf.exists()) {
-						String path = docuVerzAufruf.toPath().toString();
+						String path = docuVerzAufruf.getPath().toString();
 						
 //						file://///cebitmaster40/entw-fepco/owdoku/docu/Dokumentation.html
 						String url = "-FILE " +  docuVerzAufrufStr + "Dokumentation.html";
