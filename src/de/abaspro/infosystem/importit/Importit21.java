@@ -373,37 +373,18 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 											row.setYicon("icon:ok");
 										} else {
 										
-											if (!row.getYimportiert()) {
-												row.setYicon("icon:stop");
-											}else {
-												row.setYicon("icon:attention");
-											}
-											row.setYfehlerda(true);
-											int errorReportlength = errorReport.length();
-											int fieldLength = Row.META.ytfehler.getLength();
-											if (errorReportlength > fieldLength) {
-												row.setYtfehler(errorReport
-														.substring(0,
-																fieldLength));
-											} else {
-												row.setYtfehler(errorReport);
-											}
-
-											StringReader reader = new StringReader(
-													errorReport);
-											row.setYkomtext(reader);
+											schreibeErrorReportinZeile(errorReport, row);
 										}
 									}
 
 								} else {
-									//							Tippkommando
+									//	Tippkommando
 									datensatz.createErrorReport();
 									String errorReport = datensatz
 											.getErrorReport();
-									if (!(errorReport.isEmpty() & infosysImportit
-											.getYshowonlyerrorline())
-											|| (!infosysImportit
-													.getYshowonlyerrorline())) {
+									if (!(errorReport.isEmpty() & infosysImportit.getYshowonlyerrorline())|| 
+											(!infosysImportit.getYshowonlyerrorline())) {
+										
 										Row row = infosysImportit.table()
 												.appendRow();
 
@@ -414,36 +395,14 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 												+ datensatzList
 														.indexOf(datensatz));
 
+										row.setYimportiert(datensatz.getIsimportiert());
+
 										if (errorReport.isEmpty()) {
 											row.setYicon("icon:ok");
 										} else {
-											row.setYicon("icon:stop");
-											int errorReportlength = errorReport
-													.length();
-											int fieldLength = Row.META.ytfehler
-													.getLength();
-											if (errorReportlength > fieldLength) {
-												row.setYtfehler(errorReport
-														.substring(0,
-																fieldLength));
-											} else {
-												row.setYtfehler(errorReport);
-											}
-
-											StringReader reader = new StringReader(
-													errorReport);
-											row.setYkomtext(reader);
+											schreibeErrorReportinZeile(errorReport, row);
 										}
 									}
-
-									//							if (datensatz.getImportError() == null) {
-									//								row.setYicon("icon:ok");
-									//							}else {
-									//								row.setYicon("icon:stop");
-									//								row.setYtfehler(datensatz.getImportError().substring(0, 70));
-									//								StringReader reader = new StringReader(datensatz.getImportError());
-									//								row.setYkomtext(reader);
-									//							}
 								}
 
 							}
@@ -468,6 +427,37 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 					abasExceptionOutput(e);
 				}
 			}
+
+		/**
+		 * @param errorReport
+		 * @param row
+		 * @throws IOException
+		 */
+		private void schreibeErrorReportinZeile(String errorReport, Row row)
+				throws IOException {
+			
+			if (!row.getYimportiert()) {
+				row.setYicon("icon:stop");
+			}else {
+				row.setYicon("icon:attention");
+			}
+			row.setYfehlerda(true);
+			int errorReportlength = errorReport
+					.length();
+			int fieldLength = Row.META.ytfehler
+					.getLength();
+			if (errorReportlength > fieldLength) {
+				row.setYtfehler(errorReport
+						.substring(0,
+								fieldLength));
+			} else {
+				row.setYtfehler(errorReport);
+			}
+
+			StringReader reader = new StringReader(
+					errorReport);
+			row.setYkomtext(reader);
+		}
 			
 		}
 		
