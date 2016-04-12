@@ -1015,10 +1015,10 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 //			Englische Variablen nutzen
 			if (optionCode.getUseEnglishVariablen()) {
 				edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.ENGLISH);
-				
+				edpEditor.setVariableLanguage(EDPVariableLanguage.ENGLISH);
 			}else {
 				edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.GERMAN);
-				
+				edpEditor.setVariableLanguage(EDPVariableLanguage.GERMAN);
 
 			}
 		}
