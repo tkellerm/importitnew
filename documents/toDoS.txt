@@ -50,3 +50,16 @@ Verweisprüfung mit eindeutigem Suchwort : Beispiel L-FP1 und L-FP1-F2
 Bedienung sicher machen -> Reihenfolge sicherstellen.  
 
 owfw7
+
+
+
+Dateiprüfung bei Eingabe des Dateiname Feldaustritt
+
+Sichtbarkeiten verwenden zur Reihenfolge Steuerung
+
+Fehler sofort anzeigen wenn aufgetreten (In Tabelle laden)
+
+Wenn schon importiert worden ist nachfragen, ob wirklich noch mal importiert werden  
+
+Checksum prüfung vor Datenprüfen und import ob sich die Datei geändert hat.
+

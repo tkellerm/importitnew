@@ -70,6 +70,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	    objectHandler.addListener(InfosystemImportit.META.yoptuseenglvars, new OptionsListener());
 	    objectHandler.addListener(InfosystemImportit.META.ydoku, new DokuButtonListener());
 	    objectHandler.addListener(InfosystemImportit.META.ymandant, new MandantListener());
+	    objectHandler.addListener(InfosystemImportit.META.ydatafile, new DatafileListener());
 	  }
 	
 	
@@ -97,7 +98,19 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 		
 	}
 	
-	
+public class DatafileListener extends FieldListenerAdapter<InfosystemImportit> {
+		
+		@Override
+		public void exit(FieldEvent<InfosystemImportit> event)
+				throws EventException {
+			super.exit(event);
+//			Datensatzliste zurücksetzen
+			datensatzList = null;
+			
+		}
+		
+		
+	}
 	 
 	public class OptionsListener extends FieldListenerAdapter<InfosystemImportit> {
 
@@ -329,9 +342,14 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				infosysImportit.setYstatus("Datenprüfung erfolgreich");
 			}else {
 				infosysImportit.setYstatus("Datenprüfung fehlerhaft");
+				infosysImportit.setYshowonlyerrorline(true);
+				
 			}
 			
 			TextBox textbox = new TextBox(getContext(), "Fertig", "Datenprüfung abgeschlossen!");
+			textbox.show();
+		}else {
+			TextBox textbox = new TextBox(getContext(), "Fehler", "Daten nicht geladen! \nDatei bitte mit Strukturprüfen neu einlesen!");
 			textbox.show();
 		}
 
