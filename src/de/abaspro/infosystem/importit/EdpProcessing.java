@@ -627,6 +627,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		startEdpSession();
 
 		for (Datensatz datensatz : datensatzList) {
+			logger.info("Datensatz " + datensatzList.indexOf(datensatz) + " von " + datensatzList.size());
 			writeDatensatzToAbas(datensatz);
 		}
 		closeEdpSession();
@@ -640,9 +641,10 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	 * Es wird keine EDPSession aufgebaut und geschlossen dies muss in dem aufrufenden Programmteil erledigt werden 
 	 */
 	public void importDatensatzListTransaction(ArrayList<Datensatz> datensatzList) throws ImportitException {
-		
+		edpSession.loggingOn("java/log/importit21edp.log");
 
 		for (Datensatz datensatz : datensatzList) {
+			logger.info("Datensatz " + datensatzList.indexOf(datensatz) + " von " + datensatzList.size());
 			writeDatensatzToAbas(datensatz);
 		}
 		
@@ -908,7 +910,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	private void writeDatabase(Datensatz datensatz, EDPEditor edpEditor)
 			throws CantBeginEditException, CantChangeSettingException,
 			ImportitException, CantSaveException, InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException, InvalidRowOperationException {
-		
+		String editoraction = "";
 		datensatz.setIsimportiert(false);
 		if (datensatz.getOptionCode().getAlwaysNew()) {
 			setEditorOption(datensatz, edpEditor);
@@ -963,11 +965,12 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 					if (edpEditor.getRowCount() > 0 && datensatz.getOptionCode().getDeleteTable()) {
 						edpEditor.deleteAllRows();
 					}
-					logger.info("Editor starten UPDATE" + " " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString() + " ID:" +edpEditor.getEditRef());
+					editoraction = "UPDATE";
+					logger.info("Editor starten " + editoraction + " " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString() + " ID:" +edpEditor.getEditRef());
 
 				}else {
-					
-					logger.info("Editor starten NEW " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString());
+					editoraction = "NEW";
+					logger.info("Editor starten " + editoraction + " "+ datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString());
 					edpEditor.beginEditNew(datensatz.getDatenbank().toString(),
 							datensatz.getGruppe().toString());
 				}
@@ -978,7 +981,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 //				edpEditor.setEditorOption(EDPEditorOption.STOREROWMODE, EDPStoreRowMode.DELETE_NONE.getModeStr());
 				String abasId = edpEditor.getEditRef();
 				
-				logger.info("Editor save Always NEW " + datensatz.getDatenbank().toString() + ":" + datensatz.getGruppe().toString() + " ID:" + abasId);
+				logger.info("Editor save Always " + editoraction + " " + datensatz.getDatenbank().toString() + ":" + datensatz.getGruppe().toString() + " ID:" + abasId);
 				
 				datensatz.setAbasId(abasId);
 				edpEditor.endEditSave();
