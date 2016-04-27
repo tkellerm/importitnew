@@ -170,7 +170,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		if (datensatzList != null) {
 			
 			if (!datensatzList.isEmpty()) {
-			startEdpSession();
+			startEdpSession(EDPVariableLanguage.ENGLISH);
 //			Annahme: alles Datensätze in der Liste sind gleich von der Struktur, dann sollte auch nur der Erste geprüft werden	
 //			Sonst ist die Laufzeit zu lange, wenn bei einer großen Excelliste für jeden Datensatz die Struktur geprüft werden soll
 				
@@ -480,12 +480,20 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 							query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
 							query.getLastRecord();
 							if (query.getRecordCount() == 1) {
-							 
+								EDPVariableLanguage langtest;
+								try {
+								langtest = this.edpSession.getVariableLanguage();
+								} catch (CantReadSettingException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 								String dbstring = query.getField("grpDBDescr");
+								String gruppe = query.getField("grpGrpNo");
+								dbstring = query.getField(3);
 								dbstring = dbstring.replaceAll("\\(*", "");
 								dbstring = dbstring.replaceAll("\\)*", "");
 								datensatz.setDatenbank(new Integer(dbstring));
-								String gruppe = query.getField("grpGrpNo");
+								
 								gruppe = gruppe.replaceAll(" ", "");
 								datensatz.setGruppe(new Integer(gruppe));
 								return true;

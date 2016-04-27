@@ -45,6 +45,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 	private ArrayList<Datensatz> datensatzList;
 	private EdpProcessing edpProcessing;
 	private Logger logger = Logger.getLogger(Importit21.class);
+	private String md5checksum;
 	
 	static private String docuVerzStr = "java/projects/importitnew/docu";
 	static private String docuVerzAufrufStr = "win/tmp/docu/";
