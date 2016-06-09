@@ -169,7 +169,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		if (datensatzList != null) {
 			
 			if (!datensatzList.isEmpty()) {
-			startEdpSession();
+			startEdpSession(EDPVariableLanguage.ENGLISH);
 //			Annahme: alles Datensätze in der Liste sind gleich von der Struktur, dann sollte auch nur der Erste geprüft werden	
 //			Sonst ist die Laufzeit zu lange, wenn bei einer großen Excelliste für jeden Datensatz die Struktur geprüft werden soll
 				
