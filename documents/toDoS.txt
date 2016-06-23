@@ -50,3 +50,6 @@ Verweisprüfung mit eindeutigem Suchwort : Beispiel L-FP1 und L-FP1-F2
 Bedienung sicher machen -> Reihenfolge sicherstellen.  
 
 owfw7
+
+SML - Felder füllen
+SML SEL anlegen 
