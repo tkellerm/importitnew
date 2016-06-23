@@ -32,6 +32,7 @@ import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
 import de.abas.ceks.jedp.InvalidSettingValueException;
+import de.abas.ceks.jedp.ServerActionException;
 import de.abas.ceks.jedp.StandardEDPSelection;
 import de.abas.ceks.jedp.StandardEDPSelectionCriteria;
 import de.abas.ceks.jedp.TransactionException;
@@ -631,13 +632,15 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	 * Es wird keine EDPSession aufgebaut und geschlossen dies muss in dem aufrufenden Programmteil erledigt werden 
 	 */
 	public void importDatensatzListTransaction(ArrayList<Datensatz> datensatzList) throws ImportitException {
-		
+		edpSession.loggingOn("java/log/importit21edp.log");
 
 		for (Datensatz datensatz : datensatzList) {
 			writeDatensatzToAbas(datensatz);
+			logger.info(datensatz.toString());
 		}
 		
 	}
+	
 	private void writeDatensatzToAbas(Datensatz datensatz) throws ImportitException {
 		
 		if (this.edpSession.isConnected()) {
@@ -690,6 +693,9 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 				logger.error(e);
 				datensatz.appendError(e);
 			} catch (CantReadSettingException e) {
+				logger.error(e);
+				datensatz.appendError(e);
+			} catch (ServerActionException e) {
 				logger.error(e);
 				datensatz.appendError(e);
 			}finally{
@@ -895,10 +901,11 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	 * @throws CantReadFieldPropertyException 
 	 * @throws CantChangeFieldValException 
 	 * @throws InvalidRowOperationException 
+	 * @throws ServerActionException 
 	 */
 	private void writeDatabase(Datensatz datensatz, EDPEditor edpEditor)
 			throws CantBeginEditException, CantChangeSettingException,
-			ImportitException, CantSaveException, InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException, InvalidRowOperationException {
+			ImportitException, CantSaveException, InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException, InvalidRowOperationException, ServerActionException {
 		
 		datensatz.setIsimportiert(false);
 		if (datensatz.getOptionCode().getAlwaysNew()) {
@@ -954,6 +961,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 					if (edpEditor.getRowCount() > 0 && datensatz.getOptionCode().getDeleteTable()) {
 						edpEditor.deleteAllRows();
 					}
+					
 					logger.info("Editor starten UPDATE" + " " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString() + " ID:" +edpEditor.getEditRef());
 
 				}else {
@@ -980,6 +988,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 						.appendError("Selektion auf Datensatz war nicht eindeutig! Folgende Selektion wurde verwendet :"
 								+ krit);
 			}
+			edpQuery.breakQuery();
 
 		}
 	}

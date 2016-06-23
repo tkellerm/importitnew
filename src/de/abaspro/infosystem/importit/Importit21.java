@@ -107,24 +107,35 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 			super.exit(event);
 			InfosystemImportit infosysImportit = event.getSourceRecord();
 			
-			if (datensatzList.size() > 0) {
-				OptionCode optioncode = datensatzList.get(0).getOptionCode();
-				
-				Boolean alwaysNew 				= infosysImportit.getYoptalwaysnew();
-				Boolean nofop  					= infosysImportit.getYoptnofop();
-				Boolean inOnetransaction 		= infosysImportit.getYopttransaction();
-				Boolean deletetable				= infosysImportit.getYoptdeltab();
-				Boolean checkFieldIsModifiable	= infosysImportit.getYoptmodifiable();
-				Boolean useEnglishVariablen		= infosysImportit.getYoptuseenglvars();
-				Boolean dontChangeIfEqual		= infosysImportit.getYoptdontchangeifeq();
-				
-				optioncode.setOptionCode(alwaysNew, nofop, inOnetransaction, deletetable, checkFieldIsModifiable, useEnglishVariablen, dontChangeIfEqual);
-				showOptions(infosysImportit, datensatzList);
-				
-				dontChangeIfEqual		= infosysImportit.getYoptdontchangeifeq();
-			}else {
-				TextBox textbox = new TextBox(getContext(), "Fehler", "Es wurde noch kein Datei eingelesen!");
-				textbox.show();
+			if (datensatzList != null) {
+				if (datensatzList.size() > 0) {
+					OptionCode optioncode = datensatzList.get(0)
+							.getOptionCode();
+
+					Boolean alwaysNew = infosysImportit.getYoptalwaysnew();
+					Boolean nofop = infosysImportit.getYoptnofop();
+					Boolean inOnetransaction = infosysImportit
+							.getYopttransaction();
+					Boolean deletetable = infosysImportit.getYoptdeltab();
+					Boolean checkFieldIsModifiable = infosysImportit
+							.getYoptmodifiable();
+					Boolean useEnglishVariablen = infosysImportit
+							.getYoptuseenglvars();
+					Boolean dontChangeIfEqual = infosysImportit
+							.getYoptdontchangeifeq();
+
+					optioncode.setOptionCode(alwaysNew, nofop,
+							inOnetransaction, deletetable,
+							checkFieldIsModifiable, useEnglishVariablen,
+							dontChangeIfEqual);
+					showOptions(infosysImportit, datensatzList);
+
+					dontChangeIfEqual = infosysImportit.getYoptdontchangeifeq();
+				} else {
+					TextBox textbox = new TextBox(getContext(), "Fehler",
+							"Es wurde noch kein Datei eingelesen!");
+					textbox.show();
+				}
 			}
 				
 
