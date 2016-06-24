@@ -922,42 +922,18 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			datensatz.setIsimportiert(true);
 			
 		} else {
-
-			//				selektiere nach dem Schlüsselfeld
-			EDPQuery edpQuery = this.edpSession.createQuery();
-
-			String tableName = datensatz.getDatenbank().toString()
-					+ ":" + datensatz.getGruppe().toString();
-
-			String key = datensatz.getKeyOfKeyfield();
-
-			if (key == null) {
-				key = "";
-			}
+			String krit = datensatz.getNameOfKeyfield() + "="
+					+ datensatz.getValueOfKeyfield();
 			
-			String krit = "";
-			//				datensatz.getOptionCode().getUseEnglishVariablen()
-			if (datensatz.getOptionCode().getUseEnglishVariablen()) {
-				krit = datensatz.getNameOfKeyfield() + "="
-						+ datensatz.getValueOfKeyfield()
-						+ ";@englvar=true;@language=en";
-				edpQuery.startQuery(tableName, key, krit, "idno,swd,id");
-			} else {
-				krit = datensatz.getNameOfKeyfield() + "="
-						+ datensatz.getValueOfKeyfield()
-						+ ";@englvar=false;@language=de";
-				edpQuery.startQuery(tableName, key, krit,
-						"nummer,such,id");
-			}
-
-			edpQuery.getLastRecord();
-			int recordCount = edpQuery.getRecordCount();
-			if (recordCount == 1 || recordCount == 0) {
+			String objectId = getSelObject(krit, datensatz );
+			
+			
+			if (!objectId.equals("Z")) {
 				setEditorOption(datensatz, edpEditor);
-				if (recordCount == 1) {
+				if (!objectId.equals("0")) {
 				
 				//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde
-					edpEditor.beginEdit(edpQuery.getField("id"));
+					edpEditor.beginEdit(objectId);
 					if (edpEditor.getRowCount() > 0 && datensatz.getOptionCode().getDeleteTable()) {
 						edpEditor.deleteAllRows();
 					}
@@ -988,9 +964,54 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 						.appendError("Selektion auf Datensatz war nicht eindeutig! Folgende Selektion wurde verwendet :"
 								+ krit);
 			}
-			edpQuery.breakQuery();
 
 		}
+	}
+
+	private String getSelObject(String krit, Datensatz datensatz) throws ImportitException, InvalidQueryException {
+//		selektiere nach dem Schlüsselfeld
+		
+		
+		
+			EDPQuery edpQuery = this.edpSession.createQuery();
+
+			String tableName = datensatz.getDatenbank().toString()
+								+ ":" + datensatz.getGruppe().toString();
+
+			String key;
+			key = datensatz.getKeyOfKeyfield();
+		
+
+		if (key == null) {
+					key = "";
+		}
+	
+	
+	
+	//				datensatz.getOptionCode().getUseEnglishVariablen()
+	if (datensatz.getOptionCode().getUseEnglishVariablen()) {
+		krit = krit + ";@englvar=true;@language=en";
+		edpQuery.startQuery(tableName, key, krit, "idno,swd,id");
+	} else {
+		krit = krit + ";@englvar=false;@language=de";
+		edpQuery.startQuery(tableName, key, krit,
+				"nummer,such,id");
+	}
+
+	edpQuery.getLastRecord();
+	int recordCount = edpQuery.getRecordCount();
+	
+	String objectid = edpQuery.getField("id"); 
+	edpQuery.breakQuery();
+	
+	if (recordCount == 1 ) {
+		return objectid;
+	}else if (recordCount >1 ) {
+		return "Z";
+	}else {
+		return "0";
+	}
+		
 	}
 
 	/**
@@ -1013,22 +1034,38 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 				edpEditor.getSession().setFOPMode(true);
 			}
 			
-//	Auskommentiert weil beim Schreiben der UPDATE oder der NEW Modus verwendet wird und nicht der Store - Mode			
-////			Tabelle löschen 
-//			if (optionCode.getDeleteTable()) {
-//				
-//				edpEditor.setEditorOption(EDPEditorOption.STOREROWMODE, EDPStoreRowMode.DELETE_TAIL.getModeStr());
-//			}else {
-//				edpEditor.setEditorOption(EDPEditorOption.STOREROWMODE, EDPStoreRowMode.DELETE_NONE.getModeStr());
-//			}
+
 //			Englische Variablen nutzen
 			if (optionCode.getUseEnglishVariablen()) {
-				edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.ENGLISH);
-				edpEditor.setVariableLanguage(EDPVariableLanguage.ENGLISH);
+				
+				try {
+					if (!edpEditor.getSession().getVariableLanguage().equals(EDPVariableLanguage.ENGLISH)) {
+						edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.ENGLISH);
+					}
+					
+					if (!edpEditor.getVariableLanguage().equals(EDPVariableLanguage.ENGLISH)) {
+						
+						edpEditor.setVariableLanguage(EDPVariableLanguage.ENGLISH);
+					}
+				} catch (CantReadSettingException e) {
+						logger.error(e);
+				}
+				
 			}else {
-				edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.GERMAN);
-				edpEditor.setVariableLanguage(EDPVariableLanguage.GERMAN);
-
+//				Deutsche Variablen nutzen
+				try {
+					if (!edpEditor.getSession().getVariableLanguage().equals(EDPVariableLanguage.GERMAN)) {
+						edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.GERMAN);
+					}
+					
+					if (!edpEditor.getVariableLanguage().equals(EDPVariableLanguage.GERMAN)) {
+						
+						edpEditor.setVariableLanguage(EDPVariableLanguage.GERMAN);
+					}
+				} catch (CantReadSettingException e) {
+						logger.error(e);
+				}
+				
 			}
 		}
 		
