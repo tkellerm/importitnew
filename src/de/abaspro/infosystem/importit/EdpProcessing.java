@@ -1706,8 +1706,7 @@ public void commitTransaction() throws ImportitException {
 		throw new ImportitException("Das Commit der Transaction schlug fehl", e);
 	}finally{
 		closeEdpSession();
-	}
-	
+	}	
 }
 
 public void abortTransaction() throws ImportitException {

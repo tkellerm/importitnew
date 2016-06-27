@@ -252,9 +252,16 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 							logger.info("Import ohne Transaction");
 							edpProcessing.importDatensatzList(datensatzList);	
 						}
+						if (infosysImportit.getYfehler() == 0) {
+							infosysImportit.setYstatus("Import erfolgreich");
+						}else {
+							infosysImportit.setYstatus("Es sind Fehler im Import aufgetreten");
+						}
 						
+						TextBox textbox = new TextBox(getContext(), "Fertig", "Import abgeschlossen!");
+						textbox.show();
 					}else {
-						TextBox textbox = new TextBox(getContext(), "Fehler", "Strukturprüfung wurde nicht durchgeführt!");
+						TextBox textbox = new TextBox(getContext(), "Fehler", "Es sind Fehler beim Import aufgetreten!");
 						textbox.show();
 					}
 					
