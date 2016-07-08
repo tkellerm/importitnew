@@ -699,7 +699,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 				logger.error(e);
 				datensatz.appendError(e);
 			}finally{
-				if (edpEditor.isActive()) {
+				if (edpEditor.isActive()) { 
 					logger.info("Editor beenden");
 					edpEditor.endEditCancel();
 				}
@@ -1656,9 +1656,7 @@ private EDPQuery getEDPQueryVerweis(String value, Integer database,
 	if (!this.edpSession.isConnected()) {
 		startEdpSession();
 	}
-	
-	
-	
+
 	String[] fieldNames = {"id" , "nummer"};
 	
 	String tableName = "";
