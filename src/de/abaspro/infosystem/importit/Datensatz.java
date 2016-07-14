@@ -6,6 +6,8 @@ import java.util.List;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
+import de.abas.ceks.jedp.EDPVariableLanguage;
+
 public class Datensatz {
 
 	 private List<Feld> kopfFelder = new ArrayList<Feld>();
@@ -490,6 +492,15 @@ public Boolean getIsimportiert() {
 
 public void setIsimportiert(Boolean isimportiert) {
 	this.isimportiert = isimportiert;
+}
+
+public EDPVariableLanguage getEDPLanguage(){
+	if (this.optionCode.getUseEnglishVariablen()) {
+		return EDPVariableLanguage.ENGLISH;
+	}else {
+		return EDPVariableLanguage.GERMAN;
+	}
+	
 }
 
 }

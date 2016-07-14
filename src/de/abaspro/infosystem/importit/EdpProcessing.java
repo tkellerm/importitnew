@@ -18,6 +18,7 @@ import de.abas.ceks.jedp.CantChangeFieldValException;
 import de.abas.ceks.jedp.CantChangeSettingException;
 import de.abas.ceks.jedp.CantReadFieldPropertyException;
 import de.abas.ceks.jedp.CantReadSettingException;
+import de.abas.ceks.jedp.CantReadStatusException;
 import de.abas.ceks.jedp.CantSaveException;
 import de.abas.ceks.jedp.ConnectionLostException;
 import de.abas.ceks.jedp.EDPConstants;
@@ -26,6 +27,7 @@ import de.abas.ceks.jedp.EDPEditAction;
 import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPFactory;
 import de.abas.ceks.jedp.EDPQuery;
+import de.abas.ceks.jedp.EDPServerAction.ActionState;
 import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.EDPTools;
 import de.abas.ceks.jedp.EDPVariableLanguage;
@@ -51,6 +53,7 @@ public class EdpProcessing {
 	private String passwort;
 	private EDPSession edpSession;
 	private Logger logger = Logger.getLogger(Importit21.class);
+	private static String edplogFile = "java/log/importit21edp.log";
 	
 	/**
 	 * @param server
@@ -127,10 +130,14 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		sessionAufbauen(this.server, this.port, this.mandant, this.passwort, varlanguage);
 	}
 	
-	public void closeEdpSession(){
-		
-		if (this.edpSession.isConnected()) {
-			this.edpSession.endSession();
+	public void closeEdpSession(EDPSession edpSession){
+			
+		if (edpSession.isConnected()) {
+			edpSession.endSession();
+			logger.info(edpSession.getSessionTag() + " EDPSession beendet");
+			edpSession = null;
+		}else {
+			logger.error(edpSession.getSessionTag() + " EDPSession ist nicht mehr verbunden");
 		}
 		
 	}
@@ -140,6 +147,8 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
       
     	  		try {
     	  			this.edpSession.beginSession(server , port, mandant, passwort, "ImportIt_21");
+    	  			this.edpSession.loggingOn(edplogFile);
+    	  			logger.info(edpSession.getSessionTag() + " EDPSession begin Importit_21");
     	  		} catch (CantBeginSessionException ex) 
     	  			{
     	  			logger.error(ex);
@@ -152,17 +161,42 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
       
     	  		try {
     	  			this.edpSession.beginSession(server , port, mandant, passwort, "ImportIt_21");
+    	  			this.edpSession.loggingOn(edplogFile);
+    	  			logger.info(edpSession.getSessionTag() + " EDPSession begin Importit_21");
+    	  			this.edpSession.setVariableLanguage(varlanguage);
     	  		} catch (CantBeginSessionException ex) 
     	  			{
     	  			logger.error(ex);
     	  			throw new ImportitException("FEHLER\n EDP Session kann nicht gestartet werden\n" , ex);
     	  			}
-                 
-              this.edpSession.setVariableLanguage(varlanguage);
-        
-	        
+                     
     }
 	
+	private EDPSession connectNewEdpsession(EDPVariableLanguage varlanguage) throws ImportitException{
+		EDPSession edpSession = EDPFactory.createEDPSession();
+
+		while (!edpSession.isConnected()) {
+			try {
+
+				edpSession.beginSession(this.server, this.port,
+						this.mandant, this.passwort, "ImportIt_21_m");
+				edpSession.loggingOn(edplogFile);
+				logger.info(edpSession.getSessionTag() + " EDPSession begin Importit_21_m");
+				edpSession.setVariableLanguage(varlanguage);
+			} catch (CantBeginSessionException e) {
+				logger.error(e);
+				throw new ImportitException(
+						"FEHLER\n EDP Session kann nicht gestartet werden\n", e);
+			} catch (Exception ex) {
+				logger.error(ex);
+				throw new ImportitException(
+						"FEHLER\n EDP Session kann nicht gestartet werden\n",
+						ex);
+			}
+		}
+		
+		return edpSession;
+	}
 	
 	
 	public void checkDatensatzList(ArrayList<Datensatz> datensatzList) throws ImportitException {
@@ -170,27 +204,33 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		if (datensatzList != null) {
 			
 			if (!datensatzList.isEmpty()) {
-			startEdpSession(EDPVariableLanguage.ENGLISH);
-//			Annahme: alles Datensätze in der Liste sind gleich von der Struktur, dann sollte auch nur der Erste geprüft werden	
-//			Sonst ist die Laufzeit zu lange, wenn bei einer großen Excelliste für jeden Datensatz die Struktur geprüft werden soll
-				
-				    Datensatz datensatz = datensatzList.get(0);
 				    
-				    if (datensatz != null) {
-				    	if (checkDatensatzStruktur(datensatz)) {
-				    		
-							for (Datensatz datensatzIter : datensatzList) {
-								datensatzIter.copyDatabaseinDatensatz(datensatz);
-//								Alle Abastypen aus dem ersten Datensatz in alle Felder füllen
-								datensatzIter.copyAbasTypInDatensatz(datensatz);
-								
-							}
-				    		
-						}
-				    	
-					}
+				    try {
+						startEdpSession(EDPVariableLanguage.ENGLISH);
+//						Annahme: alles Datensätze in der Liste sind gleich von der Struktur, dann sollte auch nur der Erste geprüft werden	
+//						Sonst ist die Laufzeit zu lange, wenn bei einer großen Excelliste für jeden Datensatz die Struktur geprüft werden soll
+							
+							    Datensatz datensatz = datensatzList.get(0);
 
-				closeEdpSession();
+				    	if (datensatz != null) {
+							if (checkDatensatzStruktur(datensatz)) {
+
+								for (Datensatz datensatzIter : datensatzList) {
+									datensatzIter
+											.copyDatabaseinDatensatz(datensatz);
+									//								Alle Abastypen aus dem ersten Datensatz in alle Felder füllen
+									datensatzIter
+											.copyAbasTypInDatensatz(datensatz);
+
+								}
+
+							}
+
+						}
+					} finally {
+						closeEdpSession(this.edpSession);
+					}
+				
 			}else {
 				throw new ImportitException("Die übergebene Datensatzliste ist leer");
 			}
@@ -555,7 +595,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			logger.info("START Hole Vartab für Datenbank " + database + ":" + group);
 			Vartab vartab = new Vartab(edpSession, database , group);
 			logger.info("ENDE Hole Vartab für Datenbank");
-			closeEdpSession();
+			closeEdpSession(this.edpSession);
 			Boolean fehlergefunden = false;
 			for (Feld feld : feldListe) {
 				if (!feld.getOption_skip()) {
@@ -616,12 +656,16 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	 */
 	public void importDatensatzList(ArrayList<Datensatz> datensatzList) throws ImportitException {
 		edpSession.loggingOn("java/log/importit21edp.log");
-		startEdpSession();
-
-		for (Datensatz datensatz : datensatzList) {
-			writeDatensatzToAbas(datensatz);
-		}
-		closeEdpSession();
+		
+		try{
+			startEdpSession();
+			for (Datensatz datensatz : datensatzList) {
+				writeDatensatzToAbas(datensatz);
+			}		
+		}finally{
+			closeEdpSession(this.edpSession);
+			}
+		
 	}
 	/**
 	 * @param datensatzList
@@ -643,8 +687,10 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	
 	private void writeDatensatzToAbas(Datensatz datensatz) throws ImportitException {
 		
-		if (this.edpSession.isConnected()) {
-			EDPEditor edpEditor = this.edpSession.createEditor();
+		EDPSession edpSession = connectNewEdpsession(datensatz.getEDPLanguage());
+		if (edpSession.isConnected()) {
+			EDPEditor edpEditor = edpSession.createEditor();
+			
 			try {
 				
 			if (datensatz.getTippkommando()== null ) {
@@ -698,11 +744,20 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			} catch (ServerActionException e) {
 				logger.error(e);
 				datensatz.appendError(e);
+			} catch (CantReadStatusException e) {
+				logger.error(e);
+				datensatz.appendError(e);
 			}finally{
-				if (edpEditor.isActive()) { 
-					logger.info("Editor beenden");
-					edpEditor.endEditCancel();
+				if (edpSession.isConnected()) {
+					if (edpEditor.isActive()) { 
+						logger.info("Editor beenden");
+						edpEditor.endEditCancel();
+					}
+					closeEdpSession(edpSession);
+				}else {
+					logger.error("Connection schon beendet Editor beenden");
 				}
+				
 			}
 			
 		}else {
@@ -881,7 +936,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		
 	}
 
-	private void writeTippKommandos(Datensatz datensatz, EDPEditor edpEditor) throws ImportitException, CantChangeSettingException, CantSaveException, CantBeginEditException {
+	private void writeTippKommandos(Datensatz datensatz, EDPEditor edpEditor) throws ImportitException, CantChangeSettingException, CantSaveException, CantBeginEditException, CantReadSettingException {
 		datensatz.setIsimportiert(false);
 		edpEditor.beginEditCmd(datensatz.getTippkommando().toString(), "");
 		setEditorOption(datensatz, edpEditor);
@@ -902,10 +957,12 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	 * @throws CantChangeFieldValException 
 	 * @throws InvalidRowOperationException 
 	 * @throws ServerActionException 
+	 * @throws CantReadStatusException 
+	 * @throws CantReadSettingException 
 	 */
 	private void writeDatabase(Datensatz datensatz, EDPEditor edpEditor)
 			throws CantBeginEditException, CantChangeSettingException,
-			ImportitException, CantSaveException, InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException, InvalidRowOperationException, ServerActionException {
+			ImportitException, CantSaveException, InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException, InvalidRowOperationException, ServerActionException, CantReadStatusException, CantReadSettingException {
 		
 		datensatz.setIsimportiert(false);
 		if (datensatz.getOptionCode().getAlwaysNew()) {
@@ -920,6 +977,20 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			datensatz.setAbasId(abasId);
 			edpEditor.endEditSave();
 			datensatz.setIsimportiert(true);
+			
+//			neu wegen Aktionstabelle
+			
+			if (edpEditor.isActive()) {
+				edpEditor.endEditCancel();
+				logger.info("Editor save cancel "
+						+ datensatz.getDatenbank().toString() + ":"
+						+ datensatz.getGruppe().toString() + " ID:"
+						+ abasId);
+			}else {
+				
+				logger.info("Editor nicht aktiv!");
+				
+			}
 			
 		} else {
 			String krit = datensatz.getNameOfKeyfield() + "="
@@ -958,6 +1029,18 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 				datensatz.setAbasId(abasId);
 				edpEditor.endEditSave();
 				datensatz.setIsimportiert(true);
+				
+				if (edpEditor.isActive()) {
+					edpEditor.endEditCancel();
+					logger.info("Editor save cancel "
+							+ datensatz.getDatenbank().toString() + ":"
+							+ datensatz.getGruppe().toString() + " ID:"
+							+ abasId);
+				}else {
+					
+					logger.info("Editor nicht aktiv!");
+					
+				}
 			} else {
 
 				datensatz
@@ -970,18 +1053,21 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 
 	private String getSelObject(String krit, Datensatz datensatz) throws ImportitException, InvalidQueryException {
 //		selektiere nach dem Schlüsselfeld
-		
-		
-		
-			EDPQuery edpQuery = this.edpSession.createQuery();
+			EDPSession edpquerysession = null;
+			try{
+			if (datensatz.getOptionCode().getUseEnglishVariablen()) {
+				 edpquerysession = connectNewEdpsession(EDPVariableLanguage.ENGLISH);	
+			}else {
+				edpquerysession = connectNewEdpsession(EDPVariableLanguage.GERMAN);
+			}
+			Boolean connect = edpquerysession.isConnected();
+			EDPQuery edpQuery= edpquerysession.createQuery();
 
 			String tableName = datensatz.getDatenbank().toString()
 								+ ":" + datensatz.getGruppe().toString();
 
 			String key;
 			key = datensatz.getKeyOfKeyfield();
-		
-
 		if (key == null) {
 					key = "";
 		}
@@ -1004,6 +1090,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	String objectid = edpQuery.getField("id"); 
 	edpQuery.breakQuery();
 	
+	
 	if (recordCount == 1 ) {
 		return objectid;
 	}else if (recordCount >1 ) {
@@ -1011,6 +1098,10 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	}else {
 		return "0";
 	}
+			}finally{
+				closeEdpSession(edpquerysession);
+				
+			}
 		
 	}
 
@@ -1020,18 +1111,24 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	 * @param edpEditor
 	 * 
 	 * @throws CantChangeSettingException
+	 * @throws CantReadSettingException 
 	 *  
 	 */
-	private void setEditorOption(Datensatz datensatz, EDPEditor edpEditor) throws CantChangeSettingException {
+	private void setEditorOption(Datensatz datensatz, EDPEditor edpEditor) throws CantChangeSettingException, CantReadSettingException {
 		
 		OptionCode optionCode = datensatz.getOptionCode();
 		
 		if (optionCode!= null) {
 			
 			if (optionCode.getNofop()) {
-				edpEditor.getSession().setFOPMode(false);
+				if (edpEditor.getSession().getFOPMode()) {
+					edpEditor.getSession().setFOPMode(false);
+				}
 			}else {
-				edpEditor.getSession().setFOPMode(true);
+				
+				if (!edpEditor.getSession().getFOPMode()) {
+					edpEditor.getSession().setFOPMode(true);
+				}
 			}
 			
 
@@ -1317,32 +1414,37 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 	 */
 	
 	public void checkDatensatzListValues(ArrayList<Datensatz> datensatzList) throws ImportitException {
-		startEdpSession();
 		
-		for (Datensatz datensatz : datensatzList) {
-			List<Feld> kopfFelder = datensatz.getKopfFelder();
-			Boolean includeError = false;
-			for (Feld feld : kopfFelder) {
-				if (!checkData(feld)) {
-					includeError = true;
-				}
-				
-			}
-			List<DatensatzTabelle> tabellenZeilen = datensatz.getTabellenzeilen();
-			for (DatensatzTabelle datensatzTabelle : tabellenZeilen) {
-				ArrayList<Feld> tabfelder = datensatzTabelle.getTabellenFelder();
-				for (Feld feld : tabfelder) {
+		try {
+			startEdpSession();
+			for (Datensatz datensatz : datensatzList) {
+				List<Feld> kopfFelder = datensatz.getKopfFelder();
+				Boolean includeError = false;
+				for (Feld feld : kopfFelder) {
 					if (!checkData(feld)) {
 						includeError = true;
 					}
+
+				}
+				List<DatensatzTabelle> tabellenZeilen = datensatz
+						.getTabellenzeilen();
+				for (DatensatzTabelle datensatzTabelle : tabellenZeilen) {
+					ArrayList<Feld> tabfelder = datensatzTabelle
+							.getTabellenFelder();
+					for (Feld feld : tabfelder) {
+						if (!checkData(feld)) {
+							includeError = true;
+						}
+					}
+				}
+				if (includeError) {
+					datensatz.createErrorReport();
 				}
 			}
-			if (includeError) {
-				datensatz.createErrorReport();
-			}
+		} finally {
+			closeEdpSession(this.edpSession);
 		}
-		
-		closeEdpSession();
+
 	}
 
 	private long getAbasFieldLength(String abasTyp){
@@ -1531,8 +1633,9 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		int groupNumber = edpeksartinfo.getRefGroupNr();
 //		Die Prüfung soll nur ausgeführt werden wenn value <> "" ist
 		if (!value.isEmpty()) {
+			EDPQuery query = null; 
 			try {
-				EDPQuery query = getEDPQueryVerweis(value,
+				query = getEDPQueryVerweis(value,
 						databaseNumber, groupNumber,
 						feld.getColNumber());
 				query.getLastRecord();
@@ -1560,6 +1663,13 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 						+ value
 						+ " auf");
 	
+			}finally{
+				if (query != null) {
+					if (query.getSession().isConnected()) {
+						query.getSession().endSession();
+						logger.info("End EDPSession Query-Verweis");
+					}
+				}
 			}
 		}
 	}
@@ -1681,7 +1791,7 @@ private EDPQuery getEDPQueryVerweis(String value, Integer database,
 		query.startQuery(edpcriteria, fieldNames.toString());
 		
 	} catch (InvalidQueryException e) {
-		closeEdpSession();
+		closeEdpSession(this.edpSession);
 		throw new ImportitException( "fehlerhafter Selektionsstring: " + krit , e);
 	}
 	
@@ -1703,7 +1813,7 @@ public void commitTransaction() throws ImportitException {
 	} catch (TransactionException e) {		
 		throw new ImportitException("Das Commit der Transaction schlug fehl", e);
 	}finally{
-		closeEdpSession();
+		closeEdpSession(this.edpSession);
 	}	
 }
 
@@ -1716,7 +1826,7 @@ public void abortTransaction() throws ImportitException {
 	}catch(ConnectionLostException e){
 		throw new ImportitException("Die Verbindung ist abgebrochen", e);
 	}finally{
-		closeEdpSession();
+		closeEdpSession(this.edpSession);
 	}
 	
 }
