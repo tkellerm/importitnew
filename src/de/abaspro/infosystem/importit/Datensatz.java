@@ -298,6 +298,7 @@ public class Datensatz {
 	public void copyDatabaseinDatensatz(Datensatz datensatz) {
 		this.database = datensatz.getDatenbank();
 		this.group = datensatz.getGruppe();
+		this.tippcommand = datensatz.getTippkommando();
 		
 	}
 
