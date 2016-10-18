@@ -131,6 +131,7 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 					showOptions(infosysImportit, datensatzList);
 
 					dontChangeIfEqual = infosysImportit.getYoptdontchangeifeq();
+					
 				} else {
 					TextBox textbox = new TextBox(getContext(), "Fehler",
 							"Es wurde noch kein Datei eingelesen!");
@@ -509,7 +510,6 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				edpProcessing.checkDatensatzList(datensatzList);
 				logger.info("Ende checkDatensatzList");
 				
-				
 				infosysImportit.setYfehlerstruktur(geterrorDatasets(datensatzList));
 				
 				showDatenbankInfos(infosysImportit , datensatzList);
@@ -526,7 +526,6 @@ public class Importit21 extends EventHandler<InfosystemImportit> {
 				abasExceptionOutput(e);
 			}	      
 	    }
-
 		
 	  }
 	

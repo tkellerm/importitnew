@@ -111,6 +111,26 @@ public class Datensatz {
 			
 	}
 
+	public void aktualisiereOptionCodeInFeldern(){
+		for (Feld feld : this.kopfFelder) {
+			aktOptionsFeld(feld);		
+		}
+		for (DatensatzTabelle tabellenZeile : this.tabellenZeilen) {
+			ArrayList<Feld> tabFelder = tabellenZeile.getTabellenFelder();
+			for (Feld feld : tabFelder) {
+				aktOptionsFeld(feld);
+			}
+		}
+		
+	}
+
+
+	private void aktOptionsFeld(Feld feld) {
+//		setz die Optionen entsprechend dem Globalen Optionen  
+		feld.setOptionGlobalModifiable(this.optionCode.getCheckFieldIsModifiable());
+		feld.setOptionDontChangeIfEqual(this.optionCode.getDontChangeIfEqual());
+	}
+	
 	/**
 	 * @param kopfFelder2
 	 * @return ColNumber

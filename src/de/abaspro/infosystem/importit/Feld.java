@@ -9,15 +9,17 @@ package de.abaspro.infosystem.importit;
  */
 public class Feld {
 
-	
-
 	private String  name;
 	private String  value;
 	private String  key;
-	private Boolean option_notEmpty;
-	private Boolean option_modifiable;
-	private Boolean option_skip;
-	private Boolean option_dontChangeIfEqual;
+	private Boolean optionNotEmpty;
+	
+
+	private Boolean optionGlobalDontChangeIfEqual;
+	private Boolean optionModifiable;
+	private Boolean optionGlobalModifiable;
+	private Boolean optionSkip;
+	private Boolean optionDontChangeIfEqual;
 	private String  error;
 	private String  completeContent;
 	private Boolean fieldtoCopy;
@@ -27,6 +29,16 @@ public class Feld {
 	
 	
 	
+
+
+	public void setOptionGlobalDontChangeIfEqual(Boolean optionGlobalDontChangeIfEqual) {
+		this.optionGlobalDontChangeIfEqual = optionGlobalDontChangeIfEqual;
+	}
+
+
+	public void setOptionGlobalModifiable(Boolean optionGlobalModifiable) {
+		this.optionGlobalModifiable = optionGlobalModifiable;
+	}
 
 
 	@Override
@@ -54,6 +66,12 @@ public class Feld {
 		this.error = "";
 		this.name = "";
 		this.abasTyp = "";
+		this.optionGlobalModifiable = false;
+		this.optionGlobalDontChangeIfEqual = false;
+		this.optionModifiable = false;
+		this.optionNotEmpty = false;
+		this.optionSkip = false;
+		this.optionDontChangeIfEqual = false;
 		if (fieldToCopy) {
 	//		Es ist ein Kopfffeld und daher wird nicht value, sondern name gefüllt
 			this.name = extractValue(completeContent);
@@ -78,6 +96,9 @@ public class Feld {
 	
 	public Feld(String completeContent, Feld headfield)throws ImportitException {
 		super();
+		this.optionGlobalModifiable = false;
+		this.optionGlobalDontChangeIfEqual = false;
+		
 		if (headfield.getFieldInHead()) {
 			
 			this.completeContent = completeContent;
@@ -85,10 +106,10 @@ public class Feld {
 			this.name = "";
 			this.name = headfield.getName();
 			this.value = extractValue(completeContent);
-			this.option_modifiable = headfield.getOption_modifiable();
-			this.option_notEmpty = headfield.getOption_notEmpty();
-			this.option_skip = headfield.getOption_skip();
-			this.option_dontChangeIfEqual = headfield.getOption_dontChangeIfEqual();
+			this.optionModifiable = headfield.getOptionModifiable();
+			this.optionNotEmpty = headfield.getOptionNotEmpty();
+			this.optionSkip = headfield.getOptionSkip();
+			this.optionDontChangeIfEqual = headfield.getOptionDontChangeIfEqual();	
 			this.colNumber = headfield.colNumber;
 			this.key = "";
 			this.error = "";
@@ -101,18 +122,18 @@ public class Feld {
 	}
 
 	/**
-	 * @return the option_dontChangeIfEqual
+	 * @return the optiondontChangeIfEqual
 	 */
-	public Boolean getOption_dontChangeIfEqual() {
-		return option_dontChangeIfEqual;
+	public Boolean getOptionDontChangeIfEqual() {
+		return optionDontChangeIfEqual;
 	}
 
 
 	/**
-	 * @param option_dontChangeIfEqual the option_dontChangeIfEqual to set
+	 * @param optionDontChangeIfEqual the option_dontChangeIfEqual to set
 	 */
-	public void setOption_dontChangeIfEqual(Boolean option_dontChangeIfEqual) {
-		this.option_dontChangeIfEqual = option_dontChangeIfEqual;
+	public void setOptionDontChangeIfEqual(Boolean optionDontChangeIfEqual) {
+		this.optionDontChangeIfEqual = optionDontChangeIfEqual;
 	}
 
 
@@ -130,10 +151,10 @@ public class Feld {
 	// falls der String leer ist dann das Feld ignorieren
 		if (!completeContent2.isEmpty()) {
 	
-			this.option_notEmpty   = completeContent2.contains(ImportOptionen.NOTEMPTY.getSearchstring());
-			this.option_modifiable = completeContent2.contains(ImportOptionen.MODIFIABLE.getSearchstring());
-			this.option_skip       = completeContent2.contains(ImportOptionen.SKIP.getSearchstring());
-			this.option_dontChangeIfEqual = completeContent2.contains(ImportOptionen.DONT_CHANGE_IF_EQUAL.getSearchstring());
+			this.optionNotEmpty   = completeContent2.contains(ImportOptionen.NOTEMPTY.getSearchstring());
+			this.optionModifiable = completeContent2.contains(ImportOptionen.MODIFIABLE.getSearchstring());
+			this.optionSkip       = completeContent2.contains(ImportOptionen.SKIP.getSearchstring());
+			this.optionDontChangeIfEqual = completeContent2.contains(ImportOptionen.DONT_CHANGE_IF_EQUAL.getSearchstring());
 			
 			if (completeContent2.contains(ImportOptionen.KEY.getSearchstring())) {
 		//		Es muss in dem FELD @KEY=NAME_OF_KEY
@@ -143,7 +164,7 @@ public class Feld {
 				this.key = tempstring.substring(0, tempindex);
 			}
 		}else {
-			this.option_skip = true;
+			this.optionSkip = true;
 		}
 	}
 
@@ -199,28 +220,35 @@ public class Feld {
 		this.value = value;
 	}
 
-	public Boolean getOption_notEmpty() {
-		return option_notEmpty;
+	/**
+	 * 
+	 * 
+	 * @return true, wenn eines der beiden optionen option_notempty oder option_global_notEmpty gesetzt ist. 
+	 */
+	public Boolean getOptionGlobalDontChangeIfEqual() {
+		Boolean optdontChange = this.optionDontChangeIfEqual || this.optionGlobalDontChangeIfEqual;
+		return optdontChange;
 	}
 	
-	public void setOption_notEmpty(Boolean option_notEmpty) {
-		this.option_notEmpty = option_notEmpty;
+	public void setOptionNotEmpty(Boolean option_notEmpty) {
+		this.optionNotEmpty = option_notEmpty;
 	}
 	
-	public Boolean getOption_modifiable() {
-		return option_modifiable;
+	public Boolean getOptionModifiable() {
+		Boolean opModifiable = this.optionModifiable || this.optionGlobalModifiable; 
+		return opModifiable;
 	}
 	
-	public void setOption_modifiable(Boolean option_modifiable) {
-		this.option_modifiable = option_modifiable;
+	public void setOptionModifiable(Boolean option_modifiable) {
+		this.optionModifiable = option_modifiable;
 	}
 	
-	public Boolean getOption_skip() {
-		return option_skip;
+	public Boolean getOptionSkip() {
+		return optionSkip;
 	}
 	
-	public void setOption_skip(Boolean option_skip) {
-		this.option_skip = option_skip;
+	public void setOptionSkip(Boolean option_skip) {
+		this.optionSkip = option_skip;
 	}
 
 	public String getKey() {
@@ -264,7 +292,9 @@ public class Feld {
 		return abasFieldLength;
 	}
 
-
+	public Boolean getOptionNotEmpty() {
+		return optionNotEmpty;
+	}
 
 
 	/**

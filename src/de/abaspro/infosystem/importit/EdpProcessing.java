@@ -249,7 +249,6 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		
 		boolean dbok = checkDBorEditorCommdands(datensatz);
 //		Wenn es ein Tipkommanndo gibt muss noch die Datenbank gesucht werden damit die Felder gecheckt werden können
-		
 				
 		boolean kopfok = false;
 		boolean tabelleok = false;
@@ -292,9 +291,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			return true;	
 		}else {
 			return false;
-		}
-			
-		
+		}	
 	}
 
 	private boolean checkKundenartikeleigenschaftenKopf(List<Feld> kopfFelder, Boolean englVar) throws ImportitException {
@@ -598,7 +595,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			closeEdpSession(this.edpSession);
 			Boolean fehlergefunden = false;
 			for (Feld feld : feldListe) {
-				if (!feld.getOption_skip()) {
+				if (!feld.getOptionSkip()) {
 					
 				
 					VartabFeld vartabfeld = null; 
@@ -965,6 +962,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			ImportitException, CantSaveException, InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException, InvalidRowOperationException, ServerActionException, CantReadStatusException, CantReadSettingException {
 		
 		datensatz.setIsimportiert(false);
+		datensatz.aktualisiereOptionCodeInFeldern();
 		if (datensatz.getOptionCode().getAlwaysNew()) {
 			setEditorOption(datensatz, edpEditor);
 			logger.info("Editor starten Always NEW " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString());
@@ -1317,7 +1315,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		 *Falls das Feld mit Skip gekennzeichnet ist wird es ignoriert
 		 */
 		
-		if (!feld.getOption_skip()) {
+		if (!feld.getOptionSkip()) {
 			/** 
 			 * Falls die Option notEmpty gesetzt ist, wird geprüft,
 			 * ob der Feldwert leer ist, 
@@ -1329,7 +1327,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 				throw new ImportitException("Das Feld " + feld.getName() + "war im Datensatz " + datensatz.getValueOfKeyfield() + "in der Zeile " + rowNumber + " mit dem Wert NULL belegt");
 				
 			}
-			if (!(feld.getOption_notEmpty() && feld.getValue().isEmpty())) {
+			if (!(feld.getOptionNotEmpty() && feld.getValue().isEmpty())) {
 				/** 
 				 *Wenn die option modifiable gesetzt ist, wird vor dem Schreiben geprüft, ob das Feld Beschreibbar ist.
 				 *Wenn nicht dann wird der Wert nicht geschrieben.
@@ -1350,7 +1348,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 //									beschreibe das Feld 
 							String datafieldval = feld.getValue();
 							
-							if (!(feld.getOption_dontChangeIfEqual() & 
+							if (!(feld.getOptionDontChangeIfEqual() & 
 									edpEditor.getFieldVal(rowNumber, feld.getName()).equals(datafieldval))) {
 								edpEditor.setFieldVal(rowNumber, feld.getName(), datafieldval);
 					
@@ -1360,7 +1358,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 							
 						}else {
 							
-							if (!feld.getOption_modifiable() && !datensatz.getNameOfKeyfield().equals(feld.getName())) {
+							if (!feld.getOptionModifiable() && !datensatz.getNameOfKeyfield().equals(feld.getName())) {
 								if (rowNumber == 0) {									
 									throw new ImportitException("Das Kopffeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
 											+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + "nicht änderbar");	
@@ -1456,14 +1454,14 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		
 		String value = feld.getValue();
 //		falls Feld ist mit skip gekennzeichnet, nicht prüfen
-		if (!feld.getOption_skip()) {
+		if (!feld.getOptionSkip()) {
 			logger.debug("checkData Feld " + feld.getName() + " Zeile "
 					+ feld.getColNumber() + " AbasTyp " + feld.getAbasTyp()
 					+ " Wert " + value);
 			EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(feld.getAbasTyp());
 			int datatyp = edpeksartinfo.getDataType();
 			if (value != null) {
-				if (!(feld.getOption_notEmpty() & value.isEmpty())) {
+				if (!(feld.getOptionNotEmpty() & value.isEmpty())) {
 					if (datatyp == EDPTools.EDP_REFERENCE
 							|| datatyp == EDPTools.EDP_ROWREFERENCE) {
 						String edpErpArt = edpeksartinfo.getERPArt();
@@ -1631,6 +1629,10 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 		String value = feld.getValue();
 		int databaseNumber = edpeksartinfo.getRefDatabaseNr();
 		int groupNumber = edpeksartinfo.getRefGroupNr();
+		
+		if (databaseNumber == 7 && groupNumber == 0) {
+			value = extractNumberArbeitsgang(value); 
+		}
 //		Die Prüfung soll nur ausgeführt werden wenn value <> "" ist
 		if (!value.isEmpty()) {
 			EDPQuery query = null; 
@@ -1672,6 +1674,14 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 				}
 			}
 		}
+	}
+
+	private String extractNumberArbeitsgang(String value) {
+
+		String newValue = value.replaceAll("A", "");
+		newValue = newValue.replaceAll(" ", "");
+		
+		return newValue;
 	}
 
 	/**
