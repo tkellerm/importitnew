@@ -1,0 +1,134 @@
+V#21
+K#n#IMPORTIT21#Import IT 2.1#A#isrein/screen.OW1.IMPORTIT21#25B.1##
+K#(0)#(0)#4000077##n#n#InfosystemImportit#y
+K#n#(1)#
+K######
+K#######
+K#ow1#(127)##(116)#(98)###0#0#
+K#########
+Z#0#itgrust##n####(0)######n#0#n#0##n##
+Z#0#itgruppe##n####(0)######n#2#n#0##n##
+Z#0#itgrbez##n####(0)######n#2#n#0##n##
+Z#0#itsn##n####(0)######n#0#n#0##n##
+Z#0#itid##n####(0)######n#2#n#0##n##
+Z#0#itdnr##n####(0)######n#0#n#0##n##
+Z#0#itdbez##n####(0)######n#2#n#0##n##
+Z#0#itobjgruppe##n####(0)######n#0#n#0##n##
+Z#0#itobjgrbez##n####(0)######n#2#n#0##n##
+Z#0#itobjdnr##n####(0)######n#0#n#0##n##
+Z#0#itobjdbez##n####(0)######n#2#n#0##n##
+Z#0#itobjinzeile##n####(0)######n#0#n#0##n##
+Z#0#itozeilen##n####(0)######n#0#n#0##n##
+Z#0#itdateiarchivieren##n####(0)######n#0#n#0##n##
+Z#0#itbudruck##n####(1)######n#0#n#0##n##
+Z#0#itbudruck2##n####(1)######n#0#n#0##n##
+Z#0#itbuinfosys##n####(1)######n#0#n#0##n##
+Z#0#itbuaktion##n####(1)######n#0#n#0##n##
+Z#0#itversionn##n####(0)######n#0#n#0##n##
+Z#0#itablagen##n####(0)######n#0#n#0##n##
+Z#0#itablagef##n####(0)######n#2#n#0##n##
+Z#0#itnum65##n####(0)######n#0#n#0##n##
+Z#0#itnummer##n####(0)######n#2#n#0##n##
+Z#0#itnummerb##n####(0)######n#2#n#0##n##
+Z#0#itsuch65##n####(0)######n#0#n#0##n##
+Z#0#itsuch##n####(0)######n#2#n#0##n##
+Z#0#itsuchb##n####(0)######n#2#n#0##n##
+Z#0#isarb##n####(0)######n#0#n#0##n##
+Z#0#israngarb##n####(0)######n#0#n#0##n##
+Z#0#isdatname##n####(0)######n#0#n#0##n##
+Z#0#isdn##n####(0)######n#2#n#0##n##
+Z#0#isdatnr##n####(0)######n#2#n#0##n##
+Z#0#isgrp##n####(0)######n#0#n#0##n##
+Z#0#isgrliste##n####(0)######n#0#n#0##n##
+Z#0#isgrtxt##n####(0)######n#0#n#0##n##
+Z#0#isgrausw##n####(1)######n#0#n#0##n##
+Z#0#isbkopf##n####(1)######n#0#n#0##n##
+Z#0#isbfuss##n####(1)######n#0#n#0##n##
+Z#0#isgrkopf##n####(1)######n#0#n#0##n##
+Z#0#isgrfuss##n####(1)######n#0#n#0##n##
+Z#0#istab##n####(1)######n#0#n#0##n##
+Z#0#isbtyp##n####(0)######n#0#n#0##n##
+Z#0#isatyp##n####(0)######n#0#n#0##n##
+Z#0#isageraet##n####(0)######n#0#n#0##n##
+Z#0#isaparam##n####(0)######n#0#n#0##n##
+Z#0#ismaxlines##n####(0)######n#0#n#0##n##
+Z#0#isanzstufen##n####(0)######n#0#n#0##n##
+Z#0#istreeview##n####(0)######n#0#n#0##n##
+Z#0#isabbrfrage##n####(0)######n#0#n#0##n##
+Z#0#ismenuetitel##n####(0)######n#0#n#0##n##
+Z#0#ismenuevorauswahl##n####(0)######n#0#n#0##n##
+Z#0#ismenuesofort##n####(0)######n#0#n#0##n##
+Z#0#ismenueokay##n####(1)######n#0#n#0##n##
+Z#0#ismenueabbruch##n####(1)######n#0#n#0##n##
+Z#0#isabbrfragetxt##n####(1)######n#0#n#0##n##
+Z#0#isisref##n####(0)######n#0#n#0##n##
+Z#0#isselect##n####(0)######n#0#n#0##n##
+Z#0#isauswahl##n####(0)######n#0#n#0##n##
+Z#0#isstufe##n####(0)######n#0#n#0##n##
+Z#0#isbstart##n####(1)######y#0#n#0##n##
+Z#0#isstartzeit##n####(0)######n#0#n#0##n##
+Z#1#isydatafile#GL50#n#Import Excel File#A#A#(2)######y#1#n#0##n##
+Z#1#isyerrorfile#GL50#n#Error File#A#A#(2)######y#1#n#0##n##
+Z#1#isypruefstrukt#BU3#n#Struktur �berpr�fen#A#A#(1)##java:de.abaspro.infosystem.importit.Importit21@importitApp####y#1#n#0##n##
+Z#1#isypruefdat#BU3#n#Daten �berpr�fen#A#A#(1)##java:de.abaspro.infosystem.importit.Importit21@importitApp####y#1#n#0##n##
+Z#1#isyintabladen#BU3#n#Daten in Tabelle anzeigen#A#A#(1)##java:de.abaspro.infosystem.importit.Importit21@importitApp####y#1#n#0##n##
+Z#1#isyimport#BU3#n#Importieren#A#A#(1)##java:de.abaspro.infosystem.importit.Importit21@importitApp####y#1#n#0##n##
+Z#1#isydb#GL30#n#Datenbank#A#A#(2)######y#1#n#0##n##
+Z#1#isygruppe#GL30#n#Gruppe#A#A#(2)######y#1#n#0##n##
+Z#1#isytippkommando#GL4#n#Tippkommando#A#A#(2)######y#1#n#0##n##
+Z#1#isyzeilen#IP9#n#Zeilen#A#A#(2)######y#1#n#0##n##
+Z#1#isyfehler#IP9#n#Fehler beim Import#A#A#(2)######y#1#y#0##y##
+Z#1#isyfehlerstruktur#IP9#n#Fehler in der Strukturpr�fung#A#A#(2)######y#1#y#0##y##
+Z#1#isyfehlerdatpruef#IP9#n#Fehler in der Datenpr�fung#A#A#(2)######y#1#y#0##y##
+Z#1#isyrest#IP9#n#Rest#A#A#(2)######y#1#n#0##n##
+Z#1#isyok#IP9#n#OK#A#A#(2)######y#1#n#0##n##
+Z#1#isytababspalte#IP3#n#Tabelle ab Spalte#A#A#(2)######y#1#n#0##n##
+Z#1#isytabelle#B#n#Tabelle#A#A#(2)#####java:de.abaspro.infosystem.importit.Importit21@importitApp#y#1#n#0##n##
+Z#1#isyserver#GL30#n#Server#A#A#(2)######n#1#n#0##n##
+Z#1#isyport#IP4#n#Port#A#A#(2)######n#1#n#0##n##
+Z#1#isymandant#GL30#n#Mandant#A#A#(2)#####java:de.abaspro.infosystem.importit.Importit21@importitApp#n#1#n#0##n##
+Z#1#isypasswort#BGLP30#n#Passwort#A#A#(2)######n#1#n#0##n##
+Z#1#isydatatab#B#n#Daten f�r Tabelle#A#A#(2)######y#1#n#0##n##
+Z#1#isyoptdeltab#B#n#Tabelle vorher l�schen#A#A#(2)#####java:de.abaspro.infosystem.importit.Importit21@importitApp#y#1#n#0##n##
+Z#1#isyoptnofop#B#n#Fop aktiv#A#A#(2)#####java:de.abaspro.infosystem.importit.Importit21@importitApp#y#1#n#0##n##
+Z#1#isyoptalwaysnew#B#n#Immer Neu#A#A#(2)#####java:de.abaspro.infosystem.importit.Importit21@importitApp#n#1#n#0##n##
+Z#1#isyopttransaction#B#n#Transaktion#A#A#(2)#####java:de.abaspro.infosystem.importit.Importit21@importitApp#y#1#n#0##n##
+Z#1#isydoku#BU3#n#Dokumentation#A#A#(1)##java:de.abaspro.infosystem.importit.Importit21@importitApp####y#1#n#0##n##
+Z#1#isyversion#GL6#n#Version#A#A#(2)######y#1#n#0##n##
+Z#1#isyoptmodifiable#B#n#Modifiable#A#A#(2)#####java:de.abaspro.infosystem.importit.Importit21@importitApp#y#1#n#0##n##
+Z#1#isyoptuseenglvars#B#n#Benutze Englische Variablennamen#A#A#(2)#####java:de.abaspro.infosystem.importit.Importit21@importitApp#y#1#n#0##n##
+Z#1#isyoptdontchangeifeq#B#n#�ndere nicht, wenn gleicher Inhalt#A#A#(2)#####java:de.abaspro.infosystem.importit.Importit21@importitApp#y#1#n#0##n##
+Z#1#isyoption#IP3#n#Optionscode#A#A#(2)######y#1#n#0##n##
+Z#1#isyshowalldata#B#n#Zeige alle Datens�tze in der Zeile#A#A#(2)######y#1#n#0##n##
+Z#1#isyshowonlyerrorline#B#n#Zeige nur fehlerhafte Datens�tze in der Zeile#A#A#(2)######y#1#n#0##n##
+Z#1#isyeigmandant#GL50#n#eigener Mandant#A#A#(2)######n#1#n#0##n##
+Z#1#isystatus#GL30#n#Status#A#A#(2)######y#1#n#0##n##
+Z#0#ittabnr##y####(0)######n#0#n#0##n##
+Z#0#itzid##y####(0)######n#0#n#0##n##
+Z#0#itzn##y####(0)######n#0#n#0##n##
+Z#0#itbudruck##y####(1)######n#0#n#0##n##
+Z#0#itbudruck2##y####(1)######n#0#n#0##n##
+Z#0#itbuinfosys##y####(1)######n#0#n#0##n##
+Z#0#itbuaktion##y####(1)######n#0#n#0##n##
+Z#0#itmarkiert##y####(1)######n#0#n#0##n##
+Z#0#itmarkierung##y####(1)######n#0#n#0##n##
+Z#0#istbaumstufe##y####(0)######n#0#n#0##n##
+Z#0#istbaumstat##y####(0)######n#0#n#0##n##
+Z#0#istbaumaufzu##y####(1)######n#0#n#0##n##
+Z#0#istbaumtext##y####(1)######n#0#n#0##n##
+Z#0#istbauminfo##y####(1)######n#0#n#0##n##
+Z#0#istbaumicon##y####(1)######n#0#n#0##n##
+Z#0#istbaumiconz##y####(1)######n#2#n#0##n##
+Z#0#istmenuemoeglich##y####(0)######n#0#n#0##n##
+Z#0#istmenueaktion##y####(0)######n#0#n#0##n##
+Z#0#istmenuean##y####(0)######n#0#n#0##n##
+Z#2#isysel#GL50#y#Selektion#A#A#(0)######y#1#y#0##y##
+Z#2#isydatensatz#VPS99#y#Datensatz#A#A#(0)######y#1#y#0##y##
+Z#2#isytfehler#T70#y#Fehlermeldung#A#A#(0)######y#1#y#0##y##
+Z#2#isytfehlerstruktur#T70#y#Fehlermeldung Strukturpr�fung#A#A#(0)######y#1#y#0##y##
+Z#2#isytfehlerdatpruef#T70#y#Fehlermeldung Datenpr�fung#A#A#(0)######y#1#y#0##y##
+Z#2#isyimportiert#B#y#importiert#A#A#(0)######y#1#y#0##y##
+Z#2#isyfehlerda#B#y#Fehler vorhanden#A#A#(0)######y#1#y#0##y##
+Z#2#isyicon#DV1#y##A#A#(0)######y#1#y#0##y##
+Z#2#isyiconz#DVZ1#y##A#A#(0)######n#3#n#0##n##
+Z#2#isykomtext#TN2#y#Fehlerreport#A#A#(0)######y#1#y#0##y##
