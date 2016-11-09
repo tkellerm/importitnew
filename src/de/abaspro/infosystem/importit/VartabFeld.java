@@ -44,7 +44,13 @@ public class VartabFeld {
 			this.varTypeNew = query.getField(varNameVarTypeNew);
 			this.varLength = query.getField(varNameVarLength);
 			String testlength = query.getField("varLengthExt");
-			this.varInTab = new Boolean(query.getField(varNameVarInTab));	
+			String inTab = query.getField(varNameVarInTab);
+			if (inTab.equals("ja")||inTab.equals("yes")||inTab.equals("1") ) {
+				this.varInTab = true;
+			}else {
+				this.varInTab = false;
+			}
+				
 		}else throw new NullPointerException("Das Query-Object war nicht definiert");	
 	}
 

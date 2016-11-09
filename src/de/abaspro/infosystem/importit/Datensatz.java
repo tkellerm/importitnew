@@ -2,10 +2,9 @@ package de.abaspro.infosystem.importit;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import de.abas.ceks.jedp.EDPVariableLanguage;
 
 public class Datensatz {
@@ -338,9 +337,9 @@ public class Datensatz {
 		}
 		
 		if (this.errordebug.isEmpty()) {
-			this.errordebug =  e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e);
+			this.errordebug =  e.getMessage() + "\n" + e.getStackTrace().toString();
 		}else {
-			this.errordebug = this.errordebug + "\n" + e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e);
+			this.errordebug = this.errordebug + "\n" + e.getMessage() + "\n" + e.getStackTrace().toString();
 		}
 		
 		

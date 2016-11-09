@@ -11,5 +11,6 @@
 	<classpathentry kind="lib" path="includejar/poi-ooxml-schemas-3.9-20121203.jar"/>
 	<classpathentry kind="lib" path="includejar/xmlbeans-2.3.0.jar"/>
 	<classpathentry kind="lib" path="includejar/commons-lang3-3.4.jar"/>
+	<classpathentry kind="lib" path="/S3Java/lib/log4j.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

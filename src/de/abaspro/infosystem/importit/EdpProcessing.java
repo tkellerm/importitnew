@@ -609,11 +609,23 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 					}
 					
 					if (vartabfeld != null) {
-						feld.setAbasTyp(vartabfeld.getAktivType());
-						logger.trace("Feld " + feld.getName() + " mit abastyp " + vartabfeld.getAktivType() + " gefunden" ); 
-						feld.setAbasFieldLength(getAbasFieldLength(vartabfeld.getVarLength()));
 						
-						
+							if (vartabfeld.getVarInTab().equals(inTab)) {
+								feld.setAbasTyp(vartabfeld.getAktivType());
+								logger.trace("Feld " + feld.getName() + " mit abastyp " + vartabfeld.getAktivType() + " gefunden" ); 
+								feld.setAbasFieldLength(getAbasFieldLength(vartabfeld.getVarLength()));	
+							}else {
+								String fehlertext;
+								if (inTab) {
+									fehlertext = "Das Feld mit dem Namen " + feld.getName() + " wurde in der Vartab gefunden, ist aber kein Tabellenfeld";	
+								}else {
+									fehlertext = "Das Feld mit dem Namen " + feld.getName() + " wurde in der Vartab gefunden, ist aber ein Tabellenfeld";
+								}
+								fehlergefunden = true;
+								feld.setError(fehlertext);
+								logger.error(fehlertext);
+							}	
+												
 					}else {
 						String fehlertext = "Das Feld mit dem Namen " + feld.getName() + " wurde in der Vartab nicht gefunden";
 						fehlergefunden = true;
