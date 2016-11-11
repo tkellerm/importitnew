@@ -6,54 +6,43 @@ import de.abas.ceks.jedp.EDPConstants;
 import de.abas.ceks.jedp.EDPQuery;
 import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.InvalidQueryException;
+import de.abaspro.utils.Util;
 
 public class Vartab {
 	 
 	
-	HashMap<String, VartabFeld> englVars;
-	HashMap<String, VartabFeld> germanVars;
+	HashMap<String, VartabField> englishVariables = new HashMap<>();
+	HashMap<String, VartabField> germanVariables = new HashMap<>();
 	 
 	
 	 public Vartab(EDPSession edpSession , Integer datenbank , Integer gruppe) throws ImportitException {
-//		Es werden alle Felder aus Vartab geladen
-		EDPQuery query = edpSession.createQuery(); 
-		
+		EDPQuery query = edpSession.createQuery();
 		int aliveFlag = EDPConstants.ALIVEFLAG_BOTH;
 		String[] fieldNames = {"varName" , "varNameNew" , "inTab" , "varType" , "varTypeNew" , "varLengthExt"};
 		String key = "";
 		String tableName = "12:26";
-		this.englVars = new HashMap<String, VartabFeld>();
-		this.germanVars = new HashMap<String, VartabFeld>();
-		String krit = "0:grpDBDescr=(" + datenbank.toString() + ");0:grpGrpNo=" + gruppe.toString() +    ";" +  ";@englvar=true;@language=en";		
-		
+		String criteria = "0:grpDBDescr=(" + datenbank.toString() + ");0:grpGrpNo=" + gruppe.toString() + ";" +  ";@englvar=true;@language=en";
 		try {
-			query.startQuery(tableName, key, krit, true, aliveFlag, true, true, fieldNames, 0, 10000);
+			query.startQuery(tableName, key, criteria, true, aliveFlag, true, true, fieldNames, 0, 10000);
 			while (query.getNextRecord()) {
-				
-				VartabFeld vartabFeld = new VartabFeld(query);
-				this.englVars.put(vartabFeld.getVarNameEnglish(), vartabFeld);
-				this.germanVars.put(vartabFeld.getAktivVarName(), vartabFeld);
+				VartabField vartabField = new VartabField(query);
+				englishVariables.put(vartabField.getVarNameEnglish(), vartabField);
+				germanVariables.put(vartabField.getActiveVarName(), vartabField);
 			}
-		
 		} catch (InvalidQueryException e) {
 			if (edpSession.isConnected()) {
 				edpSession.endSession();
 			}
-			throw new ImportitException( "fehlerhafter Selektionsstring: " + krit , e);
+			throw new ImportitException(Util.getMessage("err.edp.query.bad.selection.string", criteria), e);
 		} 
-		 
 	}
 
-	public VartabFeld checkVartabforEnglVarName(String name) {
-		VartabFeld vartabFeld = englVars.get(name);
-		
-		return vartabFeld;
+	public VartabField checkVartabEnglish(String name) {
+		return englishVariables.get(name);
 	}
 
-	public VartabFeld checkVartabforGermanVarName(String name) {
-		VartabFeld vartabFeld = germanVars.get(name);
-		
-		return vartabFeld;
+	public VartabField checkVartabGerman(String name) {
+		return germanVariables.get(name);
 	}
 	
 	

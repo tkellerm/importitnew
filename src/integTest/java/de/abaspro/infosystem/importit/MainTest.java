@@ -2,18 +2,18 @@ package de.abaspro.infosystem.importit;
 
 import de.abas.erp.db.schema.customer.Customer;
 import de.abaspro.infosystem.importit.util.AbstractTest;
-import org.junit.After;
+import de.abaspro.utils.Util;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
-public class Importit21Test extends AbstractTest {
+public class MainTest extends AbstractTest {
 
     @Test
-    public void integTest() throws Exception {
+    public void integTestImport() throws Exception {
         infosys.setYserver(getHostname());
         infosys.setYmandant(getClient());
         infosys.setYport(getPort());
@@ -25,18 +25,30 @@ public class Importit21Test extends AbstractTest {
 
         assertThat(getMessage(), not(containsString("Java-Klasse nicht gefunden")));
         assertThat(infosys.getYfehlerstruktur(), is(0));
-        assertThat(infosys.getYstatus(), is("Strukturprüfung durchgelaufen"));
+        assertThat(infosys.getYstatus(), is(Util.getMessage("main.status.structure.check.success")));
 
         infosys.invokeYpruefdat();
-        assertThat(infosys.getYstatus(), is("Datenprüfung erfolgreich"));
+        assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
 
         infosys.invokeYimport();
-        assertThat(infosys.getYstatus(), is("Import erfolgreich"));
+        assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
         assertThat(infosys.getYfehler(), is(0));
 
         for (int i = 0; i < 8; i++) {
             assertNotNull(getObject(Customer.class, "1TEST" + i));
         }
+    }
+
+    @Test
+    public void integTestDocumentation() {
+        infosys.setYserver(getHostname());
+        infosys.setYmandant(getClient());
+        infosys.setYport(getPort());
+        infosys.setYpasswort(getPassword());
+
+        infosys.invokeYdoku();
+
+        assertFalse(getMessage().contains(Util.getMessage("main.docu.error")));
     }
 
     @Override

@@ -1,708 +1,418 @@
 package de.abaspro.infosystem.importit;
 
+import de.abas.erp.common.type.AbasDate;
+import de.abaspro.utils.Util;
+import org.apache.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
-import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import de.abas.erp.common.type.AbasDate;
-
-/**
- * @author tkellermann
- * 
- *In der Klasse ExcelProcessing soll die ExcelDatei ausgelesen 
- *und in das Object Datensatz geschrieben werden.
- *
- *
- */
 
 public class ExcelImportProcessing {
 
-	private org.apache.poi.ss.usermodel.Workbook importWorkbook;
-	private org.apache.poi.ss.usermodel.Workbook errorWorkbook;
-	private org.apache.poi.ss.usermodel.Sheet importSheet;
-	private org.apache.poi.ss.usermodel.Sheet errorSheet;
-	
-	private ArrayList<Datensatz> datensatzList;
-	private List<Feld> kopfFelder ;
-	private DatensatzTabelle tabellenFelder;
-	
-	private String importFilename; 
-	private String errorFilename;
-	private Integer db;
-	private Integer gruppe;
-	private String dbString;
-	private String dbgroupString;
-	private Integer tippkommando;
-	private String tippkommandoString;
-	private Integer tabelleAbFeld; 
-	private int anzahlDatensaetze;
-	private OptionCode optionCode;
-	private Logger logger = Logger.getLogger(Importit21.class);
-	
-	public ExcelImportProcessing(String importFilename) throws ImportitException {
-		super();
-		this.kopfFelder = new ArrayList<Feld>();
-		this.tabellenFelder = new DatensatzTabelle();
-		this.datensatzList = new ArrayList<Datensatz>();
-		this.importFilename = importFilename;
-		checkImportFile(importFilename);
-		this.importWorkbook = initWorkbook(importFilename);
-		this.importSheet = importWorkbook.getSheetAt(0);
-		pruefeUndHoleInfoAusSheet(this.importSheet);
-		this.kopfFelder = readFieldinHead(this.importSheet , this.tabelleAbFeld);
-		this.tabellenFelder = readFieldInTable(this.importSheet , this.tabelleAbFeld);
-		this.datensatzList = readAllData(this.importSheet);
-	}
-	
-	
-	
-	
-	/**
-	 * @param importSheet2
-	 * @return
-	 * @throws ImportitException
-	 * 
-	 * Über die Funktion readAllData werden die Daten aus dem Excelzeilen in die Datensatzstruktur eingelesen.
-	 * Über das Keyfeld wird gesteuert, ob ein neuer Datensatz angelegt
-	 *  
-	 * 
-	 */
-	private ArrayList<Datensatz> readAllData(Sheet importSheet2) throws ImportitException {
-	
-		ArrayList<Datensatz> datensatzListtemp = new ArrayList<Datensatz>();
-		Integer rowstart = 2;
-		Integer col = 0;
-		Datensatz datensatz = null;
-		for (Integer row = rowstart ; row <= getMaxRow(importSheet2); row++) {
-//			prüfen, ob noch gleicher Datensatz normal Col = 0, wenn key - Feldnummer aus kopfffelder holen angegeben dann
-//			Wenn das erste Feld in der Zeile leer ist wird die Zeile ignoriert
-			if (!getZellenInhaltString(importSheet2, 0, row).isEmpty()) {
-				if (datensatz==null) {
-					
-//					Es wird die erste Datenzeile in der ExcelTabelle gelesen
-					
-					datensatz = fuellValueInKopfdatensatz(importSheet2 , row);
-					
-					datensatzListtemp.add(datensatz);		
-					
-				}else {
-					
-//					Es wird eine weitere Zeile gelesen
-//					prüfen ob noch gleicher Kopfdatensatz Prüfung über keyfeld(ColNumber)
-					String valueKeyfield = getZellenInhaltString(importSheet2, datensatz.getKeyfield(), row);
-					if ((!datensatz.getValueOfKeyfield().equals(valueKeyfield)) || this.tabellenFelder == null) {
-							//Es fängt ein neuer Datensatz an
-							datensatz = null;
-							datensatz = fuellValueInKopfdatensatz(importSheet2 , row);
-							datensatzListtemp.add(datensatz);
-					}
+    private Sheet importSheet;
+    private ArrayList<Data> dataList;
+    private List<Field> headerFields;
+    private DataTable tableFields;
+    private Integer database;
+    private Integer group;
+    private String databaseString;
+    private String groupString;
+    private Integer typeCommand;
+    private String typeCommandString;
+    private Integer tableFromField;
+    private OptionCode optionCode;
+    private Logger logger = Logger.getLogger(Main.class);
 
-				}
-//				falls es eine Tabelle gibt muss Sie in jeder Zeile ausgelesen werden
-				readTableData(importSheet2 ,row , datensatz);	
-			}
-						
-		}
-		
-		return datensatzListtemp;
-	}
+    public ExcelImportProcessing(String importFilename) throws ImportitException {
+        super();
+        this.headerFields = new ArrayList<>();
+        this.tableFields = new DataTable();
+        this.dataList = new ArrayList<>();
+        checkImportFile(importFilename);
+        this.importSheet = initWorkbook(importFilename).getSheetAt(0);
+        getFromSheet();
+        this.headerFields = readFieldsInHead();
+        this.tableFields = readFieldsInTable();
+        this.dataList = readAllData();
+    }
+
+    private ArrayList<Data> readAllData() throws ImportitException {
+        ArrayList<Data> dataList = new ArrayList<>();
+        Data data = null;
+        for (Integer row = 2; row <= importSheet.getLastRowNum(); row++) {
+            if (!getCellContents(0, row).isEmpty()) {
+                if (data == null) {
+                    data = fillValueInHead(row);
+                    dataList.add(data);
+                } else {
+                    String valueKeyfield = getCellContents(data.getKeyField(), row);
+                    if ((!data.getValueOfKeyField().equals(valueKeyfield)) || this.tableFields == null) {
+                        data = fillValueInHead(row);
+                        dataList.add(data);
+                    }
+                }
+                readTableData(row, data);
+            }
+        }
+        return dataList;
+    }
 
 
+    private void readTableData(Integer row, Data data) throws ImportitException {
+        if (tableFields != null) {
+            List<DataTable> rows = data.getTableRows();
+            DataTable dataTable = new DataTable(tableFields);
+            ArrayList<Field> fields = dataTable.getTableFields();
+            for (Field field : fields) {
+                field.setValue(getCellContents(field.getColNumber(), row));
+            }
+            if (!dataTable.isEmpty() || row == 2) {
+                rows.add(dataTable);
+            }
+        }
+    }
 
-	private void readTableData(Sheet importSheet2, Integer row, Datensatz datensatz) throws ImportitException {
-		
-//		Wenn keine tabellenfelder definiert sind, dürfen auch keine Tabellen gefüllt werden.
-		
-		if (this.tabellenFelder !=null) {
-				
-			List<DatensatzTabelle> tabelle = datensatz.getTabellenzeilen();	
-				DatensatzTabelle datensatzTabelle = new DatensatzTabelle(this.tabellenFelder);
-				ArrayList<Feld> tabrow = datensatzTabelle.getTabellenFelder();
-//				tabrow = this.tabellenFelder.getTabellenFelder();
-				
-				for (Feld feld : tabrow) {
-					feld.setValue(getZellenInhaltString(importSheet2, feld.getColNumber(), row));
-				}
-				/**
-				 * row ist der Zeilenzähler in der ExcelTabelle und die Daten beginnen in row 2
-				 * um die Prüfung der Inhalte durchzuführen muss eine Zeile in dem Datensatz mit den Tabellenfeldern vorhanden sein
-				*/
-				if(!datensatzTabelle.isEmpty() || row == 2 ){
-//					Datensatz an Tabelle anfügen
-					
-					tabelle.add(datensatzTabelle);						
-				}
-
-			}
-				
-	}
-
-	/**
-	 * @param importSheet2
-	 * @param tableBeginAtRow
-	 * @return
-	 * @throws ImportitException
-	 * 
-	 * Liest die Werte aus bis zur Spalte @tableBeginAtRow aus und schreibt sie in das Value der einzeln Kopffeldern
-	 * 
-	 */
-	private Datensatz fuellValueInKopfdatensatz(Sheet importSheet2, Integer tableBeginAtRow) throws ImportitException {
-
-		Datensatz datensatz = initNewDatensatz();
-		List<Feld> kopffelder = datensatz.getKopfFelder();
-		for (Feld feld : kopffelder) {
-			feld.setValue(getZellenInhaltString(importSheet2, feld.getColNumber(), tableBeginAtRow));
-
-		}
-
-		return datensatz;
-		
-	}
-
-
-
-
-	private Datensatz initNewDatensatz() throws ImportitException {
-
-		Datensatz datensatz = new Datensatz();
-		
-		datensatz.setKopfFelder(getCopyOfKopffelder());
-		datensatz.setDatenbank(this.db);
-		datensatz.setDbString(this.dbString);
-		datensatz.setGruppe(this.gruppe);
-		datensatz.setDbGroupString(this.dbgroupString);
-		datensatz.setTippkommando(this.tippkommando);
-		datensatz.setTippcommandString(this.tippkommandoString);
-		datensatz.setOptionCode(this.optionCode);
-		datensatz.setTableStartsAtField(this.tabelleAbFeld);
-		
-		return datensatz;
-		
-	}
-
-
-
-	private List<Feld> getCopyOfKopffelder() throws ImportitException {
-		
-		
-		List<Feld> kopfFelderNeu = new ArrayList<Feld>();
-		Feld feldneu;
-		for (Feld feld : this.kopfFelder) {
-			feldneu = new Feld(feld.getCompleteContent(),feld);
-			kopfFelderNeu.add(feldneu);
-		}
-		
-		return kopfFelderNeu;
-		
-	}
-	
-	
-	public ArrayList<Datensatz> getDatensatzList() {
-		return datensatzList;
-	}
-
-
-
-	private  List<Feld> readFieldinHead(Sheet importSheet2, Integer tabelleAbFeld2) throws ImportitException {
-
-//			alle Felder in der Zeile2 durchlaufen, ob Sie in der Datenbank vorhanden sind
-//			Falls ja, dann in Struktur einfügen
-			List<Feld> kopfFelder2 = new ArrayList<Feld>();
-			String variable;
-			
-//			Tabellefelder  vorhanden
-				Integer row = 1;
-				for (int col = 0; (col < getMaxCol(importSheet2)) && (col < (this.tabelleAbFeld) || this.tabelleAbFeld == 0) ; col++) {
-					
-//					Zelleninhalt auslesen und Feld Konstruktor übergeben
-					String feldInhalt = getZellenInhaltString(importSheet2, col, row);
-//					Falls das Feld komplettleer ist dann nicht in Feldliste aufnehmen
-					
-					if (feldInhalt !=null) {
-						if (!feldInhalt.isEmpty()) {
-							Feld feld = new Feld(feldInhalt, true, col);
-
-							//						hänge das Feld an die Kopffelder an
-
-							kopfFelder2.add(feld);
-						}
-					}
-					
-					
-				}
-				
-			return kopfFelder2;	
-	}
-		
-
-	private DatensatzTabelle readFieldInTable(Sheet importSheet2,	Integer tabelleAbFeld2) throws ImportitException {
-//		alle Felder in der Zeile2 durchlaufen, ob Sie in der Datenbank vorhanden sind
-//		Falls ja, dann in Struktur einfügen
-		DatensatzTabelle datensatzTabelle = new DatensatzTabelle();
-		
-		List<Feld> tabellenFelder2 = datensatzTabelle.getTabellenFelder();
-		String variable;
-//		Tabellenfelder  vorhanden
-		Integer row = 1;
-			if (tabelleAbFeld2 > 0) {
-				for (int col = this.tabelleAbFeld; col < getMaxCol(importSheet2) ; col++) {
-					
-//					Zelleninhalt auslesen und Feld Konstruktor übergeben
-					
-					String feldInhalt;
-					
-						feldInhalt = getZellenInhaltString(importSheet2, col, row);
-						if (!feldInhalt.isEmpty()) {
-							Feld feld = new Feld(feldInhalt, true , col );
-
-//							hänge das Feld an die Tabellenfelder an
-							
-							tabellenFelder2.add(feld);	
-						}
-					
-					
-					
-					
-					
-				}
-				return datensatzTabelle;
-			}else {
-				return null;
-			}
-			
-			
-	}
-	
-	
-	
-	private void checkImportFile(String filename) throws ImportitException{
-    	File file = new File(filename);
-    	if (file.exists() & file.isFile() ) {
-			if (file.canRead()) {
-				if (filename.contains(".xlsx") || filename.contains(".xls")) {
-					this.importFilename = file.getAbsolutePath();	
-				}else {
-					throw new ImportitException("Die Datei " + filename + " ist keine Excel-Datei");
-				}
-
-								
-			}else {
-		
-				throw new ImportitException("Die Importdatei " + filename + "ist nicht mit Lesen-Rechte versehen!");
-			}
-			
-		}else {
-			
-			throw new ImportitException("Die Importdatei " + filename + " ist nicht vorhanden bzw keine Datei");
-			
-		}
+    private Data fillValueInHead(Integer tableBeginAtRow) throws ImportitException {
+        Data data = initNewData();
+        List<Field> headerFields = data.getHeaderFields();
+        for (Field field : headerFields) {
+            field.setValue(getCellContents(field.getColNumber(), tableBeginAtRow));
+        }
+        return data;
 
     }
 
-	private Workbook initWorkbook(String filename) throws ImportitException {
-    	try {
-    		if (filename.contains(".xlsx")) {
-    			org.apache.poi.ss.usermodel.Workbook workbook;
-			
-				workbook = new XSSFWorkbook(new FileInputStream(filename));
-			
-    		return workbook;
-    		
-    	}else if (filename.contains(".xls")) {
-        	   Workbook workbook = new HSSFWorkbook(new FileInputStream(filename));
-        	   return workbook;
-        	   
-		} else {
-			
-			throw new ImportitException("Die Datei " + filename + " ist keine Excel-Datei");
-		}
-    		
-    	} catch (FileNotFoundException e) {
-    		
-			throw new ImportitException("Die Datei " + filename + " wurde nicht gefunden;" + e.getMessage());
-			
-		} catch (IOException e) {
-			
-			throw new ImportitException("Bei dem Zugriff auf die Datei " + filename + " trat ein Fehler auf;" + e.getMessage());
-			
-		}
+
+    private Data initNewData() throws ImportitException {
+        Data data = new Data();
+        data.setHeaderFields(getCopyOfHeaderFields());
+        data.setDatabase(this.database);
+        data.setDbString(this.databaseString);
+        data.setGroup(this.group);
+        data.setDbGroupString(this.groupString);
+        data.setTypeCommand(this.typeCommand);
+        data.setTypeCommandString(this.typeCommandString);
+        data.setOptionCode(this.optionCode);
+        data.setTableStartsAtField(this.tableFromField);
+        return data;
 
     }
-	
-	private void pruefeUndHoleInfoAusSheet(Sheet sheet) throws ImportitException {
-		
-			try{
-			this.dbString          = getdbString(sheet); 
-			this.dbgroupString     = getdbgroupString(sheet);
-			this.tippkommandoString = getTippkomanndoString(sheet);
-			this.db                = getdb(sheet);
-			this.gruppe            = getdbgroup(sheet);
-			this.tippkommando      = getTippkomanndo(sheet);
-			this.tabelleAbFeld     = getTabelleab(sheet); 
-			this.optionCode        = new OptionCode(getOptionCodeFromSheet(sheet));
-			this.anzahlDatensaetze = getAnzDatenzeilen(this.importSheet);
-			
-
-			}catch (NumberFormatException e){
-				throw new ImportitException("Es war die Datenbank bzw. das Tippkommando im falschen Format angegeben!");
-			}
-					
-	}
-	
-	private int getMaxCol(Sheet sheet) {
-	// Anzahl Spalten(Cols) in der 2. Zeile (entspricht 1) 
-		 Integer maxcol = sheet.getRow(1).getPhysicalNumberOfCells();
-	return maxcol;
-}
 
 
-	private int getMaxRow(Sheet sheet) {
-		// TODO Auto-generated method stub
-			
-		return sheet.getLastRowNum();
-}
-	
-	private String getTippkomanndoString(Sheet sheet) throws ImportitException {
-//		Es ist ein Tipkommdo, wenn es keinen Doppelpunkt besitzt 		
-		String dbgroup = getDbGroupComplete(sheet);
-		
-		int doppelpunkt =dbgroup.indexOf(":");
-        
-        if (doppelpunkt == 0 || doppelpunkt == -1){
-        	return dbgroup;
-        }else {
-			return null;
-		}
-	}
+    private List<Field> getCopyOfHeaderFields() throws ImportitException {
+        List<Field> headerFields = new ArrayList<>();
+        for (Field field : this.headerFields) {
+            headerFields.add(new Field(field.getCompleteContent(), field));
+        }
+        return headerFields;
+    }
 
 
+    public ArrayList<Data> getDataList() {
+        return dataList;
+    }
 
 
-	private Integer getTippkomanndo(Sheet sheet) throws ImportitException {
-		
-			String tippString = getTippkomanndoString(sheet);
-			
-        	if (tippString != null) {
-				if (!tippString.isEmpty()) {
+    private List<Field> readFieldsInHead() throws ImportitException {
+        List<Field> headerFields = new ArrayList<>();
+        Integer row = 1;
+        for (int col = 0; (col < getMaxCol()) && (col < (this.tableFromField) || this.tableFromField == 0); col++) {
+            String content = getCellContents(col, row);
+            if (content != null) {
+                if (!content.isEmpty()) {
+                    Field field = new Field(content, true, col);
+                    headerFields.add(field);
+                }
+            }
+        }
+        return headerFields;
+    }
 
-					try {
-						return Integer.parseInt(tippString);
 
-					} catch (NumberFormatException e) {
-
-						//					throw new ImportitException("Das Tippkommando wurde nicht richtig angegeben, so dass die Umformatierung in einen Integer-Wert nicht funktioniert!");
-						return null;
-					}
-
-				} else {
-
-					return null;
-				}
-			}else {
-				return null;
-			}
-        	
-        }   	
-	
-	private Boolean isZelleleer(Sheet sheet, int x, int y) throws ImportitException {
-		// Prüft ob die Zelle leer ist
-		Cell cell = sheet.getRow(y).getCell(x);
-		
-		if (cell == null) {
-			return true;
-		}else {
-			if (sheet.getRow(y).getCell(x).getCellType() == Cell.CELL_TYPE_BLANK){
-				return true;
-			}else {
-				if (getZellenInhaltString(sheet, x, y).equals("")) {
-					return true;
-				}else {
-					if (getZellenInhaltString(sheet, x, y) == null) {
-						return null;
-					}else {
-						return false;
-					}
-				}
-			}
-		}					
-	}
-	
-	private Integer getOptionCodeFromSheet(
-			Sheet sheet) throws ImportitException {
-		try{
-		if (isZelleleer(sheet, 2, 0)) {
-			return 0;
-		}else {
-			Integer option=Integer.parseInt(getZellenInhaltString(sheet, 2, 0));
-			return option;	
-		}	
-				
-		}catch (NumberFormatException e) {
-			
-			throw new ImportitException("Es war in dem Feld Optionscode ein üngültiger Integerwert eingetragen !");
-			
-		}
-		
-	}
-	
-private Integer getdbgroup(Sheet sheet) throws ImportitException {
-		
-//		nach dem Doppelpunkt steht die Datenbankgruppe
-//		leerer String wenn es ein Tippkommando ist
-		
-		String dbgroup = getDbGroupComplete(sheet);
-		String groupString;
-		int doppelpunkt =dbgroup.indexOf(":") + 1;
-        
-        if (doppelpunkt>0)
-     
-        {
-
-        	groupString = dbgroup.substring(doppelpunkt,dbgroup.length());
-        	
-        	if (!groupString.isEmpty() && groupString != null ){
-        		
-        		try {
-        			return Integer.parseInt(groupString);	
-        			
-				} catch (NumberFormatException e) {
-					return null;
-//					throw new ImportitException("Die Gruppe wurde nicht richtig angegeben, so dass die Umformatierung in einen Integer-Wert nicht funktioniert!");
-				
-				}
-        		
-        		
-        		
-        	}else {
-				return null;
-			}
-        	 	
-        	
-        }else{
+    private DataTable readFieldsInTable() throws ImportitException {
+        DataTable dataTable = new DataTable();
+        List<Field> tableFields = dataTable.getTableFields();
+        Integer row = 1;
+        if (tableFromField > 0) {
+            for (int col = tableFromField; col < getMaxCol(); col++) {
+                String content;
+                content = getCellContents(col, row);
+                if (!content.isEmpty()) {
+                    Field field = new Field(content, true, col);
+                    tableFields.add(field);
+                }
+            }
+            return dataTable;
+        } else {
             return null;
         }
     }
 
-	private String getdbString(Sheet sheet) throws ImportitException{
-		//		vor dem Doppelpunkt steht die Datenbank
-		//		leerer String wenn es ein Tippkommando ist
-				
-				String dbgroup = getDbGroupComplete(sheet);
-				String dbString;
-				
-				int doppelpunkt =dbgroup.indexOf(":");
-		        
-		        if (doppelpunkt>0){
-		        		return dbgroup.substring(0,doppelpunkt);
-		        	}else {
-		        		return null;
-					}
-		
-	}
-	
-	private String getdbgroupString(Sheet sheet) throws ImportitException{
-//		nach dem Doppelpunkt steht die Datenbankgruppe
-//		leerer String wenn es ein Tippkommando ist
-		
-		String dbgroup = getDbGroupComplete(sheet);
-		String groupString;
-		int doppelpunkt =dbgroup.indexOf(":") + 1;
-        
-        if (doppelpunkt>0)
-     
-        {
 
-        	return dbgroup.substring(doppelpunkt,dbgroup.length());
-        }else {
-        	
-			return  null;
-		}
-	}
+    private void checkImportFile(String filename) throws ImportitException {
+        File file = new File(filename);
+        if (file.exists() & file.isFile()) {
+            if (file.canRead()) {
+                if (!filename.contains(".xlsx") && !filename.contains(".xls")) {
+                    throw new ImportitException(Util.getMessage("excel.check.import.file.no.excel", filename));
+                }
+            } else {
+                throw new ImportitException(Util.getMessage("excel.check.import.file.cant.read", filename));
+            }
+        } else {
+            throw new ImportitException(Util.getMessage("excel.check.import.file.cant.read", filename));
+        }
+    }
 
-	private Integer getdb(Sheet sheet) throws ImportitException {
-		
-	//		vor dem Doppelpunkt steht die Datenbank
-	//		leerer String wenn es ein Tippkommando ist
-			
-				
-	        	String databaseString = this.dbString;
-	        	if (databaseString != null ){
-		        	if (!databaseString.isEmpty() ){
-		        		
-		        		try {
-		        			return Integer.parseInt(databaseString);	
-		        			
-						} catch (NumberFormatException e) {
-							
-							return null;
-	//						throw new ImportitException("Die Gruppe wurde nicht richtig angegeben, so dass die Umformatierung in einen Integer-Wert nicht funktioniert!");
-						
-						}
-		        		
-		        		
-		        	}else {
-						return null;
-					}
-	        	}else {
-					return null;
-				}
-	        	 
-	        
-	        	
-	        }
-	
-	private String getDbGroupComplete(Sheet sheet) throws ImportitException {
-	 		
-		
-		return getZellenInhaltString(sheet, 0, 0);
-        
-	}
-	
-	private Integer getTabelleab(Sheet sheet) throws ImportitException {
-		Integer tabAbFeld = 0;
-		try{
-			String zelleninhalt = getZellenInhaltString(sheet, 1, 0);
-			if (zelleninhalt.length() > 0) {
-				tabAbFeld = Integer.parseInt(zelleninhalt);
-//				Da in Poi die erste Spalte mit 0 zählt muss der Wert 1 abgezogen werden
-				if (tabAbFeld > 1) {
-					tabAbFeld = tabAbFeld - 1;
-				}else {
-					tabAbFeld = 0;
-				}
-			}
-		
-		 
-		return tabAbFeld;
-		}catch (NumberFormatException e) {
-			
-			throw new ImportitException("Es war in dem Feld TabelleAbFeld ein üngültiger Integerwert eingetragen !");
-			
-		}
-		
-		
-	}
+    private Workbook initWorkbook(String filename) throws ImportitException {
+        try {
+            if (filename.contains(".xlsx")) {
+                org.apache.poi.ss.usermodel.Workbook workbook;
+                workbook = new XSSFWorkbook(new FileInputStream(filename));
+                return workbook;
 
-	private String getZellenInhaltString(Sheet sheet, int x, int y) throws ImportitException {
-//		Hier werden alle Inhaltsmöglichkeiten einer Celle in einen String umgewandelt
-		Cell cell = null;
-		try {
-			Row row = sheet.getRow(y);
-			if (row != null) {
-				cell = row.getCell(x);
-			}
-		} catch (NullPointerException e) {
-			logger.error("Bei der Zelle Zeile " + y + " Zelle " + x + " tritt eine Nullpointer Exeption auf", e);
-			throw new ImportitException("Bei der Zelle Zeile " + y + " Zelle " + x + " tritt eine Nullpointer Exeption auf"  , e);
-		}
-		
-		if (cell != null) {
-			if ( cell.getCellType() == Cell.CELL_TYPE_STRING)  {
-				return cell.getStringCellValue();
-			}else {
-		
-				if ( cell.getCellType() == Cell.CELL_TYPE_NUMERIC)  {
-//					cell.setCellType(Cell.CELL_TYPE_STRING);
-					if (DateUtil.isCellDateFormatted(cell)) {
-						Date date = cell.getDateCellValue();
-						AbasDate abasDate = new AbasDate(date);
-						return abasDate.toString();
-					}else {
-						Double nummericvalue = cell.getNumericCellValue();
-						Integer intvalue = nummericvalue.intValue();
-						NumberFormat numberformat = new DecimalFormat("#.#########");
-						String fnummericValue = numberformat.format(nummericvalue);
-						if 	(intvalue.doubleValue()  == nummericvalue){
-							return intvalue.toString();
-						}else {
-							return fnummericValue;	
-						}	
-					}
-					
-					
-//				return cell.getStringCellValue();
-			}else {
-				if ( cell.getCellType() == Cell.CELL_TYPE_BOOLEAN){
-					if (cell.getBooleanCellValue() == true) {
-						return "ja";
-					}else {
-						return "nein";
-					}
-				}else {
-						if ( cell.getCellType() == Cell.CELL_TYPE_FORMULA){
-								if (cell.getCachedFormulaResultType() == Cell.CELL_TYPE_STRING) {
-										return cell.getStringCellValue();
-								}else {
-									if (cell.getCachedFormulaResultType() == Cell.CELL_TYPE_NUMERIC) {
-										Double nummericvalue = cell.getNumericCellValue();
-										return nummericvalue.toString();
-									}else {
-										if ( cell.getCachedFormulaResultType() == Cell.CELL_TYPE_BOOLEAN){
-											if (cell.getBooleanCellValue() == true) {
-													return "ja";
-											}else {
-													return "nein";
-											}
-										}else {
-											if ( cell.getCachedFormulaResultType() == Cell.CELL_TYPE_BLANK){
-												return "";
-											}else {
-												if ( cell.getCachedFormulaResultType() == Cell.CELL_TYPE_ERROR){
-													int fehlerzeile = y +1;
-													int fehlerspalte = x+1;
-													throw new ImportitException("Der Zelleninhalt in der Zeile " + fehlerzeile + " Spalte " + fehlerspalte + " ist vom Typ ERROR!Der Feldwert ist ungültig! Das können wir nicht verabeiten!");
-												}
-											}
-										}
-									}
-								}
-							}else {
-								if ( cell.getCellType() == Cell.CELL_TYPE_BLANK){
-									return "";
-								}else {
-									if ( cell.getCellType() == Cell.CELL_TYPE_ERROR){
-										int fehlerzeile = y +1;
-										int fehlerspalte = x+1;
-										throw new ImportitException("Der Zelleninhalt in der Zeile " + fehlerzeile + " Spalte " + fehlerspalte + " ist vom Typ ERROR!Der Feldwert ist ungültig! Das können wir nicht verabeiten!");
-									}
-									
-								}
-		
-	
-							}	
-	
-					}
-				}
-			}
-		
-		}else {
-//			Falls die Zelle null ist soll ein leer-String "" zurückgeben werden.
-			return "";
-//			throw new ImportitException("Der Zelleninhalt in der Zeile " + x + " Spalte " + y + " ist null");
-		}
-	// Falls irgendein Fall vergessen wurde wird null übertragen
-		return null;
-	
-	}
-	
-	private int getAnzDatenzeilen(Sheet poisheet) {
-		// holt alle gefüllten Zeilen aus dem sheet
-		// laut Definition sind die ersten beidenZeilen nur für die Konfiguration 
-			return poisheet.getPhysicalNumberOfRows()-2;
-	}
+            } else if (filename.contains(".xls")) {
+                Workbook workbook = new HSSFWorkbook(new FileInputStream(filename));
+                return workbook;
+
+            } else {
+                throw new ImportitException(Util.getMessage("excel.check.import.file.no.excel", filename));
+            }
+
+        } catch (FileNotFoundException e) {
+            throw new ImportitException(Util.getMessage("excel.check.import.file.not.found", filename));
+
+        } catch (IOException e) {
+            throw new ImportitException(Util.getMessage("excel.check.import.file.access.err", filename, e.getMessage()));
+        }
+    }
+
+    private void getFromSheet() throws ImportitException {
+        try {
+            this.databaseString = getDatabaseString();
+            this.groupString = getGroupString();
+            this.typeCommandString = getTypeCommandString();
+            this.database = getDatabase();
+            this.group = getGroup();
+            this.typeCommand = getTypeCommand();
+            this.tableFromField = getTableFrom();
+            this.optionCode = new OptionCode(getOptionCodeFromSheet());
+        } catch (NumberFormatException e) {
+            throw new ImportitException(Util.getMessage("excel.get.from.sheet.wrong.format"));
+        }
+    }
+
+    private int getMaxCol() {
+        return importSheet.getRow(1).getPhysicalNumberOfCells();
+    }
+
+
+    private String getTypeCommandString() throws ImportitException {
+        String group = getDbGroupComplete();
+        int colon = group.indexOf(":");
+        if (colon == 0 || colon == -1) {
+            return group;
+        } else {
+            return null;
+        }
+    }
+
+
+    private Integer getTypeCommand() throws ImportitException {
+        String typeCommandString = getTypeCommandString();
+        if (typeCommandString != null) {
+            if (!typeCommandString.isEmpty()) {
+                try {
+                    return Integer.parseInt(typeCommandString);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private Boolean isCellEmpty(int x, int y) throws ImportitException {
+        Cell cell = importSheet.getRow(y).getCell(x);
+        if (cell == null) {
+            return true;
+        } else {
+            if (importSheet.getRow(y).getCell(x).getCellType() == Cell.CELL_TYPE_BLANK) {
+                return true;
+            } else {
+                if (getCellContents(x, y).equals("")) {
+                    return true;
+                } else {
+                    if (getCellContents(x, y) == null) {
+                        return null;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
+    private Integer getOptionCodeFromSheet() throws ImportitException {
+        try {
+            if (isCellEmpty(2, 0)) {
+                return 0;
+            } else {
+                Integer option = Integer.parseInt(getCellContents(2, 0));
+                return option;
+            }
+        } catch (NumberFormatException e) {
+            throw new ImportitException(Util.getMessage("excel.get.options.invalid.value"));
+        }
+    }
+
+    private Integer getGroup() throws ImportitException {
+        String group = getDbGroupComplete();
+        String groupString;
+        int colon = group.indexOf(":") + 1;
+        if (colon > 0) {
+            groupString = group.substring(colon, group.length());
+            if (!groupString.isEmpty() && groupString != null) {
+                try {
+                    return Integer.parseInt(groupString);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private String getDatabaseString() throws ImportitException {
+        String group = getDbGroupComplete();
+        int colon = group.indexOf(":");
+        if (colon > 0) {
+            return group.substring(0, colon);
+        } else {
+            return null;
+        }
+    }
+
+    private String getGroupString() throws ImportitException {
+        String group = getDbGroupComplete();
+        int colon = group.indexOf(":") + 1;
+        if (colon > 0) {
+            return group.substring(colon, group.length());
+        } else {
+            return null;
+        }
+    }
+
+    private Integer getDatabase() throws ImportitException {
+        String databaseString = this.databaseString;
+        if (databaseString != null) {
+            if (!databaseString.isEmpty()) {
+                try {
+                    return Integer.parseInt(databaseString);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private String getDbGroupComplete() throws ImportitException {
+        return getCellContents(0, 0);
+
+    }
+
+    private Integer getTableFrom() throws ImportitException {
+        Integer tableFromField = 0;
+        try {
+            String cellContents = getCellContents(1, 0);
+            if (cellContents.length() > 0) {
+                tableFromField = Integer.parseInt(cellContents);
+                if (tableFromField > 1) {
+                    tableFromField = tableFromField - 1;
+                } else {
+                    tableFromField = 0;
+                }
+            }
+            return tableFromField;
+        } catch (NumberFormatException e) {
+            throw new ImportitException(Util.getMessage("excel.get.table.from.invalid.value"));
+        }
+    }
+
+    private String getCellContents(int column, int line) throws ImportitException {
+        Cell cell = null;
+        try {
+            Row row = importSheet.getRow(line);
+            if (row != null) {
+                cell = row.getCell(column);
+            }
+        } catch (NullPointerException e) {
+            logger.error(Util.getMessage("excel.get.cell.contents.null", line, column), e);
+            throw new ImportitException(Util.getMessage("excel.get.cell.contents.null", line, column), e);
+        }
+        if (cell != null) {
+            switch (cell.getCellType()) {
+                case Cell.CELL_TYPE_STRING:
+                    return cell.getStringCellValue();
+                case Cell.CELL_TYPE_NUMERIC:
+                    if (DateUtil.isCellDateFormatted(cell)) {
+                        return new AbasDate(cell.getDateCellValue()).toString();
+                    } else {
+                        Double numericValue = cell.getNumericCellValue();
+                        Integer intValue = numericValue.intValue();
+                        if (intValue.doubleValue() == numericValue) {
+                            return intValue.toString();
+                        } else {
+                            return new DecimalFormat("#.#########").format(numericValue);
+                        }
+                    }
+                case Cell.CELL_TYPE_BOOLEAN:
+                    return (cell.getBooleanCellValue() ? Util.getMessage("excel.bool.yes") : Util.getMessage("excel.bool.no"));
+                case Cell.CELL_TYPE_FORMULA:
+                    return handleFormula(cell, line + 1, column + 1);
+                case Cell.CELL_TYPE_BLANK:
+                    return "";
+                case Cell.CELL_TYPE_ERROR:
+                    throw new ImportitException(Util.getMessage("excel.get.cell.contents.err.type", line + 1, column + 1));
+                default:
+                    return null;
+            }
+        } else {
+            return "";
+        }
+    }
+
+    private String handleFormula(Cell cell, int errorLine, int errorColumn) throws ImportitException {
+        switch (cell.getCachedFormulaResultType()) {
+            case Cell.CELL_TYPE_STRING:
+                return cell.getStringCellValue();
+            case Cell.CELL_TYPE_NUMERIC:
+                return ((Double) cell.getNumericCellValue()).toString();
+            case Cell.CELL_TYPE_BOOLEAN:
+                return (cell.getBooleanCellValue() ? Util.getMessage("excel.bool.yes") : Util.getMessage("excel.bool.no"));
+            case Cell.CELL_TYPE_BLANK:
+                return "";
+            default:
+                throw new ImportitException(Util.getMessage("excel.get.cell.contents.err.type", errorLine, errorColumn));
+        }
+    }
+
 }

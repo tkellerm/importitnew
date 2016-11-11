@@ -1,5 +1,16 @@
 package de.abaspro.infosystem.importit;
 
+import de.abas.ceks.jedp.*;
+import de.abas.eks.jfop.remote.FOe;
+import de.abas.erp.common.type.enums.EnumTypeCommands;
+import de.abas.jfop.base.buffer.BufferFactory;
+import de.abas.jfop.base.buffer.GlobalTextBuffer;
+import de.abas.jfop.base.buffer.UserTextBuffer;
+import de.abaspro.utils.Util;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.log4j.Logger;
+
+import javax.management.BadAttributeValueExpException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -7,1838 +18,1090 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.management.BadAttributeValueExpException;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.log4j.Logger;
-
-import de.abas.ceks.jedp.CantBeginEditException;
-import de.abas.ceks.jedp.CantBeginSessionException;
-import de.abas.ceks.jedp.CantChangeFieldValException;
-import de.abas.ceks.jedp.CantChangeSettingException;
-import de.abas.ceks.jedp.CantReadFieldPropertyException;
-import de.abas.ceks.jedp.CantReadSettingException;
-import de.abas.ceks.jedp.CantReadStatusException;
-import de.abas.ceks.jedp.CantSaveException;
-import de.abas.ceks.jedp.ConnectionLostException;
-import de.abas.ceks.jedp.EDPConstants;
-import de.abas.ceks.jedp.EDPEKSArtInfo;
-import de.abas.ceks.jedp.EDPEditAction;
-import de.abas.ceks.jedp.EDPEditor;
-import de.abas.ceks.jedp.EDPFactory;
-import de.abas.ceks.jedp.EDPQuery;
-import de.abas.ceks.jedp.EDPServerAction.ActionState;
-import de.abas.ceks.jedp.EDPSession;
-import de.abas.ceks.jedp.EDPTools;
-import de.abas.ceks.jedp.EDPVariableLanguage;
-import de.abas.ceks.jedp.InvalidQueryException;
-import de.abas.ceks.jedp.InvalidRowOperationException;
-import de.abas.ceks.jedp.InvalidSettingValueException;
-import de.abas.ceks.jedp.ServerActionException;
-import de.abas.ceks.jedp.StandardEDPSelection;
-import de.abas.ceks.jedp.StandardEDPSelectionCriteria;
-import de.abas.ceks.jedp.TransactionException;
-import de.abas.eks.jfop.remote.FOe;
-import de.abas.erp.common.type.enums.EnumTypeCommands;
-import de.abas.jfop.base.buffer.BufferFactory;
-import de.abas.jfop.base.buffer.GlobalTextBuffer;
-import de.abas.jfop.base.buffer.UserTextBuffer;
-
 
 public class EdpProcessing {
 
-	private String server;
-	private Integer port;
-	private String mandant;
-	private String passwort;
-	private EDPSession edpSession;
-	private Logger logger = Logger.getLogger(Importit21.class);
-	private static String edplogFile = "java/log/importit21edp.log";
-	
-	/**
-	 * @param server
-	 * @param port
-	 * @param mandant
-	 * @param passwort
-	 * @throws ImportitException
-	 */
-	public EdpProcessing(String server, Integer port, String mandant,
-			String passwort) throws ImportitException {
-		super();
-//		check Parameter
-		
-		
-		checkNotNullandNotEmpty(port, "Bitte Port eintragen!");
-		checkNotNullandNotEmpty(server, "Bitte Server eintragen!");
-		checkNotNullandNotEmpty(mandant,"Bitte Mandant eintragen!");
-		checkNotNullandNotEmpty(passwort, "Bitte Passwort eintragen!");
-		
-		this.server = server;
-		this.port = port;
-		this.mandant = mandant;
-		this.passwort = passwort;
-		this.edpSession = EDPFactory.createEDPSession ();
-	}
+    private static String edpLogFile = "java/log/importit21edp.log";
+    private String server;
+    private Integer port;
+    private String client;
+    private String password;
+    private EDPSession edpSession;
+    private Logger logger = Logger.getLogger(Main.class);
 
-	/**
-	 * @param integerVar
-	 * @param errortext
-	 * @throws ImportitException 
-	 * 
-	 * 
-	 * Empty = 0
-	 * 
-	 */
-	private void checkNotNullandNotEmpty(Integer integerVar, String errortext) throws ImportitException {
-		final String fehlerNull = "Darf nicht null sein!";
-		
-		if (integerVar!=null) {
-			if (integerVar == 0) {
-				throw new ImportitException(errortext);
-			}			
-		}else {
-			throw new ImportitException(errortext + fehlerNull);
-		}
-		
-	}
-
-	/**
-	 * @param stringVar
-	 * @param errortext
-	 * @throws ImportitException
-	 */
-	private void checkNotNullandNotEmpty(String stringVar, String errortext)
-			throws ImportitException {
-		final String fehlerNull = "Darf nicht null sein!";
-		if (stringVar != null) {
-			if (stringVar.isEmpty()) {
-				throw new ImportitException(errortext);
-			}
-			
-		}else {
-			throw new ImportitException(errortext + fehlerNull);
-		}
-	}
-	
-	public void startEdpSession() throws ImportitException {
-		
-		sessionAufbauen(this.server, this.port, this.mandant, this.passwort);
-	}
-
-public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitException {
-		
-		sessionAufbauen(this.server, this.port, this.mandant, this.passwort, varlanguage);
-	}
-	
-	public void closeEdpSession(EDPSession edpSession){
-			
-		if (edpSession.isConnected()) {
-			edpSession.endSession();
-			logger.info(edpSession.getSessionTag() + " EDPSession beendet");
-			edpSession = null;
-		}else {
-			logger.error(edpSession.getSessionTag() + " EDPSession ist nicht mehr verbunden");
-		}
-		
-	}
-	
-	private void sessionAufbauen(String server, int port, String mandant, String passwort ) throws ImportitException 
-    { 
-      
-    	  		try {
-    	  			this.edpSession.beginSession(server , port, mandant, passwort, "ImportIt_21");
-    	  			this.edpSession.loggingOn(edplogFile);
-    	  			logger.info(edpSession.getSessionTag() + " EDPSession begin Importit_21");
-    	  		} catch (CantBeginSessionException ex) 
-    	  			{
-    	  			logger.error(ex);
-    	  			throw new ImportitException("FEHLER\n EDP Session kann nicht gestartet werden\n" , ex);
-    	  			}
+    public EdpProcessing(String server, Integer port, String client, String password) throws ImportitException {
+        super();
+        validate(port, Util.getMessage("err.no.port"));
+        validate(server, Util.getMessage("err.no.server"));
+        validate(client, Util.getMessage("err.no.client"));
+        validate(password, Util.getMessage("err.no.password"));
+        this.server = server;
+        this.port = port;
+        this.client = client;
+        this.password = password;
+        this.edpSession = EDPFactory.createEDPSession();
     }
-	
-	private void sessionAufbauen(String server, int port, String mandant, String passwort , EDPVariableLanguage varlanguage ) throws ImportitException 
-    { 
-      
-    	  		try {
-    	  			this.edpSession.beginSession(server , port, mandant, passwort, "ImportIt_21");
-    	  			this.edpSession.loggingOn(edplogFile);
-    	  			logger.info(edpSession.getSessionTag() + " EDPSession begin Importit_21");
-    	  			this.edpSession.setVariableLanguage(varlanguage);
-    	  		} catch (CantBeginSessionException ex) 
-    	  			{
-    	  			logger.error(ex);
-    	  			throw new ImportitException("FEHLER\n EDP Session kann nicht gestartet werden\n" , ex);
-    	  			}
-                     
+
+    private void validate(Integer integerVar, String errorText) throws ImportitException {
+        if (integerVar != null) {
+            if (integerVar == 0) {
+                throw new ImportitException(errorText);
+            }
+        } else {
+            throw new ImportitException(String.format("%s: %s", errorText, Util.getMessage("err.port.null.value")));
+        }
     }
-	
-	private EDPSession connectNewEdpsession(EDPVariableLanguage varlanguage) throws ImportitException{
-		EDPSession edpSession = EDPFactory.createEDPSession();
-
-		while (!edpSession.isConnected()) {
-			try {
-
-				edpSession.beginSession(this.server, this.port,
-						this.mandant, this.passwort, "ImportIt_21_m");
-				edpSession.loggingOn(edplogFile);
-				logger.info(edpSession.getSessionTag() + " EDPSession begin Importit_21_m");
-				edpSession.setVariableLanguage(varlanguage);
-			} catch (CantBeginSessionException e) {
-				logger.error(e);
-				throw new ImportitException(
-						"FEHLER\n EDP Session kann nicht gestartet werden\n", e);
-			} catch (Exception ex) {
-				logger.error(ex);
-				throw new ImportitException(
-						"FEHLER\n EDP Session kann nicht gestartet werden\n",
-						ex);
-			}
-		}
-		
-		return edpSession;
-	}
-	
-	
-	public void checkDatensatzList(ArrayList<Datensatz> datensatzList) throws ImportitException {
-		
-		if (datensatzList != null) {
-			
-			if (!datensatzList.isEmpty()) {
-				    
-				    try {
-						startEdpSession(EDPVariableLanguage.ENGLISH);
-//						Annahme: alles Datensätze in der Liste sind gleich von der Struktur, dann sollte auch nur der Erste geprüft werden	
-//						Sonst ist die Laufzeit zu lange, wenn bei einer großen Excelliste für jeden Datensatz die Struktur geprüft werden soll
-							
-							    Datensatz datensatz = datensatzList.get(0);
-
-				    	if (datensatz != null) {
-							if (checkDatensatzStruktur(datensatz)) {
-
-								for (Datensatz datensatzIter : datensatzList) {
-									datensatzIter
-											.copyDatabaseinDatensatz(datensatz);
-									//								Alle Abastypen aus dem ersten Datensatz in alle Felder füllen
-									datensatzIter
-											.copyAbasTypInDatensatz(datensatz);
-
-								}
-
-							}
-
-						}
-					} finally {
-						closeEdpSession(this.edpSession);
-					}
-				
-			}else {
-				throw new ImportitException("Die übergebene Datensatzliste ist leer");
-			}
-			
-		}else {
-			throw new ImportitException("Die übergebene Datensatzliste war nicht definiert");
-		}
-		
-		
-		
-	}
-
-	private boolean checkDatensatzStruktur(Datensatz datensatz){
-
-		//		prüfe Datenbank, ob vorhanden
-		
-		boolean dbok = checkDBorEditorCommdands(datensatz);
-//		Wenn es ein Tipkommanndo gibt muss noch die Datenbank gesucht werden damit die Felder gecheckt werden können
-				
-		boolean kopfok = false;
-		boolean tabelleok = false;
-		if (dbok) {
-			List<Feld> kopfFelder = datensatz.getKopfFelder();
-			List<Feld> tabellenFelder = datensatz.getTabellenFelder();
-			kopfok = false;
-			tabelleok = false;
-			try {
-				switch (checkSpecialDB(datensatz)) {
-				case 1:
-					//		Kundenartikeleigenschaften
-					kopfok = checkKundenartikeleigenschaftenKopf(kopfFelder,
-							datensatz.getOptionCode().getUseEnglishVariablen());
-					//				Bei der Kundenartikeleigenschaften sind alle Variablen in der Gruppe 6 gespeichert und dort gibt es keine Tabelle
-					tabelleok = checkListofFeldAndGetabasType(tabellenFelder,
-							2, 6, false, datensatz.getOptionCode()
-									.getUseEnglishVariablen());
-					break;
-
-				default:
-					//				Alle normalen Datenbanken
-					kopfok = checkListofFeldAndGetabasType(kopfFelder,
-							datensatz.getDatenbank(), datensatz.getGruppe(),
-							false, datensatz.getOptionCode()
-									.getUseEnglishVariablen());
-					tabelleok = checkListofFeldAndGetabasType(tabellenFelder,
-							datensatz.getDatenbank(), datensatz.getGruppe(),
-							true, datensatz.getOptionCode()
-									.getUseEnglishVariablen());
-					break;
-				}
-
-			} catch (ImportitException e) {
-				logger.error(e);
-				datensatz.appendError("Die Strukturprüfung war fehlerhaft", e);
-			}
-		}
-		if (tabelleok & kopfok & dbok) {
-			return true;	
-		}else {
-			return false;
-		}	
-	}
-
-	private boolean checkKundenartikeleigenschaftenKopf(List<Feld> kopfFelder, Boolean englVar) throws ImportitException {
-		
-		if (kopfFelder.size() == 1) {
-				for (Feld feld : kopfFelder) {
-					String varName = feld.getName();
-					if (varName.equals("product")|| varName.equals("art") || varName.equals("artikel") ) {
-							return checkListofFeldAndGetabasType(kopfFelder, 2 , 6 , false , englVar);
-					}
-				}
-				throw new ImportitException("Es wurde die Variable art, artikel oder product nicht gefunden!");	
-			}else {
-				throw new ImportitException("In den Kopffeldern sind mehre Felder, bei den Kundenartikelschaften ist nur eine Variable art, artikel oder product erlaubt!");
-			}
-				
-	}
-
-	private int checkSpecialDB(Datensatz datensatz) {
-		if (datensatz.getDatenbank() == 2 && (datensatz.getGruppe() == 6 ||datensatz.getGruppe() == 7)) {
-//			Kundenartikeleigenschaften
-			return 1;
-		}else {
-			return 0;
-		}
-	}
-
-	private boolean checkDBorEditorCommdands(Datensatz datensatz) {
-		
-		Boolean gefunden = false ;
-		
-		
-		if (datensatz.getTippkommando()==null && datensatz.getTippcommandString()!=null) {
-			
-			datensatz.setTippkommando(checkTippCommandString(datensatz.getTippcommandString()));
-			
-		}
-		if (datensatz.getTippkommando()!=null && datensatz.getDatenbank() == null) {
-//		Überprüfung der Tipkkommandos
-			
-			EnumTypeCommands[] typeCommands = EnumTypeCommands.values();
-			
-			for (EnumTypeCommands enumTypeCommands : typeCommands) {
-				if (datensatz.getTippkommando() == enumTypeCommands.getCode()) {
-					gefunden = true;
-				}
-				
-			}
-			if (gefunden) {
-//				datenbank für Tipkkommando in Datensatz eintragen
-				try {
-					findDatenbankForTipkkommando(datensatz);
-				} catch (ImportitException e) {
-					datensatz.appendError(e);
-				}
-
-			}else {
-				datensatz.appendError("Das Tippkommando mit der Nummer "
-						+ datensatz.getTippkommando() + " ist nicht definiert");
-			}
-		}
-		
-		gefunden = checkDatabaseName(datensatz);
-		
-		
-		
-		return gefunden;
-	}
-
-		
-	
-
-	private Integer checkTippCommandString(String tippcommandString) {
-		
-		Integer tippCommandCode = null;
-		
-		Aufzaehlung aufzaehlung = fuellAufzaehlung();
-		
-		if (aufzaehlung.getListOfAufzaehlungItem().size() > 0) {
-			AufzaehlungItem aufzaehlungItem = aufzaehlung.searchItem(tippcommandString);
-			tippCommandCode =  aufzaehlungItem.getNumber();
-		}
-		
-		
-		return tippCommandCode;
-	}
-
-	private Aufzaehlung fuellAufzaehlung() {
-		
-
-		Aufzaehlung aufzaehlung = new Aufzaehlung();
-		ArrayList<AufzaehlungItem> listAufzaehlung = aufzaehlung.getListOfAufzaehlungItem();
-		
-		BufferFactory bufferFactory = BufferFactory.newInstance(true);
-		GlobalTextBuffer globalTextbuffer = bufferFactory.getGlobalTextBuffer();
-		UserTextBuffer userTextBuffer = bufferFactory.getUserTextBuffer();
-		int maxkkomnam = globalTextbuffer.getIntegerValue("cmdNameMax");	
-		for (Integer i = 0; i < maxkkomnam; i++) {
-			
-			String varnameNamebspr = "xtnamebspr";
-			String varnameNameNeutral = "xtnameneutral";
-			String varnameAufzaehlung = "xtaufzaehlung";
-			String namebspr;
-			String nameNeutral;
-			Integer nummer;
-			
-			
-			if (!userTextBuffer.isVarDefined(varnameNamebspr)) {
-				userTextBuffer.defineVar("Text", varnameNamebspr);
-			}
-			if (!userTextBuffer.isVarDefined(varnameNameNeutral)) {
-				userTextBuffer.defineVar("Text", varnameNameNeutral);
-			}
-			
-			if (!userTextBuffer.isVarDefined(varnameAufzaehlung)) {
-				userTextBuffer.defineVar("A198", varnameAufzaehlung);
-			}
-			
-			
-//			userTextBuffer.setValue(varnameAufzaehlung, i);
-			FOe.assign("U|" + varnameAufzaehlung + " = \"(" + i + ")\"" );
-			Boolean mehr = globalTextbuffer.getBooleanValue("success");		
-			if (mehr) {
-				nummer  = i;
-				FOe.formula("U|" + varnameNameNeutral + " = 'U|" + varnameAufzaehlung + "(L=\":\")'" );
-				nameNeutral = userTextBuffer.getStringValue(varnameNameNeutral);
-				namebspr = globalTextbuffer.getStringValue("cmdName" + i);				
-				AufzaehlungItem aufzaehlungsitem = new AufzaehlungItem(nummer, namebspr, nameNeutral);
-				listAufzaehlung.add(aufzaehlungsitem);
-				
-			}
-
-		}
-		
-		return aufzaehlung;
-	}
-
-	private Boolean checkDatabaseName(Datensatz datensatz) {
-		// prüfen ob datenbank im datensatz gesetzt ist
-
-		if (datensatz.getDatenbank() != null && datensatz.getGruppe() != null) {
-
-			String krit = "0:grpDBDescr=("
-					+ datensatz.getDatenbank().toString() + ");0:grpGrpNo="
-					+ datensatz.getGruppe().toString() + ";"
-					+ ";@englvar=true;@language=en";
-
-			if (searchDatabase(datensatz, krit)) {
-				return true;
-				
-			} else {
-				datensatz.appendError("Die Datenbank : Gruppe mit der Nummer "
-						+ datensatz.getDatenbank() + ":"
-						+ datensatz.getGruppe() + " ist nicht definiert");
-				return false;
-			}
-
-		} else {
-			// Datenbank oder gruppe == null
-			// dies kann bedeuten das es ein Tipkommando ist, oder das die
-			// Datenbanken als String übergeben wurden
-			// daher die Prüfung,ob die beiden String Felder gestetzt sind.
-
-			if (datensatz.getDbString() != null
-					&& datensatz.getDbGroupString() != null) {
-				// Suche über die bediensprachliche Bezeichnung
-				String krit = "0:vdntxt==" + datensatz.getDbString()
-						+ ";0:vgrtxtbspr=="
-						+ datensatz.getDbGroupString() + ";"
-						+ ";@englvar=false;@language=de";
-
-				if (searchDatabase(datensatz, krit)) {
-					return true;
-				} else {
-					// Suche über die Sprachneutrale Bezeichnung
-					krit = "0:DBCmd==" + datensatz.getDbString()
-							+ ";0:grpGrpCmd==" + datensatz.getDbGroupString()
-							+ ";" + ";@englvar=true;@language=en";
-					if (searchDatabase(datensatz, krit)) {
-						return true;
-					} else {
-						datensatz
-								.appendError("Die Datenbank : Gruppe mit den Namen "
-										+ datensatz.getDatenbank()
-										+ ":"
-										+ datensatz.getGruppe()
-										+ " ist nicht definiert");
-						return false;
-					}
-				}
-			}
-
-		}
-
-		return false;
-	}
-
-	/**
-	 * @param datensatz
-	 * @param krit
-	 * @param option 
-	 * @return 
-	 */
-	private boolean searchDatabase(Datensatz datensatz, String krit) {
-		//			Überprüfung ob Datenbank vorhanden
-					String key = "";
-					int aliveFlag = EDPConstants.ALIVEFLAG_ALIVE;
-					String fieldNames = "vdn,vgr,grpDBDescr,grpGrpNo";
-					
-		//			Vartab Tabellenname
-					String tableName = "12:26";
-					Boolean inTable = false;
-					int mode = EDPConstants.ENUMPOS_CODE;
-					try {
-						this.edpSession.setEnumMode(mode);
-					} catch (InvalidSettingValueException e1) {
-						logger.error(e1);
-					}
-					EDPQuery query = this.edpSession.createQuery();
-
-						try {
-							
-							query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
-							query.getLastRecord();
-							if (query.getRecordCount() == 1) {
-							 
-								String dbstring = query.getField("grpDBDescr");
-								dbstring = dbstring.replaceAll("\\(*", "");
-								dbstring = dbstring.replaceAll("\\)*", "");
-								datensatz.setDatenbank(new Integer(dbstring));
-								String gruppe = query.getField("grpGrpNo");
-								gruppe = gruppe.replaceAll(" ", "");
-								datensatz.setGruppe(new Integer(gruppe));
-								return true;
-							}
-							
-						} catch (InvalidQueryException e) {
-							datensatz.appendError("Die Suche nach der Datenbank mit dem Suchstring " + krit + "war fehlerhaft" , e);
-							return false;
-						}
-						return false;
-	}
-
-	private void findDatenbankForTipkkommando(Datensatz datensatz) throws ImportitException {
-		
-		if (datensatz.getTippkommando()!=null) {
-//			EDPSession und EPDEditor für dieses Tippkommando öffnen und aus dem Dialog die Datenbank auslesen
-			
-				startEdpSession(EDPVariableLanguage.ENGLISH);
-				if (this.edpSession != null ) {
-					EDPEditor edpEditor = this.edpSession.createEditor();
-					try {
-						
-						edpEditor.beginEditCmd(datensatz.getTippkommando().toString(), "");
-						datensatz.setDatenbank(edpEditor.getEditDatabaseNr());
-						datensatz.setGruppe(edpEditor.getEditGroupNr());
-						edpEditor.endEditCancel();
-						
-					} catch (CantBeginEditException e) {
-						throw new ImportitException("Das Holen der Datenbank zu dem Tippkommando war nicht möglich ", e );
-						}
-						
-				}
-				
-		}		
-		
-	}
-
-	/**
-	 * @param feldListe
-	 * Liste der zu prüfenden Felder
-	 * @param database
-	 * Datenbank
-	 * @param group
-	 * Datenbankgruppe
-	 * @param inTab
-	 * Suche in Tabellenfeldern
-	 * @param englVarNames
-	 * 
-	 * true : es wird nach englischen Variablenname gesucht.
-	 * false : es wird nach deutschen Variablennamen gesucht.  
-	 * 
-	 * @return
-	 * Wenn alles gut dann true
-	 * @throws ImportitException
-	 * Es gibt die folgenden Fälle für eine Exeption
-	 * kein Treffer für eine Variable
-	 * mehrere Treffer für eine Variable 
-	 * falsche Selektion
-	 * 
-	 */
-	private boolean checkListofFeldAndGetabasType(List<Feld> feldListe, Integer database , Integer group,  Boolean inTab , Boolean englVarNames ) throws ImportitException {
-		
-		if (feldListe !=null ) {
-			if (!edpSession.isConnected()) {
-				startEdpSession(EDPVariableLanguage.ENGLISH);
-			}
-			logger.info("START Hole Vartab für Datenbank " + database + ":" + group);
-			Vartab vartab = new Vartab(edpSession, database , group);
-			logger.info("ENDE Hole Vartab für Datenbank");
-			closeEdpSession(this.edpSession);
-			Boolean fehlergefunden = false;
-			for (Feld feld : feldListe) {
-				if (!feld.getOptionSkip()) {
-					
-				
-					VartabFeld vartabfeld = null; 
-					if (englVarNames) {
-		//					Checke auf englische Variablennamen					
-						vartabfeld = vartab.checkVartabforEnglVarName(feld.getName());
-						
-					}else {
-		//					Checke auf deutsche Variablennamen	
-						vartabfeld = vartab.checkVartabforGermanVarName(feld.getName());					
-					}
-					
-					if (vartabfeld != null) {
-						feld.setAbasTyp(vartabfeld.getAktivType());
-						logger.trace("Feld " + feld.getName() + " mit abastyp " + vartabfeld.getAktivType() + " gefunden" ); 
-						feld.setAbasFieldLength(getAbasFieldLength(vartabfeld.getVarLength()));
-						
-						
-					}else {
-						String fehlertext = "Das Feld mit dem Namen " + feld.getName() + " wurde in der Vartab nicht gefunden";
-						fehlergefunden = true;
-						feld.setError(fehlertext);
-						logger.error(fehlertext);
-					}
-				}	
-			}
-			
-			if (fehlergefunden) {
-				logger.info("Es wurden nicht alle Felder in der Vartab gefunden!");
-				return false;
-			}else {
-				logger.info("Es wurden alle Felder in der Vartab gefunden!");
-				return true;
-			}
-			
-			}else if (inTab) {
-//				ein leerer Tabellensatz ist erlaubt
-				return true;
-			} else {
-				throw new ImportitException("Die übergebene Feldliste für den Kopf war leer! Das funktioniert nicht");
-			}
-		
-	
-	}
-	
-	
-	
-	/**
-	 * @param datensatzList
-	 * @throws ImportitException
-	 * 
-	 * Es wird eine EDPSession aufgebaut und die Datensatzliste eingelesen.
-	 * Danach wird die EDpSession wieder beendet.
-	 * 
-	 */
-	public void importDatensatzList(ArrayList<Datensatz> datensatzList) throws ImportitException {
-		edpSession.loggingOn("java/log/importit21edp.log");
-		
-		try{
-			startEdpSession();
-			for (Datensatz datensatz : datensatzList) {
-				writeDatensatzToAbas(datensatz);
-			}		
-		}finally{
-			closeEdpSession(this.edpSession);
-			}
-		
-	}
-	/**
-	 * @param datensatzList
-	 * @throws ImportitException
-	 * 
-	 * Es wird das Object datensatzlist eingelesen
-	 * 
-	 * Es wird keine EDPSession aufgebaut und geschlossen dies muss in dem aufrufenden Programmteil erledigt werden 
-	 */
-	public void importDatensatzListTransaction(ArrayList<Datensatz> datensatzList) throws ImportitException {
-		edpSession.loggingOn("java/log/importit21edp.log");
-
-		for (Datensatz datensatz : datensatzList) {
-			writeDatensatzToAbas(datensatz);
-			logger.info(datensatz.toString());
-		}
-		
-	}
-	
-	private void writeDatensatzToAbas(Datensatz datensatz) throws ImportitException {
-		
-		EDPSession edpSession = connectNewEdpsession(datensatz.getEDPLanguage());
-		if (edpSession.isConnected()) {
-			EDPEditor edpEditor = edpSession.createEditor();
-			
-			try {
-				
-			if (datensatz.getTippkommando()== null ) {
-				
-				switch (checkSpecialDB(datensatz)) {
-				case 1:
-//					Verarbeitung Kundenartikeleigenschaften
-					writedatabaseKundenArtikeleigenschaften(datensatz , edpEditor);
-					break;
-
-				default:
-//					Verarbeitung der normalen Datenbanken
-					writeDatabase(datensatz, edpEditor);					
-					break;
-				}
-
-				
-			}else {
-//				Verarbeitung der TippKommandos
-				writeTippKommandos(datensatz, edpEditor);
-				
-			}
-				
-			} catch (CantBeginEditException e) {
-				logger.error(e);
-				datensatz.appendError(e);
-			} catch (ImportitException e) {
-				logger.error(e);
-				datensatz.appendError(e);
-			} catch (InvalidQueryException e) {
-				logger.error(e);
-				datensatz.appendError(e);
-			} catch (CantSaveException e) {
-				logger.error(e);
-				datensatz.appendError(e);
-			} catch (CantChangeSettingException e) {
-				logger.error(e);
-				datensatz.appendError(e);
-			} catch (CantReadFieldPropertyException e) {
-				logger.error(e);
-				datensatz.appendError(e);
-			} catch (CantChangeFieldValException e) {
-				logger.error(e);
-				datensatz.appendError(e);
-			} catch (InvalidRowOperationException e) {
-				logger.error(e);
-				datensatz.appendError(e);
-			} catch (CantReadSettingException e) {
-				logger.error(e);
-				datensatz.appendError(e);
-			} catch (ServerActionException e) {
-				logger.error(e);
-				datensatz.appendError(e);
-			} catch (CantReadStatusException e) {
-				logger.error(e);
-				datensatz.appendError(e);
-			}finally{
-				if (edpSession.isConnected()) {
-					if (edpEditor.isActive()) { 
-						logger.info("Editor beenden");
-						edpEditor.endEditCancel();
-					}
-					closeEdpSession(edpSession);
-				}else {
-					logger.error("Connection schon beendet Editor beenden");
-				}
-				
-			}
-			
-		}else {
-			logger.error("Die EDPSession ist nicht gestartet");
-			throw new ImportitException("Die EDPSession ist nicht gestartet");
-		}
-		
-	}
-
-	private void writedatabaseKundenArtikeleigenschaften(Datensatz datensatz,
-			EDPEditor edpEditor) throws ImportitException, InvalidQueryException, CantChangeSettingException, CantBeginEditException, InvalidRowOperationException, CantSaveException, CantReadSettingException {
-			
-		datensatz.setIsimportiert(false);
-		String[] varnames = checkDatensatzKundenartikeleigenschaften(datensatz);
-		if (varnames.length == 2) {
-			
-//			Datenbank auf 2 und Gruppe auf 6 setzen
-			logger.info("Import Kundenartikeleigenschaften");
-			
-			datensatz.setDatenbank(2);
-			datensatz.setGruppe(6);
-//			prüfen ob es für artikel und kunde schon einen Datensatz gibt
-//			Es mus jede Zeile des Datensatzes geprüft werden
-//			da im Kopf der Artikel und in der Zeile der Kunde steht
-			String fieldnameart = varnames[0];
-			String fieldnamekl  = varnames[1];
-
-			List<DatensatzTabelle> tabZeilen = datensatz.getTabellenzeilen();
-			
-			for (DatensatzTabelle datensatzTabelle : tabZeilen) {
-				
-					datensatzTabelle.getTabellenFieldValue(fieldnamekl);
-					EDPQuery edpQuery = this.edpSession.createQuery();
-					int recordCount;
-					String krit = fieldnameart +  "=" 
-							+ datensatz.getValueOfHeadField(fieldnameart)
-							+ ";" + fieldnamekl + "=" + datensatzTabelle.getTabellenFieldValue(fieldnamekl) ;
-					String key = "Kundenartikeleigenschaften";
-					
-					recordCount = getQueryTotalHits(krit , key , datensatz, edpQuery );
-					
-					if (recordCount == 1 || recordCount == 0) {
-						setEditorOption(datensatz, edpEditor);
-						if (recordCount == 1) {
-							String abasVersion = edpSession.getABASVersionNumber().substring(0, 4);
-							
-							if (2013 <= new Integer(abasVersion)   ) {
-								//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde
-								String xtid =  edpQuery.getField("id");
-								edpEditor.beginEdit("2:6", xtid);
-								
-								if (edpEditor.getRowCount() > 0 && datensatz.getOptionCode().getDeleteTable()) {
-									edpEditor.deleteAllRows();
-								}
-								logger.info("Editor Kundenartikeleigenschaften starten UPDATE" + " " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString() + " ID:" +edpEditor.getEditRef());
-
-								
-							}else {
-								logger.error("Editor Kundenartikeleigenschaften:  die Selektion " + krit + " hat einen Treffer erhalten. ID: " + edpQuery.getField("id") + "; Das Ändern der Kundenartikeleigenschaften ist erst ab der Version 2013R1 möglich!"); 
-								throw new ImportitException("Das Ändern der Kundenartikeleigenschaften ist erst ab der Version 2013R1 möglich!");
-							}
-						}else {
-							
-							logger.info("Editor Kundenartikeleigenschaften starten NEW " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString());
-							edpEditor.beginEditNew(datensatz.getDatenbank().toString(),
-									datensatz.getGruppe().toString());
-						}
-						
-						final String[] IgnoreFieldNames = {"art" , "artikel" , "product", "kl" , "custVendor" };
-						writeFieldsInEditor(datensatz,datensatzTabelle, edpEditor, IgnoreFieldNames );
-						edpEditor.endEditSave();
-						
-						datensatz.setIsimportiert(true);
-						
-						edpSession.loggingOff();
-						recordCount = getQueryTotalHits(krit,key , datensatz, edpQuery);
-						if (recordCount == 0) {
-							String errortext = "Der Datensatz mit Artikel " + datensatz.getValueOfHeadField(fieldnameart) + " und dem Kunden " + datensatzTabelle.getTabellenFieldValue(fieldnamekl) + " konnte nicht gefunden werden! es gibt ein PRoblem beim Speichern";
-									logger.error(errortext);
-							datensatz.appendError(errortext);
-							
-						}else if (recordCount > 1 ) {
-							
-							String errortext = "Der Datensatz mit Artikel " + datensatz.getValueOfHeadField(fieldnameart) + " und dem Kunden " + datensatzTabelle.getTabellenFieldValue(fieldnamekl) + " wurde mehrmals gefunden werden! Es gibt ein größeres Problem! ";
-									logger.error(errortext);
-							datensatz.appendError(errortext);
-						}
-						
-						
-					}else {
-						datensatz
-						.appendError("Selektion auf Datensatz war nicht eindeutig! Folgende Selektion wurde verwendet :"
-								+ krit);
-					}
-				
-				}
-			
-		}
-
-
-	}
-
-	private int getQueryTotalHits(String krit, String key , Datensatz datensatz, EDPQuery edpQuery) throws InvalidQueryException {
-		
-		Integer database = datensatz.getDatenbank();
-		Integer group = datensatz.getGruppe();
-		String databaseDescr;
-		if (group != -1) {
-			databaseDescr = database + ":" + group ;	
-		}else {
-			databaseDescr = database.toString() ;
-		}
-		
-
-		if (datensatz.getOptionCode().getUseEnglishVariablen()) {
-			krit = krit + ";@englvar=true;@language=en";
-			edpQuery.startQuery(databaseDescr,key , krit, "id");
-		} else {
-			krit = krit + ";@englvar=false;@language=de";
-			edpQuery.startQuery(databaseDescr, key , krit,	"id");
-		}
-
-		edpQuery.getLastRecord();
-		return edpQuery.getRecordCount();
-	}
-
-	/**
-	 * @param datensatz
-	 * 
-	 * checkDatensatz ob Es wirklich Kundenartikeleigenschaften sind 
-	 * prüfen ob die Felder kl und art als Felder vorhanden sind
-	 * nur so kann man Kundenartikeleigenschaften beschreiben
-	 * 
-	 * @return array mit 2 Werten wert[0] VariablenName Artikel
-	 * 							  wert[1] VariablenName Kunde
-	 *  
-	 */
-	private String[] checkDatensatzKundenartikeleigenschaften(Datensatz datensatz) {
-		
-		Integer database = datensatz.getDatenbank();
-		Integer group = datensatz.getGruppe();
-		Boolean varnameArtGefunden = false;
-		Boolean varnameKlGefunden = false;
-		String varNameArt = "";
-		String varNameKl = "";
-		String[] varNames = new String[2];
-		if (database==2 & (group == 6 || group == 7)) {
-			
-			List<Feld> kopffelder = datensatz.getKopfFelder();
-			for (Feld feld : kopffelder) {
-				if (feld.getName().equals("art") || feld.getName().equals("artikel") || feld.getName().equals("product") ) {
-					varnameArtGefunden = true;
-					varNameArt = feld.getName();
-				}
-			}
-			
-			List<Feld> tabellenfelder = datensatz.getTabellenFelder();
-			for (Feld feld : tabellenfelder) {
-				if (feld.getName().equals("kl") || feld.getName().equals("custVendor")) {
-					varnameKlGefunden = true;
-					varNameKl = feld.getName();
-				}
-			}
-			
-			if (varnameArtGefunden & varnameKlGefunden){
-				varNames[0] = varNameArt ;
-				varNames[1] = varNameKl ; 
-				
-				
-				return varNames;
-			}
-		}
-		
-		return ArrayUtils.EMPTY_STRING_ARRAY;
-		
-		
-	}
-
-	private void writeTippKommandos(Datensatz datensatz, EDPEditor edpEditor) throws ImportitException, CantChangeSettingException, CantSaveException, CantBeginEditException, CantReadSettingException {
-		datensatz.setIsimportiert(false);
-		edpEditor.beginEditCmd(datensatz.getTippkommando().toString(), "");
-		setEditorOption(datensatz, edpEditor);
-		writeFieldsInEditor(datensatz, edpEditor);
-		edpEditor.endEditSave();
-		datensatz.setIsimportiert(true);
-	}
-
-	/**
-	 * @param datensatz
-	 * @param edpEditor
-	 * @throws CantBeginEditException
-	 * @throws CantChangeSettingException
-	 * @throws ImportitException
-	 * @throws CantSaveException
-	 * @throws InvalidQueryException
-	 * @throws CantReadFieldPropertyException 
-	 * @throws CantChangeFieldValException 
-	 * @throws InvalidRowOperationException 
-	 * @throws ServerActionException 
-	 * @throws CantReadStatusException 
-	 * @throws CantReadSettingException 
-	 */
-	private void writeDatabase(Datensatz datensatz, EDPEditor edpEditor)
-			throws CantBeginEditException, CantChangeSettingException,
-			ImportitException, CantSaveException, InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException, InvalidRowOperationException, ServerActionException, CantReadStatusException, CantReadSettingException {
-		
-		datensatz.setIsimportiert(false);
-		datensatz.aktualisiereOptionCodeInFeldern();
-		if (datensatz.getOptionCode().getAlwaysNew()) {
-			setEditorOption(datensatz, edpEditor);
-			logger.info("Editor starten Always NEW " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString());
-			edpEditor.beginEditNew(datensatz.getDatenbank().toString(),
-					datensatz.getGruppe().toString());
-			writeFieldsInEditor(datensatz, edpEditor);
-			edpEditor.saveReload();
-			String abasId = edpEditor.getEditRef();
-			logger.info("Editor save Always NEW " + datensatz.getDatenbank().toString() + ":" + datensatz.getGruppe().toString() + " ID :" + abasId);
-			datensatz.setAbasId(abasId);
-			edpEditor.endEditSave();
-			datensatz.setIsimportiert(true);
-			
-//			neu wegen Aktionstabelle
-			
-			if (edpEditor.isActive()) {
-				edpEditor.endEditCancel();
-				logger.info("Editor save cancel "
-						+ datensatz.getDatenbank().toString() + ":"
-						+ datensatz.getGruppe().toString() + " ID:"
-						+ abasId);
-			}else {
-				
-				logger.info("Editor nicht aktiv!");
-				
-			}
-			
-		} else {
-			String krit = datensatz.getNameOfKeyfield() + "="
-					+ datensatz.getValueOfKeyfield();
-			
-			String objectId = getSelObject(krit, datensatz );
-			
-			
-			if (!objectId.equals("Z")) {
-				setEditorOption(datensatz, edpEditor);
-				if (!objectId.equals("0")) {
-				
-				//				Eröffne eine Editor fals kein oder 1 Datensatz gefunden wurde
-					edpEditor.beginEdit(objectId);
-					if (edpEditor.getRowCount() > 0 && datensatz.getOptionCode().getDeleteTable()) {
-						edpEditor.deleteAllRows();
-					}
-					
-					logger.info("Editor starten UPDATE" + " " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString() + " ID:" +edpEditor.getEditRef());
-
-				}else {
-					
-					logger.info("Editor starten NEW " + datensatz.getDatenbank().toString() +":" +datensatz.getGruppe().toString());
-					edpEditor.beginEditNew(datensatz.getDatenbank().toString(),
-							datensatz.getGruppe().toString());
-				}
-				
-				writeFieldsInEditor(datensatz, edpEditor);
-				
-				edpEditor.saveReload();
-//				edpEditor.setEditorOption(EDPEditorOption.STOREROWMODE, EDPStoreRowMode.DELETE_NONE.getModeStr());
-				String abasId = edpEditor.getEditRef();
-				
-				logger.info("Editor save Always NEW " + datensatz.getDatenbank().toString() + ":" + datensatz.getGruppe().toString() + " ID:" + abasId);
-				
-				datensatz.setAbasId(abasId);
-				edpEditor.endEditSave();
-				datensatz.setIsimportiert(true);
-				
-				if (edpEditor.isActive()) {
-					edpEditor.endEditCancel();
-					logger.info("Editor save cancel "
-							+ datensatz.getDatenbank().toString() + ":"
-							+ datensatz.getGruppe().toString() + " ID:"
-							+ abasId);
-				}else {
-					
-					logger.info("Editor nicht aktiv!");
-					
-				}
-			} else {
-
-				datensatz
-						.appendError("Selektion auf Datensatz war nicht eindeutig! Folgende Selektion wurde verwendet :"
-								+ krit);
-			}
-
-		}
-	}
-
-	private String getSelObject(String krit, Datensatz datensatz) throws ImportitException, InvalidQueryException {
-//		selektiere nach dem Schlüsselfeld
-			EDPSession edpquerysession = null;
-			try{
-			if (datensatz.getOptionCode().getUseEnglishVariablen()) {
-				 edpquerysession = connectNewEdpsession(EDPVariableLanguage.ENGLISH);	
-			}else {
-				edpquerysession = connectNewEdpsession(EDPVariableLanguage.GERMAN);
-			}
-			Boolean connect = edpquerysession.isConnected();
-			EDPQuery edpQuery= edpquerysession.createQuery();
-
-			String tableName = datensatz.getDatenbank().toString()
-								+ ":" + datensatz.getGruppe().toString();
-
-			String key;
-			key = datensatz.getKeyOfKeyfield();
-		if (key == null) {
-					key = "";
-		}
-	
-	
-	
-	//				datensatz.getOptionCode().getUseEnglishVariablen()
-	if (datensatz.getOptionCode().getUseEnglishVariablen()) {
-		krit = krit + ";@englvar=true;@language=en";
-		edpQuery.startQuery(tableName, key, krit, "idno,swd,id");
-	} else {
-		krit = krit + ";@englvar=false;@language=de";
-		edpQuery.startQuery(tableName, key, krit,
-				"nummer,such,id");
-	}
-
-	edpQuery.getLastRecord();
-	int recordCount = edpQuery.getRecordCount();
-	
-	String objectid = edpQuery.getField("id"); 
-	edpQuery.breakQuery();
-	
-	
-	if (recordCount == 1 ) {
-		return objectid;
-	}else if (recordCount >1 ) {
-		return "Z";
-	}else {
-		return "0";
-	}
-			}finally{
-				closeEdpSession(edpquerysession);
-				
-			}
-		
-	}
-
-	/**
-	 * @param datensatz
-	 * 
-	 * @param edpEditor
-	 * 
-	 * @throws CantChangeSettingException
-	 * @throws CantReadSettingException 
-	 *  
-	 */
-	private void setEditorOption(Datensatz datensatz, EDPEditor edpEditor) throws CantChangeSettingException, CantReadSettingException {
-		
-		OptionCode optionCode = datensatz.getOptionCode();
-		
-		if (optionCode!= null) {
-			
-			if (optionCode.getNofop()) {
-				if (edpEditor.getSession().getFOPMode()) {
-					edpEditor.getSession().setFOPMode(false);
-				}
-			}else {
-				
-				if (!edpEditor.getSession().getFOPMode()) {
-					edpEditor.getSession().setFOPMode(true);
-				}
-			}
-			
-
-//			Englische Variablen nutzen
-			if (optionCode.getUseEnglishVariablen()) {
-				
-				try {
-					if (!edpEditor.getSession().getVariableLanguage().equals(EDPVariableLanguage.ENGLISH)) {
-						edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.ENGLISH);
-					}
-					
-					if (!edpEditor.getVariableLanguage().equals(EDPVariableLanguage.ENGLISH)) {
-						
-						edpEditor.setVariableLanguage(EDPVariableLanguage.ENGLISH);
-					}
-				} catch (CantReadSettingException e) {
-						logger.error(e);
-				}
-				
-			}else {
-//				Deutsche Variablen nutzen
-				try {
-					if (!edpEditor.getSession().getVariableLanguage().equals(EDPVariableLanguage.GERMAN)) {
-						edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.GERMAN);
-					}
-					
-					if (!edpEditor.getVariableLanguage().equals(EDPVariableLanguage.GERMAN)) {
-						
-						edpEditor.setVariableLanguage(EDPVariableLanguage.GERMAN);
-					}
-				} catch (CantReadSettingException e) {
-						logger.error(e);
-				}
-				
-			}
-		}
-		
-	}
-
-	/**
-	 * @param datensatz
-	 * @param edpEditor
-	 * @throws ImportitException
-	 */
-	
-	private void writeFieldsInEditor(Datensatz datensatz, EDPEditor edpEditor) throws ImportitException {
-		
-		if (edpEditor.isActive()) {
-			
-//			Kopffelder schreiben
-			
-			List<Feld> kopfFelder = datensatz.getKopfFelder();
-			for (Feld feld : kopfFelder) {
-				
-				writeField(datensatz, feld, edpEditor, 0);
-				
-				}
-			
-//			TabelleFelder schreiben
-			
-			List<DatensatzTabelle> tabellenZeilen = datensatz.getTabellenzeilen();
-			
-			if (tabellenZeilen !=null && edpEditor.hasTablePart()) {
-				for (DatensatzTabelle datensatzTabelle : tabellenZeilen) {
-					Integer rowNumbervorher = edpEditor.getRowCount();
-					Integer rowNumber = insertRow(datensatz, edpEditor, rowNumbervorher);
-					
-
-					ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
-					for (Feld feld : tabellenFelder) {
-						writeField(datensatz, feld, edpEditor, rowNumber);
-					
-					}
-				}
-			}				
-			}		
-		}
-
-	private void writeFieldsInEditor(Datensatz datensatz,
-			DatensatzTabelle datensatzTabelle, EDPEditor edpEditor , String[] ignoreFields ) throws ImportitException {
-
-		if (edpEditor.isActive()) {
-//			EDPEditAction testaction = edpEditor.getEditAction(); 
-			if (edpEditor.getEditAction() == EDPEditAction.NEW  ) {	
-	//			Kopffelder schreiben
-				
-				List<Feld> kopfFelder = datensatz.getKopfFelder();
-				for (Feld feld : kopfFelder) {
-					
-					writeField(datensatz, feld, edpEditor, 0);
-					
-					}
-				
-	//			eine Zeile TabelleFelder schreiben
-	
-				if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
-					Integer rowNumbervorher = edpEditor.getRowCount();
-						Integer rowNumber = insertRow(datensatz, edpEditor, rowNumbervorher);
-						
-
-						ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
-						for (Feld feld : tabellenFelder) {
-							writeField(datensatz, feld, edpEditor, rowNumber);
-						
-						}
-					
-				}				
-				
-			}else if (edpEditor.getEditAction() == EDPEditAction.UPDATE) {
-//				Kopffelder schreiben
-				List<Feld> kopfFelder = datensatz.getKopfFelder();
-				for (Feld feld : kopfFelder) {
-					if (dontIgnoreField(feld, ignoreFields)) {
-						writeField(datensatz, feld, edpEditor, 0);
-					}
-				}
-//				Zeile aktualisieren
-//				eine Zeile TabelleFelder schreiben
-				
-				if (datensatzTabelle !=null && edpEditor.hasTablePart()) {
-						Integer rowNumber = edpEditor.getCurrentRow();
-						ArrayList<Feld> tabellenFelder = datensatzTabelle.getTabellenFelder();
-						for (Feld feld : tabellenFelder) {
-								if (dontIgnoreField(feld, ignoreFields)) {
-									writeField(datensatz, feld, edpEditor, rowNumber);	
-								}	
-						}
-					
-				}
-			}
-		}	
-		
-	}
-
-
-	private Integer insertRow(Datensatz datensatz, EDPEditor edpEditor,
-			Integer rowNumbervorher) throws ImportitException {
-		try {
-			if (rowNumbervorher == 0) {
-				edpEditor.insertRow(1);
-				return 1;
-			}else {
-				if (( datensatz.getTippkommando() != null && rowNumbervorher > 1) || (datensatz.getTippkommando() == null) ) {
-					Integer newRowNumber = rowNumbervorher + 1;
-					edpEditor.insertRow(newRowNumber);
-					return newRowNumber;
-				}else {
-					return rowNumbervorher;
-
-				}
-					
-			}
-			
-		} catch (InvalidRowOperationException e) {
-			logger.error(e);
-			throw new ImportitException("Die Zeilen konnten nicht eingefügt werden!" ,e );
-		}
-	}
-	
-	/**
-	 * Prüfen, ob das @param feld in dem Array
-	 * @param ignoreFields vorkommt
-	 * @return wenn ja wird false zurückgegen, ansonsten true
-	 */
-	private boolean dontIgnoreField(Feld feld, String[] ignoreFields) {
-		
-		String fieldName = feld.getName();
-		for (String ignoreField : ignoreFields) {
-			if (ignoreField.equals(fieldName)) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	/**
-	 * @param datensatz
-	 * @param edpEditor
-	 * @param feld
-	 * @param rowNumber
-	 * @throws ImportitException
-	 */
-	private void writeField(Datensatz datensatz, Feld feld, EDPEditor edpEditor , Integer rowNumber )
-			throws ImportitException {
-		/**
-		 *Falls das Feld mit Skip gekennzeichnet ist wird es ignoriert
-		 */
-		
-		if (!feld.getOptionSkip()) {
-			/** 
-			 * Falls die Option notEmpty gesetzt ist, wird geprüft,
-			 * ob der Feldwert leer ist, 
-			 *  wenn ja dann wird da wird das Feld nicht beschrieben
-			 *  wenn die Option nicht gesetzt ist wird der Wert in dem Feld gelöscht  
-			 */  
-			if (feld.getValue() == null) {
-				
-				throw new ImportitException("Das Feld " + feld.getName() + "war im Datensatz " + datensatz.getValueOfKeyfield() + "in der Zeile " + rowNumber + " mit dem Wert NULL belegt");
-				
-			}
-			if (!(feld.getOptionNotEmpty() && feld.getValue().isEmpty())) {
-				/** 
-				 *Wenn die option modifiable gesetzt ist, wird vor dem Schreiben geprüft, ob das Feld Beschreibbar ist.
-				 *Wenn nicht dann wird der Wert nicht geschrieben.
-				 *
-				 * Beim Schreiben in ein geschütztes Feld wird eine Exception geworfen.
-				 *  
-				 */
-				try {
-						/**
-						 * Das Feld soll nur beschrieben werden, wenn es beschreibbar ist.
-						 * Fall die option modifiable nicht gesetzt ist, wird eine ImportitExecption abgesetzt
-						 * 
-						 */
-						
-					
-						
-						if (edpEditor.fieldIsModifiable(rowNumber, feld.getName())) {
-//									beschreibe das Feld 
-							String datafieldval = feld.getValue();
-							
-							if (!(feld.getOptionDontChangeIfEqual() & 
-									edpEditor.getFieldVal(rowNumber, feld.getName()).equals(datafieldval))) {
-								edpEditor.setFieldVal(rowNumber, feld.getName(), datafieldval);
-					
-								logger.debug("Das Feld " + feld.getName() + " mit dem Wert " + datafieldval  + " wurde in Zeile " + rowNumber.toString() + "geschrieben" );
-							}
-							
-							
-						}else {
-							
-							if (!feld.getOptionModifiable() && !datensatz.getNameOfKeyfield().equals(feld.getName())) {
-								if (rowNumber == 0) {									
-									throw new ImportitException("Das Kopffeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
-											+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + "nicht änderbar");	
-								}else {
-									throw new ImportitException("Das Tabellenfeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
-											+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " in Zeile " + rowNumber.toString() + " nicht änderbar");
-								}
-								
-
-							}
-						}	
-					} catch (CantChangeFieldValException e) {
-						logger.error(e);
-						if (rowNumber == 0) {			
-						throw new ImportitException("Das Kopffeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
-								+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " nicht änderbar"  , e);
-						}else {
-							throw new ImportitException("Das Tabellenfeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
-									+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " in Zeile " + rowNumber.toString() + " nicht änderbar"  , e);
-						}
-						
-					}catch (CantReadFieldPropertyException e) {
-						logger.error(e);
-						if (rowNumber == 0) {
-						throw new ImportitException("Für das Kopffeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
-								+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " die Abasfeldeigenschaften nicht auslesbar"  , e);
-						}else {
-							throw new ImportitException("Für das Tabellenfeld " + feld.getName() + " ist in dem Datensatz " + datensatz.getValueOfKeyfield() 
-									+ " für die Datenbank " + datensatz.getDatenbank() + ":" + datensatz.getGruppe() + " in Zeile " + rowNumber.toString() + " die Abasfeldeigenschaften nicht auslesbar"  , e);
-							
-					}	
-					}
-					
-				}
-				
-			}else {
-				logger.debug("Das Feld " + feld.getName() + " ist als SKIP-Feld gekennzeichnet");				
-				}
-		
-	}
-	
-	/**
-	 * @param datensatzList
-	 * 
-	 * Prüft ob alle Werte in der Datensatzlist zu den Feld-Werten passen
-	 * Die Prüfung ist in die Klasse CheckDataUtil ausgegliedert.
-	 * Aber von hier wird es wegen den EDP-Einstellungen aufgerufen.  
-	 * @throws ImportitException 
-	 * 
-	 * 
-	 */
-	
-	public void checkDatensatzListValues(ArrayList<Datensatz> datensatzList) throws ImportitException {
-		
-		try {
-			startEdpSession();
-			for (Datensatz datensatz : datensatzList) {
-				List<Feld> kopfFelder = datensatz.getKopfFelder();
-				Boolean includeError = false;
-				for (Feld feld : kopfFelder) {
-					if (!checkData(feld)) {
-						includeError = true;
-					}
-
-				}
-				List<DatensatzTabelle> tabellenZeilen = datensatz
-						.getTabellenzeilen();
-				for (DatensatzTabelle datensatzTabelle : tabellenZeilen) {
-					ArrayList<Feld> tabfelder = datensatzTabelle
-							.getTabellenFelder();
-					for (Feld feld : tabfelder) {
-						if (!checkData(feld)) {
-							includeError = true;
-						}
-					}
-				}
-				if (includeError) {
-					datensatz.createErrorReport();
-				}
-			}
-		} finally {
-			closeEdpSession(this.edpSession);
-		}
-
-	}
-
-	private long getAbasFieldLength(String abasTyp){
-		EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(abasTyp);
-		return edpeksartinfo.getMaxLineLen();
-	}
-	
-	private Boolean checkData(Feld feld) throws ImportitException {
-		
-		String value = feld.getValue();
-//		falls Feld ist mit skip gekennzeichnet, nicht prüfen
-		if (!feld.getOptionSkip()) {
-			logger.debug("checkData Feld " + feld.getName() + " Zeile "
-					+ feld.getColNumber() + " AbasTyp " + feld.getAbasTyp()
-					+ " Wert " + value);
-			EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(feld.getAbasTyp());
-			int datatyp = edpeksartinfo.getDataType();
-			if (value != null) {
-				if (!(feld.getOptionNotEmpty() & value.isEmpty())) {
-					if (datatyp == EDPTools.EDP_REFERENCE
-							|| datatyp == EDPTools.EDP_ROWREFERENCE) {
-						String edpErpArt = edpeksartinfo.getERPArt();
-						if (edpErpArt.startsWith("V")) {
-
-							if (edpErpArt.equals("VPK1")
-									|| edpErpArt.equals("VPKS1")
-									|| edpErpArt.equals("VPKT1")) {
-								//							Verweis auf Fertigungslistenposition 
-								if (value.startsWith("A ")) {
-									//								Es ist ein Arbeitsgang
-									EDPEKSArtInfo edpeksartinfoV = new EDPEKSArtInfo(
-											"P7:0");
-									checkVerweisFeld(feld, edpeksartinfoV);
-								} else {
-									//								Es ist ein Artikel, Fertigungsmittel oder Dienstleistung
-									EDPEKSArtInfo edpeksartinfoV = new EDPEKSArtInfo(
-											"P2:1.2.5");
-									checkVerweisFeld(feld, edpeksartinfoV);
-								}
-
-							}
-
-							//				Multiverweisfelder außer VPK1
-							//				werden derzeit nicht überprüft.
-
-						} else {
-							//				normales Verweisfeld
-							checkVerweisFeld(feld, edpeksartinfo);
-						}
-
-					} else if (datatyp == EDPTools.EDP_STRING) {
-						Long fieldlength = edpeksartinfo.getMaxLen();
-						Long valueLength = (long) value.length();
-						if (fieldlength < valueLength) {
-							feld.setError("Der Wert " + value + " ("
-									+ valueLength
-									+ "Zeichen) ist für das Feld "
-									+ feld.getName() + " mit der Feldlänge "
-									+ fieldlength.toString() + " zu lang ");
-						}
-
-					} else if (datatyp == EDPTools.EDP_INTEGER) {
-						int integerDigits = edpeksartinfo.getIntegerDigits();
-//						nur Prüfen wenn nicht leer oder <> 0
-						if (value.length() > 0 && !value.equals("0")) {
-							try {
-								Integer intValue = new Integer(value);
-								Integer valueLength = intValue.toString().length();
-								if (integerDigits < valueLength) {
-									feld.setError("Der Wert " + value
-											+ "ist zu groß");
-								}
-							} catch (NumberFormatException e) {
-								feld.setError("Der Wert "
-										+ value
-										+ " konnte nicht in einen Integer-Wert konvertiert werden");
-							}
-						}
-
-					} else if (datatyp == EDPTools.EDP_DOUBLE) {
-						int fractionDigits = edpeksartinfo.getFractionDigits();
-						int integerDigits = edpeksartinfo.getIntegerDigits();
-						
-						if (value.length() > 0 && !value.equals("0")) {
-							try {
-								value = value.replaceAll(" ", "");
-								BigDecimal bigDecimalValue = new BigDecimal(
-										value);
-								BigDecimal roundBigDValue = bigDecimalValue
-										.setScale(fractionDigits,
-												RoundingMode.HALF_UP);
-								String roundBigDValueStr = roundBigDValue
-										.toString();
-								String compValue = fillvaluewithfractionDigit(
-										value, fractionDigits);
-
-								if (!roundBigDValueStr.equals(compValue)) {
-									feld.setError("Das Runden auf die geforderten Nachkommastellen ergibt ein falsches Ergebnis org: "
-											+ value
-											+ " Vergleichswert "
-											+ compValue
-											+ " gerundeter Wert :"
-											+ roundBigDValueStr);
-								}
-
-							} catch (NumberFormatException e) {
-								feld.setError("Der Wert "
-										+ value
-										+ " konnte nicht in einen BigDezimal-Wert(Zahl mit Nachkommastellen) konvertiert werden");
-							} catch (BadAttributeValueExpException e) {
-								throw new ImportitException(
-										"Es wurde ein falscher Übergabeparamter in der Programmierung übergeben",
-										e);
-							}
-
-							String vorkommaStellen = "";
-							if (value.contains(",")) {
-								String[] stringTeile = value.split(",");
-								if (stringTeile.length > 0) {
-									vorkommaStellen = stringTeile[0];
-								}
-							} else if (value.contains(".")) {
-								String[] stringTeile = value.split(".");
-								if (stringTeile.length > 0) {
-									vorkommaStellen = stringTeile[0];
-								}
-
-							} else {
-								vorkommaStellen = value;
-							}
-							if (vorkommaStellen.length() > integerDigits) {
-								feld.setError("Der Wert "
-										+ value
-										+ " hat zu viele Vorkommastellen für den AbasTyp "
-										+ feld.getAbasTyp() + " für das Feld "
-										+ feld.getName());
-
-							}
-
-						} else {
-
-							//						Prüfung macht keinen Sinn bei lerrem Feld und Fehler wäre zu hart
-						}
-
-					} else if (datatyp == EDPTools.EDP_DATE) {
-						if (!checkDataDate(feld)) {
-							feld.setError("Der Wert "
-									+ value
-									+ " kann nicht in ein Abas-Datum gewandelt werden!");
-						}
-
-					} else if (datatyp == EDPTools.EDP_DATETIME
-							|| datatyp == EDPTools.EDP_TIME
-							|| datatyp == EDPTools.EDP_WEEK) {
-						if (!checkDataDate(feld)) {
-							feld.setError("Der Wert "
-									+ value
-									+ " kann nicht in ein Abas-Zeitformat gewandelt werden!");
-						}
-					}
-				}
-			} else {
-				feld.setError("Der Wert ist null! Das ist nicht erlaubt");
-			}
-		}
-		
-		
-		if (feld.getError().isEmpty()) {
-			return true;
-		}else {
-			return false;
-		}
-		
-		
-	}
-
-	/**
-	 * @param feld
-	 * @param value
-	 * @param edpeksartinfo
-	 */
-	private void checkVerweisFeld(Feld feld, 
-			EDPEKSArtInfo edpeksartinfo) {
-		String value = feld.getValue();
-		int databaseNumber = edpeksartinfo.getRefDatabaseNr();
-		int groupNumber = edpeksartinfo.getRefGroupNr();
-		
-		if (databaseNumber == 7 && groupNumber == 0) {
-			value = extractNumberArbeitsgang(value); 
-		}
-//		Die Prüfung soll nur ausgeführt werden wenn value <> "" ist
-		if (!value.isEmpty()) {
-			EDPQuery query = null; 
-			try {
-				query = getEDPQueryVerweis(value,
-						databaseNumber, groupNumber,
-						feld.getColNumber());
-				query.getLastRecord();
-				int recordCount = query.getRecordCount();
-				if (recordCount == 0) {
-					feld.setError("Es wurde kein Datensatz für den Verweis "
-							+ feld.getAbasTyp()
-							+ "mit dem Wert "
-							+ value + " gefunden!");
-	
-				} else if (recordCount > 1) {
-					feld.setError("Es wurden mehrere Datensätze für den Verweis "
-							+ feld.getAbasTyp()
-							+ "mit dem Wert "
-							+ value + " gefunden!");
-	
-				} else {
-	
-				}
-	
-			} catch (ImportitException e) {
-				feld.setError("Es trat ein Fehler beim Prüfen des Verweises"
-						+ feld.getAbasTyp()
-						+ " mit dem Wert "
-						+ value
-						+ " auf");
-	
-			}finally{
-				if (query != null) {
-					if (query.getSession().isConnected()) {
-						query.getSession().endSession();
-						logger.info("End EDPSession Query-Verweis");
-					}
-				}
-			}
-		}
-	}
-
-	private String extractNumberArbeitsgang(String value) {
-
-		String newValue = value.replaceAll("A", "");
-		newValue = newValue.replaceAll(" ", "");
-		
-		return newValue;
-	}
-
-	/**
-	 * @param value
-	 * @param fractionDigits
-	 * @return
-	 * @throws BadAttributeValueExpException
-	 * 
-	 * Die Funktion soll den String der einen Zahl darstellt, mit den geforderten NachkommaStellen mit 0 auffüllen
-	 * 
-	 * Beispiel 4 geforderte Nachkommastellen 
-	 * value = 1.5
-	 * ergebniss =  1.5000
-	 *  
-	 *  
-	 */
-	private String fillvaluewithfractionDigit(String value, int fractionDigits)
-			throws BadAttributeValueExpException {
- 
-		Double doubleValue = new Double(value);
-		
-		NumberFormat numberformat = new DecimalFormat("#.#########");
-		String strdblValue = numberformat.format(doubleValue);
-		
-		String[] listofValue = strdblValue.split("\\.");
-		String nullstring = fillStringWithMultipleValues("0", fractionDigits);
-		if (listofValue.length > 1) {
-			listofValue[1] = (listofValue[1] + nullstring).substring(0,
-					fractionDigits);
-			value = listofValue[0] + "." + listofValue[1];
-		}else {
-			value = listofValue[0] + "." + nullstring;
-		}
-		
-		return value;
-	}
-		
-	/**
-	 * 
-	 *
-	 * @param value
-	 * Es ist nur ein String mit einem Zeichen erlaubt
-	 * @param numberofString
-	 * @return einen String mit numberofString mal dem value Character
-	 * @throws BadAttributeValueExpException 
-	 * 
-	 * 
-	 */
-	private String fillStringWithMultipleValues(String value,
-			int numberofString) throws BadAttributeValueExpException {
-		
-		if (value.length()==1) {
-			String multipleString = "";
-			for (int i = 0; i < numberofString; i++) {
-				multipleString = multipleString + value;
-			}
-			return multipleString;	
-		}else {
-			throw new BadAttributeValueExpException("Als Übergabe ist nur ein String mit einem Zeichen erlaubt!");
-		}
-		
-	}
-
-	private  Boolean checkDataDate(Feld feld) {
-		String abastyp = feld.getAbasTyp();
-		String value = feld.getValue();
-		Boolean ergebnis=false;
-		BufferFactory bufferFactory = BufferFactory.newInstance(true);
-		UserTextBuffer userTextBuffer = bufferFactory.getUserTextBuffer();
-
-		String varnameErgebnis = "xtergebnis";
-
-		if (!userTextBuffer.isVarDefined(varnameErgebnis)) {
-			userTextBuffer.defineVar("Bool", varnameErgebnis);
-		}
-		userTextBuffer.setValue(varnameErgebnis, "0");
-		
-			String formelStr = "U|" +varnameErgebnis + " = F|isvalue( \""  + value + "\" , \"" + abastyp + "\")";
-			FOe.formula(formelStr);
-			ergebnis = userTextBuffer.getBooleanValue(varnameErgebnis);	
-				
-		
-		return ergebnis;
-	}
-		
-		
-		
-		
-private EDPQuery getEDPQueryVerweis(String value, Integer database,
-		Integer group, Integer rowNumber) throws ImportitException {
-	
-	if (!this.edpSession.isConnected()) {
-		startEdpSession();
-	}
-
-	String[] fieldNames = {"id" , "nummer"};
-	
-	String tableName = "";
-	
-	
-//	wenn die Gruppe nicht eindeutig wird eine -1 übergeben
-	
-	if (group == -1) {
-		tableName= database.toString() + ":";
-	}else {
-		tableName= database.toString() + ":" + group.toString();	
-	}
-	
-	EDPQuery query = this.edpSession.createQuery();
-	String krit = "@noswd="  + value +  ";@englvar=true;@language=en;@database=" +database.toString();		
-	StandardEDPSelectionCriteria criteria = new StandardEDPSelectionCriteria(krit);
-	StandardEDPSelection edpcriteria = new StandardEDPSelection(tableName, criteria);
-	edpcriteria.setDatabase(database.toString());
-	
-	try {
-
-		query.startQuery(edpcriteria, fieldNames.toString());
-		
-	} catch (InvalidQueryException e) {
-		closeEdpSession(this.edpSession);
-		throw new ImportitException( "fehlerhafter Selektionsstring: " + krit , e);
-	}
-	
-	return query;
-}
-
-public void startTransaction() throws ImportitException {
-	startEdpSession();
-	try {
-		this.edpSession.startTransaction();
-	} catch (TransactionException e) {
-		throw new ImportitException("Der Start der Transaction schlug fehl", e);
-	}
-}
-
-public void commitTransaction() throws ImportitException {
-	try {
-		this.edpSession.commitTransaction();
-	} catch (TransactionException e) {		
-		throw new ImportitException("Das Commit der Transaction schlug fehl", e);
-	}finally{
-		closeEdpSession(this.edpSession);
-	}	
-}
-
-public void abortTransaction() throws ImportitException {
-	try {
-		this.edpSession.abortTransaction();
-	} catch (TransactionException e) {
-		throw new ImportitException("Das Abbruch der Transaction schlug fehl", e);
-		
-	}catch(ConnectionLostException e){
-		throw new ImportitException("Die Verbindung ist abgebrochen", e);
-	}finally{
-		closeEdpSession(this.edpSession);
-	}
-	
-}
+
+    private void validate(String stringVar, String errorText) throws ImportitException {
+        if (stringVar != null) {
+            if (stringVar.isEmpty()) {
+                throw new ImportitException(errorText);
+            }
+        } else {
+            throw new ImportitException(String.format("%s: %s", errorText, Util.getMessage("err.null.value")));
+        }
+    }
+
+    public void startEdpSession() throws ImportitException {
+        createSession(this.server, this.port, this.client, this.password);
+    }
+
+    public void startEdpSession(EDPVariableLanguage variableLanguage) throws ImportitException {
+        createSession(this.server, this.port, this.client, this.password, variableLanguage);
+    }
+
+    public void closeEdpSession(EDPSession edpSession) {
+        if (edpSession.isConnected()) {
+            edpSession.endSession();
+            logger.info(Util.getMessage("info.edp.session.closed", edpSession.getSessionTag()));
+        } else {
+            logger.error(Util.getMessage("err.edp.session.lost", edpSession.getSessionTag()));
+        }
+    }
+
+    private void createSession(String server, int port, String client, String password) throws ImportitException {
+        try {
+            this.edpSession.beginSession(server, port, client, password, "ImportIt_21");
+            this.edpSession.loggingOn(edpLogFile);
+            logger.info(Util.getMessage("info.edp.session.begin", edpSession.getSessionTag()));
+        } catch (CantBeginSessionException e) {
+            logger.error(e);
+            throw new ImportitException(Util.getMessage("err.edp.session.start", e));
+        }
+    }
+
+    private void createSession(String server, int port, String client, String password, EDPVariableLanguage variableLanguage) throws ImportitException {
+        try {
+            this.edpSession.beginSession(server, port, client, password, "ImportIt_21");
+            this.edpSession.loggingOn(edpLogFile);
+            logger.info(Util.getMessage("info.edp.session.begin", edpSession.getSessionTag()));
+            this.edpSession.setVariableLanguage(variableLanguage);
+        } catch (CantBeginSessionException e) {
+            logger.error(e);
+            throw new ImportitException(Util.getMessage("err.edp.session.start", e));
+        }
+    }
+
+    private EDPSession connectNewEdpSession(EDPVariableLanguage variableLanguage) throws ImportitException {
+        EDPSession edpSession = EDPFactory.createEDPSession();
+        while (!edpSession.isConnected()) {
+            try {
+                edpSession.beginSession(this.server, this.port, this.client, this.password, "ImportIt_21_m");
+                edpSession.loggingOn(edpLogFile);
+                logger.info(Util.getMessage("info.edp.session.begin", edpSession.getSessionTag()));
+                edpSession.setVariableLanguage(variableLanguage);
+            } catch (CantBeginSessionException e) {
+                logger.error(e);
+                throw new ImportitException(Util.getMessage("err.edp.session.start", e));
+            } catch (Exception e) {
+                logger.error(e);
+                throw new ImportitException(Util.getMessage("err.edp.session.start", e));
+            }
+        }
+        return edpSession;
+    }
+
+
+    public void checkDataList(ArrayList<Data> dataList) throws ImportitException {
+        if (dataList != null) {
+            if (!dataList.isEmpty()) {
+                try {
+                    startEdpSession(EDPVariableLanguage.ENGLISH);
+                    Data data = dataList.get(0);
+                    if (data != null) {
+                        if (checkDataStructure(data)) {
+                            for (Data dataset : dataList) {
+                                dataset.copyDatabase(data);
+                                dataset.copyAbasType(data);
+                            }
+                        }
+                    }
+                } finally {
+                    closeEdpSession(this.edpSession);
+                }
+            } else {
+                throw new ImportitException(Util.getMessage("err.empty.data.list"));
+            }
+        } else {
+            throw new ImportitException(Util.getMessage("err.undefined.data.list"));
+        }
+    }
+
+    private boolean checkDataStructure(Data data) {
+        boolean validDb = checkData(data);
+        boolean validHead = false;
+        boolean validTable = false;
+        if (validDb) {
+            List<Field> headerFields = data.getHeaderFields();
+            List<Field> tableFields = data.getTableFields();
+            validHead = false;
+            validTable = false;
+            try {
+                if (isSpecialDb(data)) {
+                    validHead = checkCustomerPartProperties(headerFields, data.getOptionCode().useEnglishVariables());
+                    validTable = getAbasType(tableFields, 2, 6, false, data.getOptionCode().useEnglishVariables());
+                } else {
+                    validHead = getAbasType(headerFields, data.getDatabase(), data.getGroup(), false, data.getOptionCode().useEnglishVariables());
+                    validTable = getAbasType(tableFields,
+                            data.getDatabase(), data.getGroup(),
+                            true, data.getOptionCode()
+                                    .useEnglishVariables());
+                }
+            } catch (ImportitException e) {
+                logger.error(e);
+                data.appendError(Util.getMessage("err.structure.check", e));
+            }
+        }
+        if (validTable && validHead && validDb) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean checkCustomerPartProperties(List<Field> headerFields, Boolean englishVariables) throws ImportitException {
+        if (headerFields.size() == 1) {
+            for (Field field : headerFields) {
+                String varName = field.getName();
+                if (varName.equals("product") || varName.equals("art") || varName.equals("artikel")) {
+                    return getAbasType(headerFields, 2, 6, false, englishVariables);
+                }
+            }
+            throw new ImportitException(Util.getMessage("err.variables.missing"));
+        } else {
+            throw new ImportitException(Util.getMessage("err.too.many.head.fields"));
+        }
+    }
+
+    private boolean isSpecialDb(Data data) {
+        if (data.getDatabase() == 2 && (data.getGroup() == 6 || data.getGroup() == 7)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkData(Data data) {
+        Boolean exists = false;
+        if (data.getTypeCommand() == null && data.getTypeCommandString() != null) {
+            data.setTypeCommand(checkTypeCommandString(data.getTypeCommandString()));
+        }
+        if (data.getTypeCommand() != null && data.getDatabase() == null) {
+            EnumTypeCommands[] typeCommands = EnumTypeCommands.values();
+            for (EnumTypeCommands enumTypeCommands : typeCommands) {
+                if (data.getTypeCommand() == enumTypeCommands.getCode()) {
+                    exists = true;
+                }
+
+            }
+            if (exists) {
+                try {
+                    findDatabaseForTypeCommand(data);
+                } catch (ImportitException e) {
+                    data.appendError(e);
+                }
+            } else {
+                data.appendError(Util.getMessage("err.invalid.type.command", data.getTypeCommand()));
+            }
+        }
+        exists = checkDatabaseName(data);
+        return exists;
+    }
+
+
+    private Integer checkTypeCommandString(String typeCommandString) {
+        Integer typeCommandCode = null;
+        Enumeration enumeration = fillEnumeration();
+        if (enumeration.getListOfEnumItems().size() > 0) {
+            EnumerationItem enumerationItem = enumeration.searchItem(typeCommandString);
+            typeCommandCode = enumerationItem.getNumber();
+        }
+        return typeCommandCode;
+    }
+
+    private Enumeration fillEnumeration() {
+        Enumeration enumeration = new Enumeration();
+        ArrayList<EnumerationItem> listOfEnumItems = enumeration.getListOfEnumItems();
+        BufferFactory bufferFactory = BufferFactory.newInstance(true);
+        GlobalTextBuffer globalTextbuffer = bufferFactory.getGlobalTextBuffer();
+        UserTextBuffer userTextBuffer = bufferFactory.getUserTextBuffer();
+        int cmdNameMax = globalTextbuffer.getIntegerValue("cmdNameMax");
+        for (Integer i = 0; i < cmdNameMax; i++) {
+            String descrVar = "xtnamebspr";
+            String neutralNameVar = "xtnameneutral";
+            String enumerationVar = "xtaufzaehlung";
+            String descr;
+            String neutralName;
+            if (!userTextBuffer.isVarDefined(descrVar)) {
+                userTextBuffer.defineVar("Text", descrVar);
+            }
+            if (!userTextBuffer.isVarDefined(neutralNameVar)) {
+                userTextBuffer.defineVar("Text", neutralNameVar);
+            }
+            if (!userTextBuffer.isVarDefined(enumerationVar)) {
+                userTextBuffer.defineVar("A198", enumerationVar);
+            }
+            FOe.assign("U|" + enumerationVar + " = \"(" + i + ")\"");
+            Boolean success = globalTextbuffer.getBooleanValue("success");
+            if (success) {
+                FOe.formula("U|" + neutralNameVar + " = 'U|" + enumerationVar + "(L=\":\")'");
+                neutralName = userTextBuffer.getStringValue(neutralNameVar);
+                descr = globalTextbuffer.getStringValue("cmdName" + i);
+                EnumerationItem enumerationItem = new EnumerationItem(i, descr, neutralName);
+                listOfEnumItems.add(enumerationItem);
+            }
+        }
+        return enumeration;
+    }
+
+    private Boolean checkDatabaseName(Data data) {
+        if (data.getDatabase() != null && data.getGroup() != null) {
+            String criteria = "0:grpDBDescr=("
+                    + data.getDatabase().toString() + ");0:grpGrpNo="
+                    + data.getGroup().toString() + ";"
+                    + ";@englvar=true;@language=en";
+            if (searchDatabase(data, criteria)) {
+                return true;
+            } else {
+                data.appendError(Util.getMessage("err.invalid.database.group", data.getDatabase(), data.getGroup()));
+                return false;
+            }
+        } else {
+            if (data.getDbString() != null && data.getDbGroupString() != null) {
+                String criteria = "0:vdntxt==" + data.getDbString()
+                        + ";0:vgrtxtbspr=="
+                        + data.getDbGroupString() + ";"
+                        + ";@englvar=false;@language=de";
+                if (searchDatabase(data, criteria)) {
+                    return true;
+                } else {
+                    criteria = "0:DBCmd==" + data.getDbString()
+                            + ";0:grpGrpCmd==" + data.getDbGroupString()
+                            + ";" + ";@englvar=true;@language=en";
+                    if (searchDatabase(data, criteria)) {
+                        return true;
+                    } else {
+                        data.appendError(Util.getMessage("err.invalid.database.group", data.getDatabase(), data.getGroup()));
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean searchDatabase(Data data, String criteria) {
+        String key = "";
+        int aliveFlag = EDPConstants.ALIVEFLAG_ALIVE;
+        String fieldNames = "vdn,vgr,grpDBDescr,grpGrpNo";
+        String tableName = "12:26";
+        Boolean inTable = false;
+        int mode = EDPConstants.ENUMPOS_CODE;
+        try {
+            this.edpSession.setEnumMode(mode);
+        } catch (InvalidSettingValueException e) {
+            logger.error(e);
+        }
+        EDPQuery query = this.edpSession.createQuery();
+        try {
+            query.startQuery(tableName, key, criteria, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
+            query.getLastRecord();
+            if (query.getRecordCount() == 1) {
+                String dbString = query.getField("grpDBDescr");
+                dbString = dbString.replaceAll("\\(*", "");
+                dbString = dbString.replaceAll("\\)*", "");
+                data.setDatabase(new Integer(dbString));
+                String group = query.getField("grpGrpNo");
+                group = group.replaceAll(" ", "");
+                data.setGroup(new Integer(group));
+                return true;
+            }
+        } catch (InvalidQueryException e) {
+            data.appendError(Util.getMessage("err.invalid.selection.criteria", criteria, e));
+            return false;
+        }
+        return false;
+    }
+
+    private void findDatabaseForTypeCommand(Data data) throws ImportitException {
+        if (data.getTypeCommand() != null) {
+            startEdpSession(EDPVariableLanguage.ENGLISH);
+            if (this.edpSession != null) {
+                EDPEditor edpEditor = this.edpSession.createEditor();
+                try {
+                    edpEditor.beginEditCmd(data.getTypeCommand().toString(), "");
+                    data.setDatabase(edpEditor.getEditDatabaseNr());
+                    data.setGroup(edpEditor.getEditGroupNr());
+                    edpEditor.endEditCancel();
+                } catch (CantBeginEditException e) {
+                    throw new ImportitException(Util.getMessage("err.getting.database", e));
+                }
+            }
+        }
+    }
+
+    private boolean getAbasType(List<Field> fieldList, Integer database, Integer group, Boolean inTab, Boolean englishVariables) throws ImportitException {
+        if (fieldList != null) {
+            if (!edpSession.isConnected()) {
+                startEdpSession(EDPVariableLanguage.ENGLISH);
+            }
+            logger.info(Util.getMessage("info.start.getting.vartab", database, group));
+            Vartab vartab = new Vartab(edpSession, database, group);
+            logger.info(Util.getMessage("info.end.getting.vartab", database, group));
+            closeEdpSession(this.edpSession);
+            Boolean error = false;
+            for (Field field : fieldList) {
+                if (!field.getOptionSkip()) {
+                    VartabField vartabField;
+                    if (englishVariables) {
+                        vartabField = vartab.checkVartabEnglish(field.getName());
+
+                    } else {
+                        vartabField = vartab.checkVartabGerman(field.getName());
+                    }
+                    if (vartabField != null) {
+                        field.setAbasType(vartabField.getActiveType());
+                        logger.trace(Util.getMessage("info.found.field.with.type", field.getName(), vartabField.getActiveType()));
+                    } else {
+                        String errorText = Util.getMessage("err.field.not.found", field.getName());
+                        error = true;
+                        field.setError(errorText);
+                        logger.error(errorText);
+                    }
+                }
+            }
+            if (error) {
+                logger.info(Util.getMessage("info.not.all.fields.found"));
+                return false;
+            } else {
+                logger.info(Util.getMessage("info.all.fields.found"));
+                return true;
+            }
+        } else if (inTab) {
+            return true;
+        } else {
+            throw new ImportitException(Util.getMessage("err.invalid.head.fields"));
+        }
+    }
+
+    public void importDataList(ArrayList<Data> dataList) throws ImportitException {
+        edpSession.loggingOn("java/log/importit21edp.log");
+        try {
+            startEdpSession();
+            for (Data data : dataList) {
+                writeData(data);
+            }
+        } finally {
+            closeEdpSession(this.edpSession);
+        }
+    }
+
+    public void importDataListTransaction(ArrayList<Data> dataList) throws ImportitException {
+        edpSession.loggingOn("java/log/importit21edp.log");
+        for (Data data : dataList) {
+            writeData(data);
+            logger.info(data.toString());
+        }
+    }
+
+    private void writeData(Data data) throws ImportitException {
+        EDPSession edpSession = connectNewEdpSession(data.getEDPLanguage());
+        if (edpSession.isConnected()) {
+            EDPEditor edpEditor = edpSession.createEditor();
+            try {
+                if (data.getTypeCommand() == null) {
+                    if(isSpecialDb(data)) {
+                        writeCustomerPartProperties(data, edpEditor);
+                    } else {
+                        writeDatabase(data, edpEditor);
+                    }
+                } else {
+                    writeTypeCommands(data, edpEditor);
+                }
+            } catch (Exception e) {
+                logger.error(e);
+                data.appendError(e);
+            } finally {
+                if (edpSession.isConnected()) {
+                    if (edpEditor.isActive()) {
+                        logger.info(Util.getMessage("info.end.editor"));
+                        edpEditor.endEditCancel();
+                    }
+                    closeEdpSession(edpSession);
+                } else {
+                    logger.error(Util.getMessage("err.end.editor"));
+                }
+            }
+        } else {
+            logger.error(Util.getMessage("err.no.edp.session"));
+            throw new ImportitException(Util.getMessage("err.no.edp.session"));
+        }
+    }
+
+    private void writeCustomerPartProperties(Data data, EDPEditor edpEditor) throws ImportitException, InvalidQueryException, CantChangeSettingException, CantBeginEditException, InvalidRowOperationException, CantSaveException, CantReadSettingException {
+        data.setImported(false);
+        String[] varNames = checkDataCustomerPartProperties(data);
+        if (varNames.length == 2) {
+            logger.info(Util.getMessage("info.import.cust.part.props"));
+            data.setDatabase(2);
+            data.setGroup(6);
+            String artField = varNames[0];
+            String klField = varNames[1];
+            List<DataTable> tableRows = data.getTableRows();
+            for (DataTable dataTable : tableRows) {
+                dataTable.getTableFieldValue(klField);
+                EDPQuery edpQuery = this.edpSession.createQuery();
+                String criteria = artField + "="
+                        + data.getValueOfHeadField(artField)
+                        + ";" + klField + "=" + dataTable.getTableFieldValue(klField);
+                String key = "Kundenartikeleigenschaften";
+                int recordCount = getQueryTotalHits(criteria, key, data, edpQuery);
+                if (recordCount == 1 || recordCount == 0) {
+                    setEditorOption(data, edpEditor);
+                    if (recordCount == 1) {
+                        String abasVersion = edpSession.getABASVersionNumber().substring(0, 4);
+                        if (2013 <= new Integer(abasVersion)) {
+                            String idField = edpQuery.getField("id");
+                            edpEditor.beginEdit("2:6", idField);
+                            if (edpEditor.getRowCount() > 0 && data.getOptionCode().getDeleteTable()) {
+                                edpEditor.deleteAllRows();
+                            }
+                            logger.info(Util.getMessage("info.update.cust.part.props", data.getDatabase().toString(), data.getGroup().toString(), edpEditor.getEditRef()));
+                        } else {
+                            logger.error(String.format("%s %s", Util.getMessage("err.edit.cust.part.props", criteria, edpQuery.getField("id")), Util.getMessage("err.edit.cust.part.props.2013")));
+                            throw new ImportitException(Util.getMessage("err.edit.cust.part.props.2013"));
+                        }
+                    } else {
+                        logger.info(Util.getMessage("info.new.cust.part.props", data.getDatabase().toString(), data.getGroup().toString()));
+                        edpEditor.beginEditNew(data.getDatabase().toString(), data.getGroup().toString());
+                    }
+                    final String[] IgnoreFieldNames = {"art", "artikel", "product", "kl", "custVendor"};
+                    writeFieldsInEditor(data, dataTable, edpEditor, IgnoreFieldNames);
+                    edpEditor.endEditSave();
+                    data.setImported(true);
+                    edpSession.loggingOff();
+                    recordCount = getQueryTotalHits(criteria, key, data, edpQuery);
+                    if (recordCount == 0) {
+                        String errorText = Util.getMessage("err.data.not.found.small", data.getValueOfHeadField(artField), dataTable.getTableFieldValue(klField));
+                        logger.error(errorText);
+                        data.appendError(errorText);
+
+                    } else if (recordCount > 1) {
+                        String errorText = Util.getMessage("err.data.not.found.major", data.getValueOfHeadField(artField), dataTable.getTableFieldValue(klField));
+                        logger.error(errorText);
+                        data.appendError(errorText);
+                    }
+                } else {
+                    data.appendError(Util.getMessage("err.selection.ambiguous", criteria));
+                }
+            }
+        }
+    }
+
+    private int getQueryTotalHits(String criteria, String key, Data data, EDPQuery edpQuery) throws InvalidQueryException {
+        Integer database = data.getDatabase();
+        Integer group = data.getGroup();
+        String databaseDescr;
+        if (group != -1) {
+            databaseDescr = database + ":" + group;
+        } else {
+            databaseDescr = database.toString();
+        }
+        if (data.getOptionCode().useEnglishVariables()) {
+            criteria = criteria + ";@englvar=true;@language=en";
+            edpQuery.startQuery(databaseDescr, key, criteria, "id");
+        } else {
+            criteria = criteria + ";@englvar=false;@language=de";
+            edpQuery.startQuery(databaseDescr, key, criteria, "id");
+        }
+        edpQuery.getLastRecord();
+        return edpQuery.getRecordCount();
+    }
+
+    private String[] checkDataCustomerPartProperties(Data data) {
+        Integer database = data.getDatabase();
+        Integer group = data.getGroup();
+        Boolean artVarFound = false;
+        Boolean klVarFound = false;
+        String varNameArt = "";
+        String varNameKl = "";
+        String[] varNames = new String[2];
+        if (database == 2 & (group == 6 || group == 7)) {
+            List<Field> headerFields = data.getHeaderFields();
+            for (Field field : headerFields) {
+                if (field.getName().equals("art") || field.getName().equals("artikel") || field.getName().equals("product")) {
+                    artVarFound = true;
+                    varNameArt = field.getName();
+                }
+            }
+            List<Field> tableFields = data.getTableFields();
+            for (Field field : tableFields) {
+                if (field.getName().equals("kl") || field.getName().equals("custVendor")) {
+                    klVarFound = true;
+                    varNameKl = field.getName();
+                }
+            }
+            if (artVarFound & klVarFound) {
+                varNames[0] = varNameArt;
+                varNames[1] = varNameKl;
+                return varNames;
+            }
+        }
+        return ArrayUtils.EMPTY_STRING_ARRAY;
+
+
+    }
+
+    private void writeTypeCommands(Data data, EDPEditor edpEditor) throws ImportitException, CantChangeSettingException, CantSaveException, CantBeginEditException, CantReadSettingException {
+        data.setImported(false);
+        edpEditor.beginEditCmd(data.getTypeCommand().toString(), "");
+        setEditorOption(data, edpEditor);
+        writeFieldsInEditor(data, edpEditor);
+        edpEditor.endEditSave();
+        data.setImported(true);
+    }
+
+    private void writeDatabase(Data data, EDPEditor edpEditor)
+            throws CantBeginEditException, CantChangeSettingException,
+            ImportitException, CantSaveException, InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException, InvalidRowOperationException, ServerActionException, CantReadStatusException, CantReadSettingException {
+        data.setImported(false);
+        data.initOptions();
+        if (data.getOptionCode().getAlwaysNew()) {
+            setEditorOption(data, edpEditor);
+            logger.info(Util.getMessage("info.start.editor.new", data.getDatabase().toString(), data.getGroup().toString()));
+            edpEditor.beginEditNew(data.getDatabase().toString(),
+                    data.getGroup().toString());
+            writeFieldsInEditor(data, edpEditor);
+            edpEditor.saveReload();
+            String abasId = edpEditor.getEditRef();
+            logger.info(Util.getMessage("info.save.editor.new", data.getDatabase().toString(), data.getGroup().toString(), abasId));
+            data.setAbasId(abasId);
+            edpEditor.endEditSave();
+            data.setImported(true);
+            if (edpEditor.isActive()) {
+                edpEditor.endEditCancel();
+                logger.info(Util.getMessage("info.cancel.editor.save", data.getDatabase().toString(), data.getGroup().toString(), abasId));
+            } else {
+                logger.info(Util.getMessage("info.editor.not.active"));
+            }
+        } else {
+            String criteria = data.getNameOfKeyfield() + "=" + data.getValueOfKeyField();
+            String objectId = getSelObject(criteria, data);
+            if (!objectId.equals("Z")) {
+                setEditorOption(data, edpEditor);
+                if (!objectId.equals("0")) {
+                    edpEditor.beginEdit(objectId);
+                    if (edpEditor.getRowCount() > 0 && data.getOptionCode().getDeleteTable()) {
+                        edpEditor.deleteAllRows();
+                    }
+                    logger.info(Util.getMessage("info.editor.start.update", data.getDatabase().toString(), data.getGroup().toString(), edpEditor.getEditRef()));
+
+                } else {
+                    logger.info(Util.getMessage("info.editor.start.new", data.getDatabase().toString(), data.getGroup().toString()));
+                    edpEditor.beginEditNew(data.getDatabase().toString(),
+                            data.getGroup().toString());
+                }
+                writeFieldsInEditor(data, edpEditor);
+                edpEditor.saveReload();
+                String abasId = edpEditor.getEditRef();
+                logger.info(Util.getMessage("info.save.editor.new", data.getDatabase().toString(), data.getGroup().toString()));
+                data.setAbasId(abasId);
+                edpEditor.endEditSave();
+                data.setImported(true);
+                if (edpEditor.isActive()) {
+                    edpEditor.endEditCancel();
+                    logger.info(Util.getMessage("info.cancel.editor.save", data.getDatabase().toString(), data.getGroup().toString(), abasId));
+                } else {
+                    logger.info(Util.getMessage("info.editor.not.active"));
+                }
+            } else {
+                data.appendError(Util.getMessage("err.selection.ambiguous", criteria));
+            }
+        }
+    }
+
+    private String getSelObject(String criteria, Data data) throws ImportitException, InvalidQueryException {
+        EDPSession edpSession = null;
+        try {
+            if (data.getOptionCode().useEnglishVariables()) {
+                edpSession = connectNewEdpSession(EDPVariableLanguage.ENGLISH);
+            } else {
+                edpSession = connectNewEdpSession(EDPVariableLanguage.GERMAN);
+            }
+            EDPQuery edpQuery = edpSession.createQuery();
+            String tableName = data.getDatabase().toString()
+                    + ":" + data.getGroup().toString();
+            String key;
+            key = data.getKeyOfKeyfield();
+            if (key == null) {
+                key = "";
+            }
+            if (data.getOptionCode().useEnglishVariables()) {
+                criteria = criteria + ";@englvar=true;@language=en";
+                edpQuery.startQuery(tableName, key, criteria, "idno,swd,id");
+            } else {
+                criteria = criteria + ";@englvar=false;@language=de";
+                edpQuery.startQuery(tableName, key, criteria, "nummer,such,id");
+            }
+            edpQuery.getLastRecord();
+            int recordCount = edpQuery.getRecordCount();
+            String objectId = edpQuery.getField("id");
+            edpQuery.breakQuery();
+            if (recordCount == 1) {
+                return objectId;
+            } else if (recordCount > 1) {
+                return "Z";
+            } else {
+                return "0";
+            }
+        } finally {
+            closeEdpSession(edpSession);
+        }
+    }
+
+    private void setEditorOption(Data data, EDPEditor edpEditor) throws CantChangeSettingException, CantReadSettingException {
+        OptionCode optionCode = data.getOptionCode();
+        if (optionCode != null) {
+            if (optionCode.noFop()) {
+                if (edpEditor.getSession().getFOPMode()) {
+                    edpEditor.getSession().setFOPMode(false);
+                }
+            } else {
+                if (!edpEditor.getSession().getFOPMode()) {
+                    edpEditor.getSession().setFOPMode(true);
+                }
+            }
+            if (optionCode.useEnglishVariables()) {
+                try {
+                    if (!edpEditor.getSession().getVariableLanguage().equals(EDPVariableLanguage.ENGLISH)) {
+                        edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.ENGLISH);
+                    }
+                    if (!edpEditor.getVariableLanguage().equals(EDPVariableLanguage.ENGLISH)) {
+                        edpEditor.setVariableLanguage(EDPVariableLanguage.ENGLISH);
+                    }
+                } catch (CantReadSettingException e) {
+                    logger.error(e);
+                }
+
+            } else {
+                try {
+                    if (!edpEditor.getSession().getVariableLanguage().equals(EDPVariableLanguage.GERMAN)) {
+                        edpEditor.getSession().setVariableLanguage(EDPVariableLanguage.GERMAN);
+                    }
+                    if (!edpEditor.getVariableLanguage().equals(EDPVariableLanguage.GERMAN)) {
+                        edpEditor.setVariableLanguage(EDPVariableLanguage.GERMAN);
+                    }
+                } catch (CantReadSettingException e) {
+                    logger.error(e);
+                }
+            }
+        }
+    }
+
+    private void writeFieldsInEditor(Data data, EDPEditor edpEditor) throws ImportitException {
+        if (edpEditor.isActive()) {
+            List<Field> headerFields = data.getHeaderFields();
+            for (Field field : headerFields) {
+                writeField(data, field, edpEditor, 0);
+            }
+            List<DataTable> tableRows = data.getTableRows();
+            if (tableRows != null && edpEditor.hasTablePart()) {
+                for (DataTable dataTable : tableRows) {
+                    Integer rowCount = edpEditor.getRowCount();
+                    Integer rowNumber = insertRow(data, edpEditor, rowCount);
+                    ArrayList<Field> tableFields = dataTable.getTableFields();
+                    for (Field field : tableFields) {
+                        writeField(data, field, edpEditor, rowNumber);
+                    }
+                }
+            }
+        }
+    }
+
+    private void writeFieldsInEditor(Data data, DataTable dataTable, EDPEditor edpEditor, String[] ignoreFields) throws ImportitException {
+        if (edpEditor.isActive()) {
+            if (edpEditor.getEditAction() == EDPEditAction.NEW) {
+                List<Field> headerFields = data.getHeaderFields();
+                for (Field field : headerFields) {
+                    writeField(data, field, edpEditor, 0);
+                }
+                if (dataTable != null && edpEditor.hasTablePart()) {
+                    Integer rowCount = edpEditor.getRowCount();
+                    Integer rowNumber = insertRow(data, edpEditor, rowCount);
+                    ArrayList<Field> tableFields = dataTable.getTableFields();
+                    for (Field field : tableFields) {
+                        writeField(data, field, edpEditor, rowNumber);
+                    }
+                }
+            } else if (edpEditor.getEditAction() == EDPEditAction.UPDATE) {
+                List<Field> headerFields = data.getHeaderFields();
+                for (Field field : headerFields) {
+                    if (dontIgnoreField(field, ignoreFields)) {
+                        writeField(data, field, edpEditor, 0);
+                    }
+                }
+                if (dataTable != null && edpEditor.hasTablePart()) {
+                    Integer rowNumber = edpEditor.getCurrentRow();
+                    ArrayList<Field> tableFields = dataTable.getTableFields();
+                    for (Field field : tableFields) {
+                        if (dontIgnoreField(field, ignoreFields)) {
+                            writeField(data, field, edpEditor, rowNumber);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    private Integer insertRow(Data data, EDPEditor edpEditor, Integer rowCount) throws ImportitException {
+        try {
+            if (rowCount == 0) {
+                edpEditor.insertRow(1);
+                return 1;
+            } else {
+                if ((data.getTypeCommand() != null && rowCount > 1) || (data.getTypeCommand() == null)) {
+                    Integer newRowNumber = rowCount + 1;
+                    edpEditor.insertRow(newRowNumber);
+                    return newRowNumber;
+                } else {
+                    return rowCount;
+                }
+            }
+        } catch (InvalidRowOperationException e) {
+            logger.error(e);
+            throw new ImportitException(Util.getMessage("err.row.insert"));
+        }
+    }
+
+    private boolean dontIgnoreField(Field field, String[] ignoreFields) {
+        String fieldName = field.getName();
+        for (String ignoreField : ignoreFields) {
+            if (ignoreField.equals(fieldName)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void writeField(Data data, Field field, EDPEditor edpEditor, Integer rowNumber) throws ImportitException {
+        if (!field.getOptionSkip()) {
+            if (field.getValue() == null) {
+                throw new ImportitException(Util.getMessage("err.null.value", field.getName(), data.getValueOfKeyField(), rowNumber));
+            }
+            if (!(field.getOptionNotEmpty() && field.getValue().isEmpty())) {
+                try {
+                    if (edpEditor.fieldIsModifiable(rowNumber, field.getName())) {
+                        String dataFieldValue = field.getValue();
+                        if (!(field.getOptionDontChangeIfEqual() &
+                                edpEditor.getFieldVal(rowNumber, field.getName()).equals(dataFieldValue))) {
+                            edpEditor.setFieldVal(rowNumber, field.getName(), dataFieldValue);
+                            logger.debug(Util.getMessage("info.field.value.written", field.getName(), dataFieldValue, rowNumber.toString()));
+                        }
+                    } else {
+                        if (!field.getOptionModifiable() && !data.getNameOfKeyfield().equals(field.getName())) {
+                            if (rowNumber == 0) {
+                                throw new ImportitException(Util.getMessage("err.headfield.not.writable", field.getName(), data.getValueOfKeyField(), data.getDatabase(), data.getGroup()));
+                            } else {
+                                throw new ImportitException(Util.getMessage("err.tablefield.not.writable", field.getName(), data.getValueOfKeyField(), data.getDatabase(), data.getGroup(), rowNumber.toString()));
+                            }
+                        }
+                    }
+                } catch (CantChangeFieldValException e) {
+                    logger.error(e);
+                    if (rowNumber == 0) {
+                        throw new ImportitException(Util.getMessage("err.headfield.not.writable", field.getName(), data.getValueOfKeyField(), data.getDatabase(), data.getGroup()));
+                    } else {
+                        throw new ImportitException(Util.getMessage("err.tablefield.not.writable", field.getName(), data.getValueOfKeyField(), data.getDatabase(), data.getGroup(), rowNumber.toString()));
+                    }
+
+                } catch (CantReadFieldPropertyException e) {
+                    logger.error(e);
+                    if (rowNumber == 0) {
+                        throw new ImportitException(Util.getMessage("err.headfield.not.readable", field.getName(), data.getValueOfKeyField(), data.getDatabase(), data.getGroup(), e));
+                    } else {
+                        throw new ImportitException(Util.getMessage("err.tablefield.not.readable", field.getName(), data.getValueOfKeyField(), data.getDatabase(), data.getGroup(), rowNumber.toString(), e));
+                    }
+                }
+            }
+        } else {
+            logger.debug(Util.getMessage("info.skip.field", field.getName()));
+        }
+    }
+
+    public void checkDataListValues(ArrayList<Data> dataList) throws ImportitException {
+        try {
+            startEdpSession();
+            for (Data data : dataList) {
+                List<Field> headerFields = data.getHeaderFields();
+                Boolean includeError = false;
+                for (Field field : headerFields) {
+                    if (!checkData(field)) {
+                        includeError = true;
+                    }
+                }
+                List<DataTable> tableRows = data
+                        .getTableRows();
+                for (DataTable dataTable : tableRows) {
+                    ArrayList<Field> tableFields = dataTable
+                            .getTableFields();
+                    for (Field field : tableFields) {
+                        if (!checkData(field)) {
+                            includeError = true;
+                        }
+                    }
+                }
+                if (includeError) {
+                    data.createErrorReport();
+                }
+            }
+        } finally {
+            closeEdpSession(this.edpSession);
+        }
+    }
+
+    private long getAbasFieldLength(String abasType) {
+        EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(abasType);
+        return edpeksartinfo.getMaxLineLen();
+    }
+
+    private Boolean checkData(Field field) throws ImportitException {
+        String value = field.getValue();
+        if (!field.getOptionSkip()) {
+            logger.debug(Util.getMessage("info.check.data", field.getName(), field.getColNumber(), field.getAbasTyp(), value));
+            EDPEKSArtInfo edpEksArtInfo = new EDPEKSArtInfo(field.getAbasTyp());
+            int dataType = edpEksArtInfo.getDataType();
+            if (value != null) {
+                if (!(field.getOptionNotEmpty() && value.isEmpty())) {
+                    if (dataType == EDPTools.EDP_REFERENCE || dataType == EDPTools.EDP_ROWREFERENCE) {
+                        String edpErpArt = edpEksArtInfo.getERPArt();
+                        if (edpErpArt.startsWith("V")) {
+                            if (edpErpArt.equals("VPK1") || edpErpArt.equals("VPKS1") || edpErpArt.equals("VPKT1")) {
+                                if (value.startsWith("A ")) {
+                                    checkReferenceField(field, new EDPEKSArtInfo("P7:0"));
+                                } else {
+                                    checkReferenceField(field, new EDPEKSArtInfo("P2:1.2.5"));
+                                }
+                            }
+                        } else {
+                            checkReferenceField(field, edpEksArtInfo);
+                        }
+                    } else if (dataType == EDPTools.EDP_STRING) {
+                        Long fieldLength = edpEksArtInfo.getMaxLen();
+                        Long valueLength = (long) value.length();
+                        if (fieldLength < valueLength) {
+                            field.setError(Util.getMessage("err.check.data.field.length", value, valueLength, field.getName(), fieldLength.toString()));
+                        }
+                    } else if (dataType == EDPTools.EDP_INTEGER) {
+                        int integerDigits = edpEksArtInfo.getIntegerDigits();
+                        if (value.length() > 0 && !value.equals("0")) {
+                            try {
+                                Integer intValue = new Integer(value);
+                                Integer valueLength = intValue.toString().length();
+                                if (integerDigits < valueLength) {
+                                    field.setError(Util.getMessage("err.check.data.too.big", value));
+                                }
+                            } catch (NumberFormatException e) {
+                                field.setError(Util.getMessage("err.check.data.conversion.integer", value));
+                            }
+                        }
+                    } else if (dataType == EDPTools.EDP_DOUBLE) {
+                        int fractionDigits = edpEksArtInfo.getFractionDigits();
+                        int integerDigits = edpEksArtInfo.getIntegerDigits();
+                        if (value.length() > 0 && !value.equals("0")) {
+                            try {
+                                value = value.replaceAll(" ", "");
+                                BigDecimal bigDecimalValue = new BigDecimal(value);
+                                BigDecimal roundBigDValue = bigDecimalValue.setScale(fractionDigits, RoundingMode.HALF_UP);
+                                String roundBigDValueStr = roundBigDValue.toString();
+                                String compValue = fillValueWithFractionDigits(value, fractionDigits);
+                                if (!roundBigDValueStr.equals(compValue)) {
+                                    field.setError(Util.getMessage("err.check.data.rounding", value, compValue, roundBigDValueStr));
+                                }
+                            } catch (NumberFormatException e) {
+                                field.setError(Util.getMessage("err.check.data.conversion.big.decimal", value));
+                            } catch (BadAttributeValueExpException e) {
+                                throw new ImportitException(Util.getMessage("err.check.data.bad.attribute"), e);
+                            }
+                            if (value.split("[\\.,]")[0].length() > integerDigits) {
+                                field.setError(Util.getMessage("err.check.data.too.many.digits", value, field.getAbasTyp(), field.getName()));
+                            }
+                        }
+                    } else if (dataType == EDPTools.EDP_DATE) {
+                        if (!checkDataDate(field)) {
+                            field.setError(Util.getMessage("err.check.data.conversion.date", value));
+                        }
+                    } else if (dataType == EDPTools.EDP_DATETIME || dataType == EDPTools.EDP_TIME || dataType == EDPTools.EDP_WEEK) {
+                        if (!checkDataDate(field)) {
+                            field.setError(Util.getMessage("err.check.data.conversion.time", value));
+                        }
+                    }
+                }
+            } else {
+                field.setError(Util.getMessage("err.check.data.null.value"));
+            }
+        }
+        if (field.getError().isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void checkReferenceField(Field field, EDPEKSArtInfo edpeksartinfo) {
+        String value = field.getValue();
+        int databaseNumber = edpeksartinfo.getRefDatabaseNr();
+        int groupNumber = edpeksartinfo.getRefGroupNr();
+        if (databaseNumber == 7 && groupNumber == 0) {
+            value = value.replaceAll("[A ]", "");
+        }
+        if (!value.isEmpty()) {
+            EDPQuery query = null;
+            try {
+                query = getEDPQueryReference(value,
+                        databaseNumber, groupNumber,
+                        field.getColNumber());
+                query.getLastRecord();
+                int recordCount = query.getRecordCount();
+                if (recordCount == 0) {
+                    field.setError(Util.getMessage("err.check.reference.not.found", field.getAbasTyp(), value));
+                } else if (recordCount > 1) {
+                    field.setError(Util.getMessage("err.check.reference.not.unique", field.getAbasTyp(), value));
+                }
+            } catch (ImportitException e) {
+                field.setError(Util.getMessage("err.check.reference", field.getAbasTyp(), value));
+            } finally {
+                if (query != null) {
+                    if (query.getSession().isConnected()) {
+                        query.getSession().endSession();
+                        logger.info(Util.getMessage("info.end.edp.query"));
+                    }
+                }
+            }
+        }
+    }
+
+    private String fillValueWithFractionDigits(String value, int fractionDigits) throws BadAttributeValueExpException {
+        Double doubleValue = new Double(value);
+        NumberFormat numberFormat = new DecimalFormat("#.#########");
+        String stringDoubleValue = numberFormat.format(doubleValue);
+        String[] valueList = stringDoubleValue.split("\\.");
+        String zeros = fillString("0", fractionDigits);
+        if (valueList.length > 1) {
+            valueList[1] = (valueList[1] + zeros).substring(0, fractionDigits);
+            return valueList[0] + "." + valueList[1];
+        } else {
+            return valueList[0] + "." + zeros;
+        }
+    }
+
+    private String fillString(String value, int stringLength) throws BadAttributeValueExpException {
+        if (value.length() == 1) {
+            String multipleString = "";
+            for (int i = 0; i < stringLength; i++) {
+                multipleString = multipleString + value;
+            }
+            return multipleString;
+        } else {
+            throw new BadAttributeValueExpException(Util.getMessage("err.fill.string.bad.attribute"));
+        }
+
+    }
+
+    private Boolean checkDataDate(Field field) {
+        String abastyp = field.getAbasTyp();
+        String value = field.getValue();
+        Boolean result = false;
+        BufferFactory bufferFactory = BufferFactory.newInstance(true);
+        UserTextBuffer userTextBuffer = bufferFactory.getUserTextBuffer();
+        String varnameResult = "xtergebnis";
+        if (!userTextBuffer.isVarDefined(varnameResult)) {
+            userTextBuffer.defineVar("Bool", varnameResult);
+        }
+        userTextBuffer.setValue(varnameResult, "0");
+        String formulaString = "U|" + varnameResult + " = F|isvalue( \"" + value + "\" , \"" + abastyp + "\")";
+        FOe.formula(formulaString);
+        result = userTextBuffer.getBooleanValue(varnameResult);
+        return result;
+    }
+
+
+    private EDPQuery getEDPQueryReference(String value, Integer database, Integer group, Integer rowNumber) throws ImportitException {
+        if (!this.edpSession.isConnected()) {
+            startEdpSession();
+        }
+        String[] fieldNames = {"id", "nummer"};
+        String tableName = "";
+        if (group == -1) {
+            tableName = database.toString() + ":";
+        } else {
+            tableName = database.toString() + ":" + group.toString();
+        }
+        EDPQuery query = this.edpSession.createQuery();
+        String selectionString = "@noswd=" + value + ";@englvar=true;@language=en;@database=" + database.toString();
+        StandardEDPSelectionCriteria criteria = new StandardEDPSelectionCriteria(selectionString);
+        StandardEDPSelection edpCriteria = new StandardEDPSelection(tableName, criteria);
+        edpCriteria.setDatabase(database.toString());
+        try {
+            query.startQuery(edpCriteria, fieldNames.toString());
+
+        } catch (InvalidQueryException e) {
+            closeEdpSession(this.edpSession);
+            throw new ImportitException(Util.getMessage("err.edp.query.bad.selection.string", selectionString), e);
+        }
+        return query;
+    }
+
+    public void startTransaction() throws ImportitException {
+        startEdpSession();
+        try {
+            this.edpSession.startTransaction();
+        } catch (TransactionException e) {
+            throw new ImportitException(Util.getMessage("err.transaction.start"), e);
+        }
+    }
+
+    public void commitTransaction() throws ImportitException {
+        try {
+            this.edpSession.commitTransaction();
+        } catch (TransactionException e) {
+            throw new ImportitException(Util.getMessage("err.transaction.commit"), e);
+        } finally {
+            closeEdpSession(this.edpSession);
+        }
+    }
+
+    public void abortTransaction() throws ImportitException {
+        try {
+            this.edpSession.abortTransaction();
+        } catch (TransactionException e) {
+            throw new ImportitException(Util.getMessage("err.transaction.cancel"), e);
+
+        } catch (ConnectionLostException e) {
+            throw new ImportitException(Util.getMessage("err.edp.connection.cancel"), e);
+        } finally {
+            closeEdpSession(this.edpSession);
+        }
+
+    }
 
 }
