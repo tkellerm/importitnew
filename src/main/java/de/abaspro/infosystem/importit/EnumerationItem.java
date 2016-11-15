@@ -1,11 +1,11 @@
 package de.abaspro.infosystem.importit;
 
-public class AufzaehlungItem {
+public class EnumerationItem {
 	Integer number;
 	String namebspr;
 	String nameNeutral;
 
-	public AufzaehlungItem(Integer number, String namebspr, String nameneutral) {
+	public EnumerationItem(Integer number, String namebspr, String nameneutral) {
 		super();
 		this.number = number;
 		this.namebspr = namebspr;

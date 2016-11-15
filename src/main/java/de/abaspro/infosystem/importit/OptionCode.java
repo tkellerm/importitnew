@@ -25,7 +25,7 @@ public class OptionCode {
 	
 	private void setOptionCodeToOptionen(Integer optCode) {
     	
-		/*		Anweisung für eine Erweiterung :
+		/*		Anweisung fï¿½r eine Erweiterung :
 		 * soviele 00000 Nullen wie Optionen  
 		 */		
     	String binoption="0000000"+Integer.toBinaryString(optCode);
@@ -90,7 +90,7 @@ public class OptionCode {
 		return alwaysNew;
 	}
 
-	public Boolean getNofop() {
+	public Boolean noFop() {
 		return nofop;
 	}
 
@@ -106,7 +106,7 @@ public class OptionCode {
 		return checkFieldIsModifiable;
 	}
 
-	public Boolean getUseEnglishVariablen() {
+	public Boolean useEnglishVariables() {
 		return useEnglishVariablen;
 	}
 
