@@ -5,8 +5,10 @@ services:
     # Accessing container via ssh:
     # ssh in den Container:   ssh localhost -l s3 -p 2205 -i docker_erp.key
     #
+    #image: nexus3.abas-usa.com:18001/pi-erp:latest
+    #image: abas/pi-erp:latest
     erp-bpmn:
-      image: abas/pi-erp:latest
+      image: nexus3.abas-usa.com:18001/abas-erp:latest
       container_name: "essentials_erp"
 
       ports:
@@ -14,6 +16,7 @@ services:
       - "8001:80"
       - "6560:6550"
       - "48592:48392"
+      - "8017:8017"
 
       environment:
       - ABAS_HOST
