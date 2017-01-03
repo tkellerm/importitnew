@@ -1,5 +1,13 @@
 package de.abaspro.infosystem.importit;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+
+import org.apache.log4j.Logger;
+
+
 import de.abas.eks.jfop.annotation.Stateful;
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.erp.api.gui.ButtonSet;
@@ -17,12 +25,6 @@ import de.abas.erp.db.infosystem.custom.ow1.InfosystemImportit;
 import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
 import de.abas.jfop.base.Color;
 import de.abaspro.utils.Util;
-import org.apache.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
 
 @Stateful
 @EventHandler(head = InfosystemImportit.class, row = InfosystemImportit.Row.class)
@@ -81,9 +83,9 @@ public class Main {
 
     @ButtonEventHandler(field = "ydoku", type = ButtonEventType.AFTER)
     public void dokuAfter(DbContext ctx, InfosystemImportit infosys) {
-        File documentationDir = new File("importitDocumentation");
+        File documentationDir = new File("win/owimportitDocumentation");
         if (documentationDir.exists()) {
-            String url = String.format("-FILE %s Dokumentation.html", documentationDir.getName());
+            String url = String.format("-FILE %s/Dokumentation.html", documentationDir.getPath());
             FOe.browser(url);
         } else {
             new TextBox(ctx, Util.getMessage("main.exception.title"), Util.getMessage("main.docu.error")).show();
@@ -94,10 +96,11 @@ public class Main {
         if (dataListNotEmpty()) {
             OptionCode optionCode = dataList.get(0).getOptionCode();
             optionCode.setOptionCode(infosys.getYoptalwaysnew(), infosys.getYoptnofop(), infosys.getYopttransaction(), infosys.getYoptdeltab(), infosys.getYoptmodifiable(), infosys.getYoptuseenglvars(), infosys.getYoptdontchangeifeq());
-            setOptions(infosys);
         } else {
-            new TextBox(ctx, Util.getMessage("main.exception.title"), Util.getMessage("main.err.no.data.read")).show();
+        	new TextBox(ctx, Util.getMessage("main.exception.title"), Util.getMessage("main.err.no.data.read")).show();
         }
+        
+        setOptions(infosys);
     }
 
     @ButtonEventHandler(field = "yimport", type = ButtonEventType.AFTER)
@@ -280,7 +283,16 @@ public class Main {
             infosys.setYoptuseenglvars(optionCode.useEnglishVariables());
             infosys.setYoptdontchangeifeq(optionCode.getDontChangeIfEqual());
             infosys.setYoption(optionCode.getOptionsCode());
-        }
+        }else {
+        	infosys.setYoptalwaysnew(false);
+            infosys.setYoptnofop(false);
+            infosys.setYoptmodifiable(false);
+            infosys.setYoptdeltab(false);
+            infosys.setYopttransaction(false);
+            infosys.setYoptuseenglvars(false);
+            infosys.setYoptdontchangeifeq(false);
+            infosys.setYoption(0);
+		}
     }
 
     private void showDatabaseInfo(InfosystemImportit infosys) {
