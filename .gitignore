@@ -12,3 +12,9 @@ build/
 # gradle specific files
 .gradle
 gradle.properties
+/cebitmaster40.pub
+/dockererp.image
+/gradle.err
+/gradle.log
+/gradle.properties.cebitmaster
+/gradle.properties.docker
