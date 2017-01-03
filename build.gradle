@@ -18,7 +18,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'de.abas.esdk:gradlePlugin:0.4.4-SNAPSHOT'
+        classpath 'de.abas.esdk:gradlePlugin:0.4.7-SNAPSHOT'
     }
 }
 
@@ -99,15 +99,19 @@ configurations { compile.extendsFrom provided }
 
 dependencies {
     compile 'xmlbeans:xmlbeans:2.3.0'
-    compile 'org.apache.poi:poi:3.9'
-    compile 'org.apache.poi:poi-ooxml:3.9'
-    compile 'org.apache.poi:poi-ooxml-schemas:3.9'
+//    compile 'org.apache.poi:poi:3.9'
+//    compile 'org.apache.poi:poi-ooxml:3.9'
+//    compile 'org.apache.poi:poi-ooxml-schemas:3.9'
+	compile 'org.apache.poi:poi:3.15'
+    compile 'org.apache.poi:poi-ooxml:3.15'
+    compile 'org.apache.poi:poi-ooxml-schemas:3.15'
 	compile 'org.jgrapht:jgrapht-core:0.9.1'
     compile 'com.github.monkeysintown:jgraphx:3.3.1.1'
     compile 'org.jgrapht:jgrapht-ext:0.9.1'
-    compile 'de.abas.erp:jedp:2017.200.0-SNAPSHOT'
+//    compile 'de.abas.erp:jedp:2017.200.0-SNAPSHOT'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.scala-lang:scala-library-all:2.11.7'
+    compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
 
     provided 'de.abas.homedir:log4j:1.0.0'
     testCompile 'junit:junit:4.12'
