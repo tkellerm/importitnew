@@ -21,7 +21,7 @@ import de.abas.erp.axi2.type.ButtonEventType;
 import de.abas.erp.axi2.type.FieldEventType;
 import de.abas.erp.common.type.enums.EnumDialogBox;
 import de.abas.erp.db.DbContext;
-import de.abas.erp.db.infosystem.custom.ow1.InfosystemImportit;
+import de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit;
 import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
 import de.abas.jfop.base.Color;
 import de.abaspro.utils.Util;
@@ -35,6 +35,7 @@ public class Main {
 
     private ArrayList<Data> dataList;
     private EdpProcessing edpProcessing;
+    private AbasDataProcessable abasDataProcessing;
 
     @FieldEventHandler(field = "ymandant", type = FieldEventType.EXIT)
     public void clientExit(InfosystemImportit infosys, ScreenControl screenControl) {
@@ -110,21 +111,24 @@ public class Main {
             if (dataListNotEmpty()) {
                 if (isTransactionDataList()) {
                     logger.info(Util.getMessage("info.transaction.start"));
-                    edpProcessing.startTransaction();
-                    edpProcessing.importDataListTransaction(dataList);
+//                    edpProcessing.startTransaction();
+//                    edpProcessing.importDataListTransaction(dataList);
+                    abasDataProcessing.startTransaction();
+                    abasDataProcessing.importDataListTransaction(dataList);
                     TextBox textBox = new TextBox(ctx, Util.getMessage("import.data.transaction.box.title"), Util.getMessage("import.data.transaction.box.message", getErrorCount()));
                     textBox.setButtons(ButtonSet.NO_YES);
                     EnumDialogBox answer = textBox.show();
                     if (answer.equals(EnumDialogBox.Yes)) {
                         logger.info(Util.getMessage("info.transaction.cancel"));
-                        edpProcessing.abortTransaction();
+//                        edpProcessing.abortTransaction();
+                        abasDataProcessing.abortTransaction();
                     } else {
                         logger.info(Util.getMessage("info.transaction.commit"));
-                        edpProcessing.commitTransaction();
                     }
                 } else {
                     logger.info(Util.getMessage("info.no.transaction.import"));
-                    edpProcessing.importDataList(dataList);
+//                    edpProcessing.importDataList(dataList);
+                    abasDataProcessing.importDataList(dataList);
                 }
                 new TextBox(ctx, Util.getMessage("main.structure.check.box.title"), Util.getMessage("info.import.data.success")).show();
             } else {
@@ -206,7 +210,8 @@ public class Main {
         if (dataListNotEmpty()) {
             try {
                 if (infosys.getYfehlerstruktur() == 0) {
-                    edpProcessing.checkDataListValues(dataList);
+//                    edpProcessing.checkDataListValues(dataList);
+                	abasDataProcessing.checkDataListValues(dataList);
                     infosys.setYok(getDataCount());
                     infosys.setYfehlerdatpruef(getErrorCount());
                 } else {
@@ -249,8 +254,11 @@ public class Main {
             dataList = excelProcessing.getDataList();
             logger.info(Util.getMessage("info.structure.check.end.processing"));
             logger.info(Util.getMessage("info.structure.check.start.data"));
-            edpProcessing = new EdpProcessing(infosys.getYserver(), infosys.getYport(), infosys.getYmandant(), infosys.getYpasswort());
-            edpProcessing.checkDataList(dataList);
+            
+            abasDataProcessing = new AbasDataProcessFactory().createAbasDataProcess(infosys.getYserver(), infosys.getYport(), infosys.getYmandant(), infosys.getYpasswort(), dataList);
+            abasDataProcessing.checkDataListStructure(dataList);
+//            edpProcessing = new EdpProcessing(infosys.getYserver(), infosys.getYport(), infosys.getYmandant(), infosys.getYpasswort());
+//            edpProcessing.checkDataListStructure(dataList);
             logger.info(Util.getMessage("info.structure.check.end.data"));
             infosys.setYfehlerstruktur(getErrorCount());
             showDatabaseInfo(infosys);

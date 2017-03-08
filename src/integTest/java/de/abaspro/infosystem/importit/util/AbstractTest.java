@@ -1,7 +1,7 @@
 package de.abaspro.infosystem.importit.util;
 
 import de.abas.erp.db.*;
-import de.abas.erp.db.infosystem.custom.ow1.InfosystemImportit;
+import de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit;
 import de.abas.erp.db.selection.Conditions;
 import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.erp.db.util.ContextHelper;
@@ -18,7 +18,7 @@ import java.util.Properties;
 public class AbstractTest {
 
 	public DbContext ctx;
-	public InfosystemImportit infosys;
+	public de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit infosys;
 
 	String hostname;
 

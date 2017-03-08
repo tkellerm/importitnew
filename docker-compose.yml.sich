@@ -5,20 +5,22 @@ services:
     # Accessing container via ssh:
     # ssh in den Container:   ssh localhost -l s3 -p 2205 -i docker_erp.key
     #
+    #image: nexus3.abas-usa.com:18001/pi-erp:latest
+    #image: abas/pi-erp:latest
     erp-bpmn:
-      #image: abas/pi-erp:latest
       image: nexus3.abas-usa.com:18001/abas-erp:latest
-      container_name: "demo_app_erp"
+      container_name: "essentials_erp"
 
       ports:
-      - "2207:22"
-      - "8003:80"
-      - "6561:6550"
-      - "48792:48392"
+      - "2205:22"
+      - "8001:80"
+      - "6560:6550"
+      - "48592:48392"
+      - "8017:8017"
 
       environment:
       - ABAS_HOST
-      - ABAS_GUI_PORT=48792
+      - ABAS_GUI_PORT=48592
 
       # starteVersion muss wegen der Volltextsuche als User s3 gestartet werden
       # Als root-user gibt es sonst Probleme wegen dem ulimit der open files.
@@ -28,6 +30,6 @@ services:
     # nexus host for madep
     nexus:
       image: sonatype/nexus:oss
-      container_name: "demo_app_nexus"
+      container_name: "essentials_nexus"
       ports:
-      - "8080:8081"
+      - "8081:8081"

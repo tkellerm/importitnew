@@ -249,7 +249,7 @@ public class ExcelImportProcessing {
             return true;
         } else {
             if (importSheet.getRow(y).getCell(x).getCellType() == Cell.CELL_TYPE_BLANK) {
-                return true;
+            	return true;
             } else {
                 if (getCellContents(x, y).equals("")) {
                     return true;
@@ -298,9 +298,10 @@ public class ExcelImportProcessing {
     }
 
     private String getDatabaseString() throws ImportitException {
-        String group = getDbGroupComplete();
+    	String group = getDbGroupComplete();
         int colon = group.indexOf(":");
         if (colon > 0) {
+        	String test = group.substring(0, colon);
             return group.substring(0, colon);
         } else {
             return null;
@@ -311,6 +312,7 @@ public class ExcelImportProcessing {
         String group = getDbGroupComplete();
         int colon = group.indexOf(":") + 1;
         if (colon > 0) {
+        	String test = group.substring(colon, group.length());
             return group.substring(colon, group.length());
         } else {
             return null;

@@ -10,13 +10,15 @@ import de.abaspro.utils.Util;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
-import javax.management.BadAttributeValueExpException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.management.BadAttributeValueExpException;
 
 
 public class EdpProcessing {
@@ -62,15 +64,15 @@ public class EdpProcessing {
         }
     }
 
-    public void startEdpSession() throws ImportitException {
+    private void startEdpSession() throws ImportitException {
         createSession(this.server, this.port, this.client, this.password);
     }
 
-    public void startEdpSession(EDPVariableLanguage variableLanguage) throws ImportitException {
+    private void startEdpSession(EDPVariableLanguage variableLanguage) throws ImportitException {
         createSession(this.server, this.port, this.client, this.password, variableLanguage);
     }
 
-    public void closeEdpSession(EDPSession edpSession) {
+    private void closeEdpSession(EDPSession edpSession) {
         if (edpSession.isConnected()) {
             edpSession.endSession();
             logger.info(Util.getMessage("info.edp.session.closed", edpSession.getSessionTag()));
@@ -122,7 +124,7 @@ public class EdpProcessing {
     }
 
 
-    public void checkDataList(ArrayList<Data> dataList) throws ImportitException {
+    public void checkDataListStructure(ArrayList<Data> dataList) throws ImportitException {
         if (dataList != null) {
             if (!dataList.isEmpty()) {
                 try {
@@ -855,7 +857,7 @@ public class EdpProcessing {
                 List<Field> headerFields = data.getHeaderFields();
                 Boolean includeError = false;
                 for (Field field : headerFields) {
-                    if (!checkData(field)) {
+                    if (!checkDataField(field)) {
                         includeError = true;
                     }
                 }
@@ -865,7 +867,7 @@ public class EdpProcessing {
                     ArrayList<Field> tableFields = dataTable
                             .getTableFields();
                     for (Field field : tableFields) {
-                        if (!checkData(field)) {
+                        if (!checkDataField(field)) {
                             includeError = true;
                         }
                     }
@@ -879,12 +881,7 @@ public class EdpProcessing {
         }
     }
 
-    private long getAbasFieldLength(String abasType) {
-        EDPEKSArtInfo edpeksartinfo = new EDPEKSArtInfo(abasType);
-        return edpeksartinfo.getMaxLineLen();
-    }
-
-    private Boolean checkData(Field field) throws ImportitException {
+    private Boolean checkDataField(Field field) throws ImportitException {
         String value = field.getValue();
         if (!field.getOptionSkip()) {
             logger.debug(Util.getMessage("info.check.data", field.getName(), field.getColNumber(), field.getAbasTyp(), value));
