@@ -168,7 +168,7 @@ public class ExcelImportProcessing {
                 throw new ImportitException(Util.getMessage("excel.check.import.file.cant.read", filename));
             }
         } else {
-            throw new ImportitException(Util.getMessage("excel.check.import.file.cant.read", filename));
+            throw new ImportitException(Util.getMessage("excel.check.import.file.not.found", filename));
         }
     }
 
