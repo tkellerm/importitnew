@@ -1,0 +1,157 @@
+..!interpreter english englvar translate
+..============================================================================
+..  Author             : tk
+..  Date of Creation   : 12.03.2017
+..  Name               : owfw7/IS.IMPORTIT21
+..  Path/Pfad          : 
+..  Function           : 
+..  include-easy  spx/ow
+..  required Paths    : 
+..  Menu Items        : 
+..  Mask Priority
+.. for EFOP           : 
+..  Starting Ticket    : 
+..                     History of Changes
+..                     ==================
+.. Ticket of Change    : 
+..
+..============================================================================
+..
+
+def main(){
+   
+    ..<BLOCK> standard programs
+    .input ARB
+    ..</BLOCK>
+    ..<VAR> variable definitions
+    ..@@BEGINVARDEFS
+    ..====================================================
+    ..... procedure stack pointer .....
+    .type integer    xIdummy                 ? _F|defined(U|xIdummy)
+    .type text       xTdummy                 ? _F|defined(U|xTdummy)
+    .type real       xRdummy                 ? _F|defined(U|xRdummy)
+    .type text       xTsystem                ? _F|defined(U|xTsystem)
+    .type integer    xizaehl                 ? _F|defined(U|xizaehl)
+    .type integer    xianzkopffeld           ? _F|defined(U|xianzkopffeld)
+    .type text       xtueber                 ? _F|defined(U|xtueber)
+    .type text       xtsel                     ? _F|defined(U|xtsel)
+    .type text       xtkommd              ? _F|defined(U|xtkommd)
+    .type text       xtdatei                  ? _F|defined(U|xtdatei)
+    .type bool      xbfehler                ? _F|defined(U|xbfehler)   
+    .type bool       xBmehr  ? _F|defined(U|xBmehr)
+    .type text xtjavadat  ? _F|defined(U|xtjavadat)
+    .type text xtjavaclass ? _F|defined(U|xtjavaclass)
+    .type text xtclasspathzeile ? _F|defined(U|xtclasspathzeile)
+    .type text xtclasspathdat ? _F|defined(U|xtclasspathdat)
+    .type text xtloggingpropdat ? _F|defined(U|xtloggingpropdat)
+    .type text xtclasspathsich ? _F|defined(U|xtclasspathsich)
+    .type text xtgrepdatei      ? _F|defined(U|xtgrepdatei)
+    .type text xtgreplogdatei ? _F|defined(U|xtgreplogdatei)
+    .type text xmandant        ? _F|defined(U|xmandant)
+    .type text xttest               ? _F|defined(U|xttest)
+    .type text xtlogpropzeile ? _F|defined(U|xtlogpropzeile)
+    .var  text xtini
+    .var text xtsys
+    ..====================================================
+    ..@@ENDVARDEFS
+    ..</VAR>
+
+    .formula U|xtini = "INI.IMPORT"
+..<META M|='Importit21' >    
+     	if(T|evtart = "maskein"){
+    		.formula M|yversion = "2.1.0"
+    		.formula U|xtjavadat = "owjava/importitapp.tgz"
+    		.formula U|xtclasspathdat = "java/mandant.classpath"
+    		.formula U|xtloggingpropdat = "java/log/config/logging.properties"	
+    		.formula U|xtlogpropzeile = "log4j.logger.de.abaspro.infosystem.importit.Main=TRACE, de.abaspro.infosystem.importit.Main.RollingFile"
+    		.formula U|xtclasspathsich = U|xtclasspathdat + "_sich_" + 'T|sekundenz'
+    		.formula U|xtloggingpropsich = U|xtloggingpropdat + "_sich_" + 'T|sekundenz'
+    		.file -TEMPNAME U|xtgrepdatei
+    		.file -TEMPNAME U|xtgreplogdatei
+    		if(F|filenotempty(U|xtjavadat)){
+    			if(_(F|filenotempty(U|xtclasspathzeile1))){
+    				.formula U|xtprojectspfad = "java/apps/"
+    				
+    				if(_(F|fileexists(U|xtprojectspfad))){
+    					.formula U|xtsys = "mkdir " + U|xtprojectspfad
+    					.system 'U|xtsys' hinter
+    				}else{
+    				}
+    				..tgz - File entpacken importitapp.tgz
+    				.formula U|xtsys = "cd java/apps/;tar xvzf ../../" + 'U|xtjavadat'
+    				.SYSTEM 'U|xtsys' hinter
+    				..logging.properties ï¿½berprï¿½fen
+    				.formula U|xtsys = "cd ~;grep "+ T|apostroph + U|xtlogpropzeile + T|apostroph + " " + xtloggingpropdat + "  >" + U|xtgreplogdatei
+    				.system 'U|xtsys' hinter
+    				if(_(F|filenotempty(U|xtgreplogdatei))){
+    					.output AUF 'U|xtgreplogdatei'
+    					.input DATEI.F
+    					.println -text "# logging for IMPORTIT21"
+    					.println -text "log4j.logger.de.abaspro.infosystem.importit.Main=TRACE, de.abaspro.infosystem.importit.Main.RollingFile"
+    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile=org.apache.log4j.RollingFileAppender"
+    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.File=java/log/importit21.log"
+    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.Append=true"
+    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.MaxBackupIndex=10"
+    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.layout=org.apache.log4j.PatternLayout"
+    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.MaxFileSize=5MB"
+    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.layout.ConversionPattern=[%X{USER_CODE}:%X{CALLER_ID}] %d{dd.MMM.yyyy HH:mm} %7r %-5p - %m%n"
+    					
+    					.output
+    					.formula U|xtsys = "cat -u " + U|xtloggingpropdat +" " + U|xtgreplogdatei + " >" + U|xtloggingpropsich + ";cp -f " + U|xtloggingpropsich + " " + U|xtloggingpropdat
+    					.system 'U|xtsys' hinter
+    				}else{
+    				}
+    				.formula U|xtkommd = "<infosystem>IMPORTIT21<zeigen> ? bugenclass=1|[invisible]=1"
+    				.command -WAIT 'U|xtkommd'
+    				.formula U|xtsel = "$,,such==JSADMIN"
+    				.load 1 Infosystem 'U|xtsel'
+    				if(mehr){
+    					.box
+    					.item "Bitte alle Jfopsserver Instanzen beenden, damit die neuen Klassen berücksichtigt werden."
+                        .enditem
+    					
+    					.formula U|xtkommd = "<infosystem>JSADMIN <hole> ? bstart=1"
+    					.command -WAIT 'U|xtkommd'
+    				}else{
+    				        	.formula U|xtsys = "jfopserver_shutdown.sh"
+    				        	.SYSTEM 'U|xtsys' hinter
+    				}
+    			}else{
+    			}
+    		}else{
+    		}
+    		.call fuellMAndantFelder()
+    		
+    	
+    }
+    
+}
+
+
+def fuellMAndantFelder(){
+..<META M|='Importit21' >
+            .file -TEMPNAME U|xtdatei
+            .formula U|xtsys = "for i in `mdir.sh` ; do cd $i ; envmake -x $i -q MNAME -q MANDANTDIR -q MANDANT ; done  |grep " + E|MANDANT + " > " + U|xtdatei
+            .system 'U|xtsys' hinter
+            
+            if(F|filenotempty(U|xtdatei)){
+                .file -OPEN U|xidat 'U|xtdatei'
+                if(mehr){
+                    .file -READ U|xidat U|xmandant # U|xttest^
+                    if(mehr){
+                    ..<META M|='Importit21' >
+                        .formula M|ymandant = U|xmandant
+                        .formula M|yeigmandant = U|xmandant
+                    }else{
+                    }
+                }else{
+                }
+            }else{
+            }
+            .formula   M|yserver= 'E|EDPHOST'
+            .formula  M|yport='E|EDPPORT'
+            if(F|empty(M|ymandant)){
+                .formula  M|ymandant= E|MANDANT
+            }else{
+            }
+}
