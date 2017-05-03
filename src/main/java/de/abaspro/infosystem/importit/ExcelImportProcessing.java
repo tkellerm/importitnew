@@ -20,6 +20,7 @@ public class ExcelImportProcessing {
     private Sheet importSheet;
     private ArrayList<Data> dataList;
     private List<Field> headerFields;
+    private List<Field> smlFields;
     private DataTable tableFields;
     private Integer database;
     private Integer group;
@@ -27,6 +28,7 @@ public class ExcelImportProcessing {
     private String groupString;
     private Integer typeCommand;
     private String typeCommandString;
+    private String smlString;
     private Integer tableFromField;
     private OptionCode optionCode;
     private Logger logger = Logger.getLogger(Main.class);
@@ -36,15 +38,27 @@ public class ExcelImportProcessing {
         this.headerFields = new ArrayList<>();
         this.tableFields = new DataTable();
         this.dataList = new ArrayList<>();
+        this.smlFields = new ArrayList<>();
         checkImportFile(importFilename);
         this.importSheet = initWorkbook(importFilename).getSheetAt(0);
         getFromSheet();
+        this.smlString = getSML();
+        this.headerFields = readFieldsInHead();
         this.headerFields = readFieldsInHead();
         this.tableFields = readFieldsInTable();
         this.dataList = readAllData();
     }
 
-    private ArrayList<Data> readAllData() throws ImportitException {
+ 
+	private String getSML()  {
+    	try {
+			return getCellContents(3, 0);
+		} catch (ImportitException e) {
+			return null;
+		}  	
+	}
+
+	private ArrayList<Data> readAllData() throws ImportitException {
         ArrayList<Data> dataList = new ArrayList<>();
         Data data = null;
         for (Integer row = 2; row <= importSheet.getLastRowNum(); row++) {

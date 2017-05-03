@@ -60,7 +60,9 @@ public class Field {
         }
     }
 
-    public void setOptionGlobalModifiable(Boolean optionGlobalModifiable) {
+    
+
+	public void setOptionGlobalModifiable(Boolean optionGlobalModifiable) {
         this.optionGlobalModifiable = optionGlobalModifiable;
     }
 
@@ -162,5 +164,7 @@ public class Field {
     public Boolean getOptionNotEmpty() {
         return optionNotEmpty;
     }
+    
+    
 
 }

@@ -1,6 +1,7 @@
 package de.abaspro.infosystem.importit;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -51,6 +52,10 @@ public class AbasDataCheckAndComplete {
                 for (Data dataset : dataList) {
                     dataset.copyDatabase(data);
                     dataset.copyAbasType(data);
+                    if (!dataset.getSmlString().isEmpty()) {
+						fillSmlArray(dataset);
+						deleteSmlFieldfromHeaderFields(dataset); 
+					}
                 }
                 return true;
             }else return false;
@@ -64,6 +69,23 @@ public class AbasDataCheckAndComplete {
 	}
 	
 	
+
+	private void deleteSmlFieldfromHeaderFields(Data dataset) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void moveSmlFieldsfromHeaderArrayToSmlArray(Data dataset) {
+		List<Field> headerFields = dataset.getHeaderFields();
+		List<Field> smlFields =  dataset.getSmlFields();
+		for (Field field : smlFields) {
+			String completeContent = field.getCompleteContent();
+			if (completeContent.startsWith("S.")) {
+				smlFields.add(field);
+				headerFields.remove(field);
+			}
+		}
+	}
 
 	private boolean checkandcompleteData(Data data) {
         Boolean exists = false;

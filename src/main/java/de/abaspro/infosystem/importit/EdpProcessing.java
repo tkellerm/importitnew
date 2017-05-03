@@ -20,7 +20,7 @@ import java.util.List;
 
 import javax.management.BadAttributeValueExpException;
 
-
+@Deprecated
 public class EdpProcessing {
 
     private static String edpLogFile = "java/log/importit21edp.log";

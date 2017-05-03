@@ -1,4 +1,4 @@
-..!interpreter english englvar translate
+..!interpreter english translate
 ..============================================================================
 ..  Author             : tk
 ..  Date of Creation   : 12.03.2017
@@ -54,22 +54,25 @@ def main(){
     .var text xtsys
     ..====================================================
     ..@@ENDVARDEFS
-    ..</VAR>
+    .var integer xidat
+.var text xtprojectspfad
+.var text xtapppath
+..</VAR>
 
     .formula U|xtini = "INI.IMPORT"
-..<META M|='Importit21' >    
-     	if(T|evtart = "maskein"){
+..<META M|='Importit21' > 
+     	if(G|evtart = "maskein"){
     		.formula M|yversion = "2.1.0"
-    		.formula U|xtjavadat = "owjava/importitapp.tgz"
+    		.formula U|xtjavadat = "owfw7/importitapp.tgz"
+    		.formula U|xtapppath = "java/apps/importitApp"
     		.formula U|xtclasspathdat = "java/mandant.classpath"
     		.formula U|xtloggingpropdat = "java/log/config/logging.properties"	
     		.formula U|xtlogpropzeile = "log4j.logger.de.abaspro.infosystem.importit.Main=TRACE, de.abaspro.infosystem.importit.Main.RollingFile"
-    		.formula U|xtclasspathsich = U|xtclasspathdat + "_sich_" + 'T|sekundenz'
     		.formula U|xtloggingpropsich = U|xtloggingpropdat + "_sich_" + 'T|sekundenz'
     		.file -TEMPNAME U|xtgrepdatei
     		.file -TEMPNAME U|xtgreplogdatei
     		if(F|filenotempty(U|xtjavadat)){
-    			if(_(F|filenotempty(U|xtclasspathzeile1))){
+    			if(_(F|fileexists(U|xtapppath))){
     				.formula U|xtprojectspfad = "java/apps/"
     				
     				if(_(F|fileexists(U|xtprojectspfad))){
@@ -79,10 +82,10 @@ def main(){
     				}
     				..tgz - File entpacken importitapp.tgz
     				.formula U|xtsys = "cd java/apps/;tar xvzf ../../" + 'U|xtjavadat'
-    				.SYSTEM 'U|xtsys' hinter
+    				.system 'U|xtsys' Background
     				..logging.properties �berpr�fen
     				.formula U|xtsys = "cd ~;grep "+ T|apostroph + U|xtlogpropzeile + T|apostroph + " " + xtloggingpropdat + "  >" + U|xtgreplogdatei
-    				.system 'U|xtsys' hinter
+    				.system 'U|xtsys' Background
     				if(_(F|filenotempty(U|xtgreplogdatei))){
     					.output AUF 'U|xtgreplogdatei'
     					.input DATEI.F
@@ -98,7 +101,7 @@ def main(){
     					
     					.output
     					.formula U|xtsys = "cat -u " + U|xtloggingpropdat +" " + U|xtgreplogdatei + " >" + U|xtloggingpropsich + ";cp -f " + U|xtloggingpropsich + " " + U|xtloggingpropdat
-    					.system 'U|xtsys' hinter
+    					.system 'U|xtsys' Background
     				}else{
     				}
     				.formula U|xtkommd = "<infosystem>IMPORTIT21<zeigen> ? bugenclass=1|[invisible]=1"
@@ -114,7 +117,7 @@ def main(){
     					.command -WAIT 'U|xtkommd'
     				}else{
     				        	.formula U|xtsys = "jfopserver_shutdown.sh"
-    				        	.SYSTEM 'U|xtsys' hinter
+    				        	.SYSTEM 'U|xtsys' Background
     				}
     			}else{
     			}
@@ -132,13 +135,13 @@ def fuellMAndantFelder(){
 ..<META M|='Importit21' >
             .file -TEMPNAME U|xtdatei
             .formula U|xtsys = "for i in `mdir.sh` ; do cd $i ; envmake -x $i -q MNAME -q MANDANTDIR -q MANDANT ; done  |grep " + E|MANDANT + " > " + U|xtdatei
-            .system 'U|xtsys' hinter
+            .system 'U|xtsys' Background
             
             if(F|filenotempty(U|xtdatei)){
                 .file -OPEN U|xidat 'U|xtdatei'
-                if(mehr){
+                if(G|mehr){
                     .file -READ U|xidat U|xmandant # U|xttest^
-                    if(mehr){
+                    if(G|mehr){
                     ..<META M|='Importit21' >
                         .formula M|ymandant = U|xmandant
                         .formula M|yeigmandant = U|xmandant
@@ -148,6 +151,7 @@ def fuellMAndantFelder(){
                 }
             }else{
             }
+
             .formula   M|yserver= 'E|EDPHOST'
             .formula  M|yport='E|EDPPORT'
             if(F|empty(M|ymandant)){

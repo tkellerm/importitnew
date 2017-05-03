@@ -24,6 +24,8 @@ import de.abas.erp.db.DbContext;
 import de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit;
 import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
 import de.abas.jfop.base.Color;
+import de.abaspro.infosystem.importit.dataprocessing.AbasDataProcessFactory;
+import de.abaspro.infosystem.importit.dataprocessing.AbasDataProcessable;
 import de.abaspro.utils.Util;
 
 @Stateful
@@ -34,7 +36,6 @@ public class Main {
     Logger logger = Logger.getLogger(Main.class);
 
     private ArrayList<Data> dataList;
-    private EdpProcessing edpProcessing;
     private AbasDataProcessable abasDataProcessing;
 
     @FieldEventHandler(field = "ymandant", type = FieldEventType.EXIT)

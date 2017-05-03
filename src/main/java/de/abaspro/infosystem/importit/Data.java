@@ -10,16 +10,31 @@ public class Data {
 
     private List<Field> headerFields = new ArrayList<Field>();
     private List<DataTable> tableFields = new ArrayList<DataTable>();
+    private List<Field> smlFields = new ArrayList<Field>(); 
     private Integer database;
     private String dbString;
     private Integer group;
     private String dbGroupString;
     private Integer typeCommand;
     private String typeCommandString;
+    private String smlString;
     private String importError = "";
     private Integer tableStartsAtField;
     private OptionCode optionCode;
-    private Integer keyField;
+    
+    public String getSmlString() {
+		return smlString;
+	}
+
+	public void setSmlString(String smlString) {
+		this.smlString = smlString;
+	}
+
+	public List<Field> getSmlFields() {
+		return smlFields;
+	}
+
+	private Integer keyField;
     private String abasId;
     private String errorReport = "";
     private String errorDebug = "";
@@ -78,7 +93,11 @@ public class Data {
         this.keyField = checkKeyField(this.headerFields);
     }
 
-    public Boolean getOptionTransaction() {
+    public void setSmlFields(List<Field> smlFields) {
+		this.smlFields = smlFields;
+	}
+
+	public Boolean getOptionTransaction() {
         return getOptionCode().getInOneTransaction();
     }
 
