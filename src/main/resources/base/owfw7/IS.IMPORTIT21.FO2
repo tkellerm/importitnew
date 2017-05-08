@@ -16,8 +16,8 @@
 .. Ticket of Change    : 
 ..
 ..============================================================================
+..include owfw7/importitapp.tgz
 ..
-
 def main(){
    
     ..<BLOCK> standard programs
@@ -62,7 +62,7 @@ def main(){
     .formula U|xtini = "INI.IMPORT"
 ..<META M|='Importit21' > 
      	if(G|evtart = "maskein"){
-    		.formula M|yversion = "2.1.0"
+    		.formula M|yversion = "2.1.1"
     		.formula U|xtjavadat = "owfw7/importitapp.tgz"
     		.formula U|xtapppath = "java/apps/importitApp"
     		.formula U|xtclasspathdat = "java/mandant.classpath"
