@@ -52,9 +52,12 @@ public class AbasDataCheckAndComplete {
                 for (Data dataset : dataList) {
                     dataset.copyDatabase(data);
                     dataset.copyAbasType(data);
-                    if (!dataset.getSmlString().isEmpty()) {
-						fillSmlArray(dataset);
-						deleteSmlFieldfromHeaderFields(dataset); 
+                    
+                    if (dataset.getSmlString() != null) {
+						if (!dataset.getSmlString().isEmpty()) {
+							fillSmlArray(dataset);
+							deleteSmlFieldfromHeaderFields(dataset);
+						} 
 					}
                 }
                 return true;
@@ -69,6 +72,11 @@ public class AbasDataCheckAndComplete {
 	}
 	
 	
+
+	private void fillSmlArray(Data dataset) {
+		// Hier fehlt noch was
+		
+	}
 
 	private void deleteSmlFieldfromHeaderFields(Data dataset) {
 		// TODO Auto-generated method stub
