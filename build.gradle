@@ -18,7 +18,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'de.abas.esdk:gradlePlugin:0.4.9'
+        classpath 'de.abas.esdk:gradlePlugin:0.4.11-SNAPSHOT'
     }
 }
 
