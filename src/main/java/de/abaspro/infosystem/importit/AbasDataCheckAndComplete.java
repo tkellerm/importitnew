@@ -49,13 +49,15 @@ public class AbasDataCheckAndComplete {
         Data data = dataList.get(0);
         if (data != null) {
             if (checkandcompleteData(data)) {
+            	List<Field> smlFieldList = createDefaultSMLFieldList(data);
+            
                 for (Data dataset : dataList) {
                     dataset.copyDatabase(data);
                     dataset.copyAbasType(data);
                     
-                    if (dataset.getSmlString() != null) {
+                    if (smlFieldList != null) {
 						if (!dataset.getSmlString().isEmpty()) {
-							fillSmlArray(dataset);
+							fillSmlArray(dataset , smlFieldList);
 							deleteSmlFieldfromHeaderFields(dataset);
 						} 
 					}
@@ -67,14 +69,72 @@ public class AbasDataCheckAndComplete {
         closeEdpSession(this.edpSession);
     }
 	return false;
-	
+		
 		
 	}
 	
 	
 
-	private void fillSmlArray(Data dataset) {
-		// Hier fehlt noch was
+	private List<Field> createDefaultSMLFieldList(Data data) {
+		if (data.getSmlString() != null) {
+			List<Field> smlFieldlist = null;
+	        String fieldNames = "vdn,vgr,grpDBDescr,grpGrpNo";
+	        String tableName = "12:24";
+	        String key= "Nummer";
+	        Boolean inTable = false;
+	        int aliveFlag = 1;
+	        EDPQuery query = this.edpSession.createQuery();
+	        String criteria = "nummer=" + data.getSmlString() + ";@englvar=true;@language=en";
+	        
+			try {
+				query.startQuery(tableName, key, criteria, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
+			} catch (InvalidQueryException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+//          query.getLastRecord();
+	        
+	        
+			return smlFieldlist;
+		}else {
+			return null;	
+		}
+		
+	}
+
+	private void fillSmlArray(Data dataset, List<Field> smlFieldList) {
+		String smlString = dataset.getSmlString();
+		
+//		Suche nach SML in abas
+//		String key = "";
+//        
+//        String fieldNames = "vdn,vgr,grpDBDescr,grpGrpNo";
+//        String tableName = "12:24";
+//        Boolean inTable = false;
+//        int mode = EDPConstants.ENUMPOS_CODE;
+//        try {
+//            this.edpSession.setEnumMode(mode);
+//        } catch (InvalidSettingValueException e) {
+//            logger.error(e);
+//        }
+//        EDPQuery query = this.edpSession.createQuery();
+//        try {
+//            query.startQuery(tableName, key, criteria, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
+//            query.getLastRecord();
+//            if (query.getRecordCount() == 1) {
+//                String dbString = query.getField("grpDBDescr");
+//                dbString = dbString.replaceAll("\\(*", "");
+//                dbString = dbString.replaceAll("\\)*", "");
+//                data.setDatabase(new Integer(dbString));
+//                String group = query.getField("grpGrpNo");
+//                group = group.replaceAll(" ", "");
+//                data.setGroup(new Integer(group));
+//                
+//            }
+//		Suche nach den Checke ob die verwendeten Felder in SML vorhanden.
+//		Wenn ja dann nehme Sie in SML-Array auf 
+		
+		
 		
 	}
 

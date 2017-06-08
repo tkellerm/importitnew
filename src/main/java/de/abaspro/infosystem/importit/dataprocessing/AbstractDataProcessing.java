@@ -426,8 +426,9 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
                 field.setError(Util.getMessage("err.check.reference", field.getAbasTyp(), value));
             } finally {
                 if (query != null) {
+                	
                     if (query.getSession().isConnected()) {
-                        query.getSession().endSession();
+                        query.breakQuery();
                         logger.info(Util.getMessage("info.end.edp.query"));
                     }
                 }
