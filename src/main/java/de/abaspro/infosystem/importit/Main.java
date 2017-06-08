@@ -207,8 +207,10 @@ public class Main {
 
     @ButtonEventHandler(field = "ypruefdat", type = ButtonEventType.AFTER)
     public void checkDataAfter(DbContext ctx, InfosystemImportit infosys) {
-        logger.debug(Util.getMessage("info.check.data.start"));
-        if (dataListNotEmpty()) {
+       
+    	logger.debug(Util.getMessage("info.check.data.start"));
+        
+    	if (dataListNotEmpty()) {
             try {
                 if (infosys.getYfehlerstruktur() == 0) {
 //                    edpProcessing.checkDataListValues(dataList);
@@ -228,6 +230,7 @@ public class Main {
             }
             new TextBox(ctx, Util.getMessage("main.structure.check.box.title"), Util.getMessage("main.data.check.box.message")).show();
         }
+    	logger.debug(Util.getMessage("info.check.data.end"));
     }
 
     private int getDataCount() {
