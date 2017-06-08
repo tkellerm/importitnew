@@ -77,13 +77,14 @@ def main(){
     				
     				if(_(F|fileexists(U|xtprojectspfad))){
     					.formula U|xtsys = "mkdir " + U|xtprojectspfad
-    					.system 'U|xtsys' hinter
+    					.system 'U|xtsys' Background
     				}else{
     				}
     				..tgz - File entpacken importitapp.tgz
     				.formula U|xtsys = "cd java/apps/;tar xvzf ../../" + 'U|xtjavadat'
     				.system 'U|xtsys' Background
     				..logging.properties �berpr�fen
+    				.set debug+
     				.formula U|xtsys = "cd ~;grep "+ T|apostroph + U|xtlogpropzeile + T|apostroph + " " + xtloggingpropdat + "  >" + U|xtgreplogdatei
     				.system 'U|xtsys' Background
     				if(_(F|filenotempty(U|xtgreplogdatei))){
