@@ -1,0 +1,122 @@
+plugins {
+    id "java"
+    id "maven-publish"
+    id "com.palantir.git-version" version "0.5.3"
+    id "de.abas.esdk" version "0.6.1"
+}
+
+repositories {
+    mavenLocal()
+    jcenter()
+    maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME" }
+}
+
+esdk {
+    app {
+        name="importitApp"
+        vendorId=""
+        appId=""
+        entryPoints = []
+        shared=true
+        infosystems = ["owfw7/IMPORTIT21"]
+        tables = []
+        data = []
+        keys = []
+        enums = []
+    }
+
+    abas {
+        homeDir = ABAS_HOMEDIR
+        clientDir = ABAS_CLIENTDIR
+        clientId = ABAS_CLIENTID
+        edpHost = EDP_HOST
+        edpPort = EDP_PORT.toInteger()
+        edpUser = EDP_USER
+        edpPassword = EDP_PASSWORD
+    }
+
+    nexus {
+        nexusHost = NEXUS_HOST
+        nexusPort = NEXUS_PORT.toInteger()
+        nexusRepoName = NEXUS_NAME
+        nexusPassword = NEXUS_PASSWORD
+    }
+
+    ssh {
+        host = SSH_HOST
+        port = SSH_PORT.toInteger()
+        user = SSH_USER
+        password = SSH_PASSWORD
+        key = SSH_KEY
+    }
+    installType = "SSH"
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+compileJava {
+    options.encoding = "UTF-8"
+}
+
+configurations { compile.extendsFrom provided }
+
+group='importitnew'
+def versionString = gitVersion().toString()
+if (versionString.contains("-")) {
+    version versionString.split("-")[0].substring(1) + "-SNAPSHOT"
+} else {
+    version versionString.substring(1)
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId 'importitnew'
+            artifactId 'info'
+            artifact "build/libs/${project.name}-standalone-app.jar"
+        }
+    }
+    repositories {
+        if(project.hasProperty("nexusSnapshotURL") && project.hasProperty("nexusReleaseURL")
+                && project.hasProperty("nexusUser") && project.hasProperty("nexusPassword")){
+            if(project.version.endsWith('-SNAPSHOT')) {
+                maven {
+                    url nexusSnapshotURL
+                    credentials {
+                        username nexusUser
+                        password nexusPassword
+                    }
+                }
+            } else {
+                maven {
+                    url nexusReleaseURL
+                    credentials {
+                        username nexusUser
+                        password nexusPassword
+                    }
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    provided 'de.abas.homedir:log4j:1.0.0'
+    compile 'xmlbeans:xmlbeans:2.3.0'
+
+    compile 'org.apache.poi:poi:3.15'
+    compile 'org.apache.poi:poi-ooxml:3.15'
+    compile 'org.apache.poi:poi-ooxml-schemas:3.15'
+    compile 'org.jgrapht:jgrapht-core:0.9.1'
+    compile 'com.github.monkeysintown:jgraphx:3.3.1.1'
+    compile 'org.jgrapht:jgrapht-ext:0.9.1'
+    //compile 'log4j:log4j:1.2.17'
+    compile 'org.apache.commons:commons-lang3:3.4'
+    compile 'org.scala-lang:scala-library-all:2.11.7'
+    compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.hamcrest:hamcrest-all:1.3'
+
+}
