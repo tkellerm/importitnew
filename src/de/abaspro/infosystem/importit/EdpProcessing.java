@@ -23,7 +23,6 @@ import de.abas.ceks.jedp.ConnectionLostException;
 import de.abas.ceks.jedp.EDPConstants;
 import de.abas.ceks.jedp.EDPEKSArtInfo;
 import de.abas.ceks.jedp.EDPEditAction;
-import de.abas.ceks.jedp.EDPEditFieldList;
 import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPFactory;
 import de.abas.ceks.jedp.EDPQuery;
@@ -400,6 +399,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 			String krit = "0:grpDBDescr=("
 					+ datensatz.getDatenbank().toString() + ");0:grpGrpNo="
 					+ datensatz.getGruppe().toString() + ";"
+					+ ";type=(1)"
 					+ ";@englvar=true;@language=en";
 
 			if (searchDatabase(datensatz, krit)) {
@@ -424,6 +424,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 				String krit = "0:vdntxt==" + datensatz.getDbString()
 						+ ";0:vgrtxtbspr=="
 						+ datensatz.getDbGroupString() + ";"
+						+ ";typ=(1)"
 						+ ";@englvar=false;@language=de";
 
 				if (searchDatabase(datensatz, krit)) {
@@ -432,6 +433,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 					// Suche über die Sprachneutrale Bezeichnung
 					krit = "0:DBCmd==" + datensatz.getDbString()
 							+ ";0:grpGrpCmd==" + datensatz.getDbGroupString()
+							+ ";type=(1)"
 							+ ";" + ";@englvar=true;@language=en";
 					if (searchDatabase(datensatz, krit)) {
 						return true;
@@ -480,13 +482,7 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 							query.startQuery(tableName, key, krit, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
 							query.getLastRecord();
 							if (query.getRecordCount() == 1) {
-								EDPVariableLanguage langtest;
-								try {
-								langtest = this.edpSession.getVariableLanguage();
-								} catch (CantReadSettingException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
+								
 								String dbstring = query.getField("grpDBDescr");
 								String gruppe = query.getField("grpGrpNo");
 								dbstring = query.getField(3);
@@ -497,13 +493,16 @@ public void startEdpSession(EDPVariableLanguage varlanguage) throws ImportitExce
 								gruppe = gruppe.replaceAll(" ", "");
 								datensatz.setGruppe(new Integer(gruppe));
 								return true;
+							}else {
+								datensatz.appendError("Die Suche nach der Datenbank mit dem Suchstring " + krit + " war nicht eindeutig. Es wurden " + query.getRecordCount() + " Vartabs gefunden!"  );
+								return false;
 							}
 							
 						} catch (InvalidQueryException e) {
 							datensatz.appendError("Die Suche nach der Datenbank mit dem Suchstring " + krit + "war fehlerhaft" , e);
 							return false;
 						}
-						return false;
+						
 	}
 
 	private void findDatenbankForTipkkommando(Datensatz datensatz) throws ImportitException {
