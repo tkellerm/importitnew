@@ -85,7 +85,7 @@ public class Main {
 
     @ButtonEventHandler(field = "ydoku", type = ButtonEventType.AFTER)
     public void dokuAfter(DbContext ctx, InfosystemImportit infosys) {
-        File documentationDir = new File("win/owimportitDocumentation");
+        File documentationDir = new File("win/tmp/owimportitDocumentation");
         if (documentationDir.exists()) {
             String url = String.format("-FILE %s/Dokumentation.html", documentationDir.getPath());
             FOe.browser(url);

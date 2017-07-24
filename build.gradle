@@ -115,7 +115,7 @@ dependencies {
     //compile 'log4j:log4j:1.2.17'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.scala-lang:scala-library-all:2.11.7'
-    compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+    //compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
 

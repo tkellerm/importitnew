@@ -51,6 +51,7 @@ def main(){
     .type text xttest               ? _F|defined(U|xttest)
     .type text xtlogpropzeile ? _F|defined(U|xtlogpropzeile)
     .var  text xtini
+    .var text xtdocudat
     .var text xtsys
     ..====================================================
     ..@@ENDVARDEFS
@@ -62,71 +63,10 @@ def main(){
     .formula U|xtini = "INI.IMPORT"
 ..<META M|='Importit21' > 
      	if(G|evtart = "maskein"){
-    		.formula M|yversion = "2.1.1"
-    		.formula U|xtjavadat = "owfw7/importitapp.tgz"
-    		.formula U|xtapppath = "java/apps/importitApp"
-    		.formula U|xtclasspathdat = "java/mandant.classpath"
-    		.formula U|xtloggingpropdat = "java/log/config/logging.properties"	
-    		.formula U|xtlogpropzeile = "log4j.logger.de.abaspro.infosystem.importit.Main=TRACE, de.abaspro.infosystem.importit.Main.RollingFile"
-    		.formula U|xtloggingpropsich = U|xtloggingpropdat + "_sich_" + 'T|sekundenz'
-    		.file -TEMPNAME U|xtgrepdatei
-    		.file -TEMPNAME U|xtgreplogdatei
-    		if(F|filenotempty(U|xtjavadat)){
-    			if(_(F|fileexists(U|xtapppath))){
-    				.formula U|xtprojectspfad = "java/apps/"
-    				
-    				if(_(F|fileexists(U|xtprojectspfad))){
-    					.formula U|xtsys = "mkdir " + U|xtprojectspfad
-    					.system 'U|xtsys' Background
-    				}else{
-    				}
-    				..tgz - File entpacken importitapp.tgz
-    				.formula U|xtsys = "cd java/apps/;tar xvzf ../../" + 'U|xtjavadat'
-    				.system 'U|xtsys' Background
-    				..logging.properties ï¿½berprï¿½fen
-    				.set debug+
-    				.formula U|xtsys = "cd ~;grep "+ T|apostroph + U|xtlogpropzeile + T|apostroph + " " + xtloggingpropdat + "  >" + U|xtgreplogdatei
-    				.system 'U|xtsys' Background
-    				if(_(F|filenotempty(U|xtgreplogdatei))){
-    					.output AUF 'U|xtgreplogdatei'
-    					.input DATEI.F
-    					.println -text "# logging for IMPORTIT21"
-    					.println -text "log4j.logger.de.abaspro.infosystem.importit.Main=TRACE, de.abaspro.infosystem.importit.Main.RollingFile"
-    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile=org.apache.log4j.RollingFileAppender"
-    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.File=java/log/importit21.log"
-    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.Append=true"
-    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.MaxBackupIndex=10"
-    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.layout=org.apache.log4j.PatternLayout"
-    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.MaxFileSize=5MB"
-    					.println -text "log4j.appender.de.abaspro.infosystem.importit.Main.RollingFile.layout.ConversionPattern=[%X{USER_CODE}:%X{CALLER_ID}] %d{dd.MMM.yyyy HH:mm} %7r %-5p - %m%n"
-    					
-    					.output
-    					.formula U|xtsys = "cat -u " + U|xtloggingpropdat +" " + U|xtgreplogdatei + " >" + U|xtloggingpropsich + ";cp -f " + U|xtloggingpropsich + " " + U|xtloggingpropdat
-    					.system 'U|xtsys' Background
-    				}else{
-    				}
-    				.formula U|xtkommd = "<infosystem>IMPORTIT21<zeigen> ? bugenclass=1|[invisible]=1"
-    				.command -WAIT 'U|xtkommd'
-    				.formula U|xtsel = "$,,such==JSADMIN"
-    				.load 1 Infosystem 'U|xtsel'
-    				if(mehr){
-    					.box
-    					.item "Bitte alle Jfopsserver Instanzen beenden, damit die neuen Klassen berücksichtigt werden."
-                        .enditem
-    					
-    					.formula U|xtkommd = "<infosystem>JSADMIN <hole> ? bstart=1"
-    					.command -WAIT 'U|xtkommd'
-    				}else{
-    				        	.formula U|xtsys = "jfopserver_shutdown.sh"
-    				        	.SYSTEM 'U|xtsys' Background
-    				}
-    			}else{
-    			}
-    		}else{
-    		}
-    		.call fuellMAndantFelder()
-    		
-    	
+    		.formula M|yversion = "2.1.2"
+    		.formula U|xtdocudat = "owfw7/owimportitDocumentation.tar"
+    		.call extractDoctar() 
+    		.call fuellMAndantFelder() 	
     }
     
 }
@@ -159,4 +99,10 @@ def fuellMAndantFelder(){
                 .formula  M|ymandant= E|MANDANT
             }else{
             }
+}
+
+def extractDoctar(){
+    .formula U|xtsys = "cd win/tmp/;tar xvf ../../owfw7/owimportitDocumentation.tar"
+    .system 'U|xtsys' Background
+
 }
