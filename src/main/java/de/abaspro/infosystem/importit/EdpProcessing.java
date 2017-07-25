@@ -280,6 +280,7 @@ public class EdpProcessing {
             String criteria = "0:grpDBDescr=("
                     + data.getDatabase().toString() + ");0:grpGrpNo="
                     + data.getGroup().toString() + ";"
+                    + ";type=(1)"
                     + ";@englvar=true;@language=en";
             if (searchDatabase(data, criteria)) {
                 return true;
@@ -292,12 +293,14 @@ public class EdpProcessing {
                 String criteria = "0:vdntxt==" + data.getDbString()
                         + ";0:vgrtxtbspr=="
                         + data.getDbGroupString() + ";"
+                        + ";typ=(1)"
                         + ";@englvar=false;@language=de";
                 if (searchDatabase(data, criteria)) {
                     return true;
                 } else {
                     criteria = "0:DBCmd==" + data.getDbString()
                             + ";0:grpGrpCmd==" + data.getDbGroupString()
+                            + ";type=(1)"
                             + ";" + ";@englvar=true;@language=en";
                     if (searchDatabase(data, criteria)) {
                         return true;

@@ -18,3 +18,8 @@ gradle.properties
 /gradle.log
 /gradle.properties.cebitmaster
 /gradle.properties.docker
+/installBaseFile.log
+/CWINDOWSsystem32.keyring
+/exportEnums_stacktrace.log
+/gradle.properties.cebitmaster48.2017
+/gradle.properties.vm-git-gmbh
