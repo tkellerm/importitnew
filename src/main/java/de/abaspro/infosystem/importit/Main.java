@@ -1,15 +1,11 @@
 package de.abaspro.infosystem.importit;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.zip.GZIPInputStream;
 
 import org.apache.log4j.Logger;
-
 
 import de.abas.eks.jfop.annotation.Stateful;
 import de.abas.eks.jfop.remote.FOe;
@@ -43,42 +39,47 @@ public class Main {
     private Logger logger = Logger.getLogger(Main.class);
     static private String HELPFILE = "owfw7/owimportitDocumentation.tar";
     static private String HELPDEST = "win/tmp/owimportitDocumentation";
+    static private String HELPDESTTAR = "win/tmp/";
 
     private ArrayList<Data> dataList;
     private AbasDataProcessable abasDataProcessing;
     
     @ScreenEventHandler(type = ScreenEventType.ENTER)
     public void screenEnter(InfosystemImportit infosys, ScreenControl screenControl, DbContext ctx){
-    			infosys.setYversion("2.1.2");
-    			BufferFactory bufffactory = BufferFactory.newInstance();
-    			EnvBuffer envBuffer = bufffactory.getEnvBuffer();
-    			String edpHost = envBuffer.getStringValue("EDPHOST");
-    			Integer edpPort = envBuffer.getIntegerValue("EDPPORT");
-    			String mandant = envBuffer.getStringValue("MANDANT");
     			
-    			infosys.setYserver(edpHost);
-    			infosys.setYport(edpPort);
-    			infosys.setYmandant(mandant);
-    			
-    			File file = new File("");
-    			String abspfad = file.getAbsolutePath();
-    			infosys.setYmandant(abspfad);
-    			File destfile = new File(HELPDEST);
-    			try {
-    				if (!destfile.exists()) {
-    					destfile.mkdir();		
-					}
-					Util.unTarFile(new File(HELPFILE), destfile);
-					 
-					 
-				} catch (IOException e) {
-					logger.error(e);
-					showErrorBox(ctx, Util.getMessage("main.docu.extract.error"));
-				}
-    			
-    	
-    	
+    	infosys.setYversion("2.1.2");
+    	fillClientFields(infosys);
+    	extractHelpTar(ctx);
     }
+
+	private void fillClientFields(InfosystemImportit infosys) {
+		BufferFactory bufffactory = BufferFactory.newInstance();
+		EnvBuffer envBuffer = bufffactory.getEnvBuffer();
+		String edpHost = envBuffer.getStringValue("EDPHOST");
+		Integer edpPort = envBuffer.getIntegerValue("EDPPORT");
+		String mandant = envBuffer.getStringValue("MANDANT");
+		
+		infosys.setYserver(edpHost);
+		infosys.setYport(edpPort);
+		infosys.setYmandant(mandant);
+		
+		File file = new File("");
+		String abspfad = file.getAbsolutePath();
+		infosys.setYmandant(abspfad);
+	}
+
+	private void extractHelpTar(DbContext ctx) {
+		File destfile = new File(HELPDESTTAR);
+		try {
+			
+			Util.unTarFile(new File(HELPFILE), destfile);
+			 
+			 
+		} catch (IOException e) {
+			logger.error(e);
+			showErrorBox(ctx, Util.getMessage("main.docu.extract.error"));
+		}
+	}
 
     @FieldEventHandler(field = "ymandant", type = FieldEventType.EXIT)
     public void clientExit(InfosystemImportit infosys, ScreenControl screenControl) {
