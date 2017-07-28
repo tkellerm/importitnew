@@ -1,9 +1,12 @@
 package de.abaspro.infosystem.importit;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.log4j.Logger;
 
@@ -17,13 +20,17 @@ import de.abas.erp.axi2.EventHandlerRunner;
 import de.abas.erp.axi2.annotation.ButtonEventHandler;
 import de.abas.erp.axi2.annotation.EventHandler;
 import de.abas.erp.axi2.annotation.FieldEventHandler;
+import de.abas.erp.axi2.annotation.ScreenEventHandler;
 import de.abas.erp.axi2.type.ButtonEventType;
 import de.abas.erp.axi2.type.FieldEventType;
+import de.abas.erp.axi2.type.ScreenEventType;
 import de.abas.erp.common.type.enums.EnumDialogBox;
 import de.abas.erp.db.DbContext;
 import de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit;
 import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
 import de.abas.jfop.base.Color;
+import de.abas.jfop.base.buffer.BufferFactory;
+import de.abas.jfop.base.buffer.EnvBuffer;
 import de.abaspro.infosystem.importit.dataprocessing.AbasDataProcessFactory;
 import de.abaspro.infosystem.importit.dataprocessing.AbasDataProcessable;
 import de.abaspro.utils.Util;
@@ -33,10 +40,45 @@ import de.abaspro.utils.Util;
 @RunFopWith(EventHandlerRunner.class)
 public class Main {
 
-    Logger logger = Logger.getLogger(Main.class);
+    private Logger logger = Logger.getLogger(Main.class);
+    static private String HELPFILE = "owfw7/owimportitDocumentation.tar";
+    static private String HELPDEST = "win/tmp/owimportitDocumentation";
 
     private ArrayList<Data> dataList;
     private AbasDataProcessable abasDataProcessing;
+    
+    @ScreenEventHandler(type = ScreenEventType.ENTER)
+    public void screenEnter(InfosystemImportit infosys, ScreenControl screenControl, DbContext ctx){
+    			infosys.setYversion("2.1.2");
+    			BufferFactory bufffactory = BufferFactory.newInstance();
+    			EnvBuffer envBuffer = bufffactory.getEnvBuffer();
+    			String edpHost = envBuffer.getStringValue("EDPHOST");
+    			Integer edpPort = envBuffer.getIntegerValue("EDPPORT");
+    			String mandant = envBuffer.getStringValue("MANDANT");
+    			
+    			infosys.setYserver(edpHost);
+    			infosys.setYport(edpPort);
+    			infosys.setYmandant(mandant);
+    			
+    			File file = new File("");
+    			String abspfad = file.getAbsolutePath();
+    			infosys.setYmandant(abspfad);
+    			File destfile = new File(HELPDEST);
+    			try {
+    				if (!destfile.exists()) {
+    					destfile.mkdir();		
+					}
+					Util.unTarFile(new File(HELPFILE), destfile);
+					 
+					 
+				} catch (IOException e) {
+					logger.error(e);
+					showErrorBox(ctx, Util.getMessage("main.docu.extract.error"));
+				}
+    			
+    	
+    	
+    }
 
     @FieldEventHandler(field = "ymandant", type = FieldEventType.EXIT)
     public void clientExit(InfosystemImportit infosys, ScreenControl screenControl) {
@@ -85,7 +127,7 @@ public class Main {
 
     @ButtonEventHandler(field = "ydoku", type = ButtonEventType.AFTER)
     public void dokuAfter(DbContext ctx, InfosystemImportit infosys) {
-        File documentationDir = new File("win/tmp/owimportitDocumentation");
+        File documentationDir = new File(HELPDEST);
         if (documentationDir.exists()) {
             String url = String.format("-FILE %s/Dokumentation.html", documentationDir.getPath());
             FOe.browser(url);
