@@ -2,7 +2,7 @@ V#21
 K#n#IMPORTIT21#Import IT 2.1#A#isrein/screen.OWFW7.IMPORTIT21#25B.1##
 K#(0)#(0)#4000077##n#n#InfosystemImportit#y
 K#n#(1)#
-K#owfw7/IS.IMPORTIT21.FO2#####
+K#java:de.abaspro.infosystem.importit.Main@importitApp#####
 K#######
 K#owfw7#(127)##(116)#(98)###0#0#
 K#########
