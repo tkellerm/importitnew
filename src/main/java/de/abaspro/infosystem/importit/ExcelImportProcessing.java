@@ -1,5 +1,6 @@
 package de.abaspro.infosystem.importit;
 
+
 import de.abas.erp.common.type.AbasDate;
 import de.abaspro.utils.Util;
 import org.apache.log4j.Logger;
@@ -31,7 +32,7 @@ public class ExcelImportProcessing {
     private String smlString;
     private Integer tableFromField;
     private OptionCode optionCode;
-    private Logger logger = Logger.getLogger(Main.class);
+    private Logger logger = Logger.getLogger(ExcelImportProcessing.class);
 
     public ExcelImportProcessing(String importFilename) throws ImportitException {
         super();
@@ -176,12 +177,16 @@ public class ExcelImportProcessing {
         if (file.exists() & file.isFile()) {
             if (file.canRead()) {
                 if (!filename.contains(".xlsx") && !filename.contains(".xls")) {
+                	
+                	logger.error(Util.getMessage("excel.check.import.file.no.excel", filename));
                     throw new ImportitException(Util.getMessage("excel.check.import.file.no.excel", filename));
                 }
             } else {
+            	logger.error(Util.getMessage("excel.check.import.file.cant.read", filename));
                 throw new ImportitException(Util.getMessage("excel.check.import.file.cant.read", filename));
             }
         } else {
+        	logger.error(Util.getMessage("excel.check.import.file.not.found", filename));
             throw new ImportitException(Util.getMessage("excel.check.import.file.not.found", filename));
         }
     }
@@ -198,13 +203,16 @@ public class ExcelImportProcessing {
                 return workbook;
 
             } else {
+            	logger.error(Util.getMessage("excel.check.import.file.no.excel", filename));
                 throw new ImportitException(Util.getMessage("excel.check.import.file.no.excel", filename));
             }
 
         } catch (FileNotFoundException e) {
+        	logger.error(Util.getMessage("excel.check.import.file.not.found", filename));
             throw new ImportitException(Util.getMessage("excel.check.import.file.not.found", filename));
 
         } catch (IOException e) {
+        	logger.error(Util.getMessage("excel.check.import.file.access.err", filename, e.getMessage()));
             throw new ImportitException(Util.getMessage("excel.check.import.file.access.err", filename, e.getMessage()));
         }
     }
@@ -220,6 +228,7 @@ public class ExcelImportProcessing {
             this.tableFromField = getTableFrom();
             this.optionCode = new OptionCode(getOptionCodeFromSheet());
         } catch (NumberFormatException e) {
+        	logger.error(Util.getMessage("excel.get.from.sheet.wrong.format"));
             throw new ImportitException(Util.getMessage("excel.get.from.sheet.wrong.format"));
         }
     }
