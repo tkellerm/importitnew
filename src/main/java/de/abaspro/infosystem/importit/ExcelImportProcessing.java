@@ -220,6 +220,9 @@ public class ExcelImportProcessing {
     private void getFromSheet() throws ImportitException {
         try {
             this.databaseString = getDatabaseString();
+            if (this.databaseString == null) {
+				throw new ImportitException(Util.getMessage("excel.error.noDatabase"));
+			}
             this.groupString = getGroupString();
             this.typeCommandString = getTypeCommandString();
             this.database = getDatabase();
@@ -267,7 +270,12 @@ public class ExcelImportProcessing {
     }
 
     private Boolean isCellEmpty(int x, int y) throws ImportitException {
-        Cell cell = importSheet.getRow(y).getCell(x);
+    	Row row = importSheet.getRow(0);
+        Cell cell = null;
+		if (row !=null) {
+			cell = row.getCell(x);
+		}else return true;
+		
         if (cell == null) {
             return true;
         } else {

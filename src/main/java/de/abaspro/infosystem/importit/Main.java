@@ -295,6 +295,9 @@ public class Main {
         infosys.setYfehler(0);
         infosys.setYfehlerdatpruef(0);
         infosys.setYfehlerstruktur(0);
+        infosys.setYdb("");
+        infosys.setYgruppe("");
+        infosys.setYtippkommando("");
         try {
             logger.info(Util.getMessage("info.structure.check.start.processing"));
             ExcelImportProcessing excelProcessing = new ExcelImportProcessing(infosys.getYdatafile());
