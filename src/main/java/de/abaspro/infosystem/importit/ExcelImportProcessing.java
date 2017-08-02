@@ -220,11 +220,11 @@ public class ExcelImportProcessing {
     private void getFromSheet() throws ImportitException {
         try {
             this.databaseString = getDatabaseString();
-            if (this.databaseString == null) {
-				throw new ImportitException(Util.getMessage("excel.error.noDatabase"));
-			}
             this.groupString = getGroupString();
             this.typeCommandString = getTypeCommandString();
+            if (this.databaseString == null && this.typeCommandString == null) {
+				throw new ImportitException(Util.getMessage("excel.error.noDatabase"));
+			}
             this.database = getDatabase();
             this.group = getGroup();
             this.typeCommand = getTypeCommand();
