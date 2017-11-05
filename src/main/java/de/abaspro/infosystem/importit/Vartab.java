@@ -5,23 +5,25 @@ import java.util.HashMap;
 import de.abas.ceks.jedp.EDPConstants;
 import de.abas.ceks.jedp.EDPQuery;
 import de.abas.ceks.jedp.EDPSession;
+import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
+import de.abaspro.infosystem.importit.dataprocessing.EDPSessionHandler;
 import de.abaspro.utils.Util;
 
 public class Vartab {
-	 
-	
+
 	HashMap<String, VartabField> englishVariables = new HashMap<>();
 	HashMap<String, VartabField> germanVariables = new HashMap<>();
-	 
-	
-	 public Vartab(EDPSession edpSession , Integer datenbank , Integer gruppe) throws ImportitException {
-		EDPQuery query = edpSession.createQuery();
+
+	public Vartab(EDPSessionHandler edpSessionHandler, Integer datenbank, Integer gruppe) throws ImportitException {
+		EDPSession edpsession = edpSessionHandler.getEDPSession(EDPVariableLanguage.ENGLISH);
+		EDPQuery query = edpsession.createQuery();
 		int aliveFlag = EDPConstants.ALIVEFLAG_BOTH;
-		String[] fieldNames = {"varName" , "varNameNew" , "inTab" , "varType" , "varTypeNew" , "varLengthExt"};
+		String[] fieldNames = { "varName", "varNameNew", "inTab", "varType", "varTypeNew", "varLengthExt" };
 		String key = "";
 		String tableName = "12:26";
-		String criteria = "0:grpDBDescr=(" + datenbank.toString() + ");0:grpGrpNo=" + gruppe.toString() + ";" +  ";@englvar=true;@language=en";
+		String criteria = "0:grpDBDescr=(" + datenbank.toString() + ");0:grpGrpNo=" + gruppe.toString() + ";"
+				+ ";@englvar=true;@language=en";
 		try {
 			query.startQuery(tableName, key, criteria, true, aliveFlag, true, true, fieldNames, 0, 10000);
 			while (query.getNextRecord()) {
@@ -30,11 +32,10 @@ public class Vartab {
 				germanVariables.put(vartabField.getActiveVarName(), vartabField);
 			}
 		} catch (InvalidQueryException e) {
-			if (edpSession.isConnected()) {
-				edpSession.endSession();
-			}
 			throw new ImportitException(Util.getMessage("err.edp.query.bad.selection.string", criteria), e);
-		} 
+		} finally {
+			edpSessionHandler.freeEDPSession(edpsession);
+		}
 	}
 
 	public VartabField checkVartabEnglish(String name) {
@@ -44,7 +45,5 @@ public class Vartab {
 	public VartabField checkVartabGerman(String name) {
 		return germanVariables.get(name);
 	}
-	
-	
-	
+
 }

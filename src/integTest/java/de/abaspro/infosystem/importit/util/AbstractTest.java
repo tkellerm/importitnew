@@ -1,19 +1,24 @@
 package de.abaspro.infosystem.importit.util;
 
-import de.abas.erp.db.*;
-import de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit;
-import de.abas.erp.db.selection.Conditions;
-import de.abas.erp.db.selection.SelectionBuilder;
-import de.abas.erp.db.util.ContextHelper;
-import org.junit.After;
-import org.junit.Before;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+
+import de.abas.erp.db.DbContext;
+import de.abas.erp.db.DbMessage;
+import de.abas.erp.db.Deletable;
+import de.abas.erp.db.MessageListener;
+import de.abas.erp.db.SelectableObject;
+import de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit;
+import de.abas.erp.db.selection.Conditions;
+import de.abas.erp.db.selection.SelectionBuilder;
+import de.abas.erp.db.util.ContextHelper;
 
 public class AbstractTest {
 
@@ -54,6 +59,14 @@ public class AbstractTest {
 	public <C extends SelectableObject & Deletable> void deleteObjects(Class<C> type, String field, String value) {
 		final List<C> objects = ctx.createQuery(SelectionBuilder.create(type).add(Conditions.eq(field, value)).build())
 				.execute();
+		for (final C object : objects) {
+			object.delete();
+		}
+	}
+
+	public <C extends SelectableObject & Deletable> void deleteObjectsmatch(Class<C> type, String field, String value) {
+		final List<C> objects = ctx
+				.createQuery(SelectionBuilder.create(type).add(Conditions.match(field, value)).build()).execute();
 		for (final C object : objects) {
 			object.delete();
 		}

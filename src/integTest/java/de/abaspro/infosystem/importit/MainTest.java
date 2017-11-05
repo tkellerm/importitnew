@@ -1,61 +1,128 @@
 package de.abaspro.infosystem.importit;
 
-import de.abas.erp.db.schema.customer.Customer;
-import de.abaspro.infosystem.importit.util.AbstractTest;
-import de.abaspro.utils.Util;
-import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
+import org.apache.log4j.Logger;
+import org.junit.Before;
+import org.junit.Test;
+
+import de.abas.erp.db.schema.customer.Customer;
+import de.abas.erp.db.schema.notes.Note;
+import de.abaspro.infosystem.importit.util.AbstractTest;
+import de.abaspro.utils.Util;
+
 public class MainTest extends AbstractTest {
+	Logger log = Logger.getLogger(MainTest.class);
 
-    @Test
-    public void integTestImport() throws Exception {
-        infosys.setYserver(getHostname());
-        infosys.setYmandant(getClient());
-        infosys.setYport(getPort());
-        infosys.setYpasswort(getPassword());
+	@Test
+	public void integTestImport() throws Exception {
+		setInfosysloginInfo();
 
-        infosys.setYdatafile("ow1/TestCustomer.xls");
+		infosys.setYdatafile("owfw7/TestCustomer.xls");
 
-        infosys.invokeYpruefstrukt();
+		infosys.invokeYpruefstrukt();
 
-        assertThat(getMessage(), not(containsString("Java-Klasse nicht gefunden")));
-        assertThat(infosys.getYfehlerstruktur(), is(0));
-        assertThat(infosys.getYstatus(), is(Util.getMessage("main.status.structure.check.success")));
+		assertThat(getMessage(), not(containsString("Java-Klasse nicht gefunden")));
+		assertThat(infosys.getYfehlerstruktur(), is(0));
+		assertThat(infosys.getYstatus(), is(Util.getMessage("main.status.structure.check.success")));
 
-        infosys.invokeYpruefdat();
-        assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
+		infosys.invokeYpruefdat();
+		assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
 
-        infosys.invokeYimport();
-        assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
-        assertThat(infosys.getYfehler(), is(0));
+		infosys.invokeYimport();
+		assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
+		assertThat(infosys.getYfehler(), is(0));
 
-        for (int i = 0; i < 8; i++) {
-            assertNotNull(getObject(Customer.class, "1TEST" + i));
-        }
-    }
+		for (int i = 0; i < 8; i++) {
+			assertNotNull(getObject(Customer.class, "1TEST" + i));
+		}
+	}
 
-    @Test
-    public void integTestDocumentation() {
-        infosys.setYserver(getHostname());
-        infosys.setYmandant(getClient());
-        infosys.setYport(getPort());
-        infosys.setYpasswort(getPassword());
+	@Before
+	public void prepareTestManyData() throws Exception {
+		setInfosysloginInfo();
+		String importfile = "owfw7/Test2_Kunden.xlsx";
+		long startKunden = System.currentTimeMillis();
+		importDataFile(importfile);
+		long endkunden = System.currentTimeMillis();
+		importfile = "owfw7/Test2_Mitarb.xlsx";
+		long startMitarbeiter = System.currentTimeMillis();
+		importDataFile(importfile);
+		long endMitarbeiter = System.currentTimeMillis();
+		System.out.println(
+				"Kunden : " + (endkunden - startKunden) + " Mitarbeiter : " + (endMitarbeiter - startMitarbeiter));
 
-        infosys.invokeYdoku();
+	}
 
-        assertFalse(getMessage().contains(Util.getMessage("main.docu.error")));
-    }
+	private void importDataFile(String importfile) {
+		setInfosysloginInfo();
+		infosys.setYdatafile(importfile);
+		infosys.invokeYpruefstrukt();
+		infosys.invokeYpruefdat();
+		infosys.invokeYimport();
+	}
 
-    @Override
-    public void cleanup() {
-        super.cleanup();
-        for (int i = 0; i < 8; i++) {
-            deleteObjects(Customer.class, "idno", "1TEST" + i);
-        }
-    }
+	@Test
+	public void integManyData() throws Exception {
+		setInfosysloginInfo();
+
+		infosys.setYdatafile("owfw7/Test2_Kundenakt_kurz.xlsx");
+
+		long startpruef = System.currentTimeMillis();
+		infosys.invokeYpruefstrukt();
+		long endpruef = System.currentTimeMillis();
+		System.out.println("Strukturprüfung: " + (endpruef - startpruef));
+
+		assertThat(infosys.getYfehlerstruktur(), is(0));
+		assertThat(infosys.getYstatus(), is(Util.getMessage("main.status.structure.check.success")));
+
+		long startpruefdat = System.currentTimeMillis();
+		infosys.invokeYpruefdat();
+		long endpruefdat = System.currentTimeMillis();
+		System.out.println("Datenprüfung: " + (endpruefdat - startpruefdat));
+
+		assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
+
+		long startimport = System.currentTimeMillis();
+		infosys.invokeYimport();
+		long endimport = System.currentTimeMillis();
+		long diffimport = endimport - startimport;
+		System.out.println("Import: " + diffimport);
+
+		assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
+		assertThat(infosys.getYfehler(), is(0));
+
+		assertFalse(diffimport > 0);
+
+	}
+
+	private void setInfosysloginInfo() {
+		infosys.setYserver(getHostname());
+		infosys.setYmandant(getClient());
+		infosys.setYport(getPort());
+		infosys.setYpasswort(getPassword());
+	}
+
+	@Test
+	public void integTestDocumentation() {
+		setInfosysloginInfo();
+
+		infosys.invokeYdoku();
+
+		assertFalse(getMessage().contains(Util.getMessage("main.docu.error")));
+	}
+
+	@Override
+	public void cleanup() {
+		super.cleanup();
+		for (int i = 0; i < 8; i++) {
+			deleteObjects(Customer.class, "idno", "1TEST" + i);
+		}
+		deleteObjectsmatch(Note.class, "swd", "T");
+	}
 }
