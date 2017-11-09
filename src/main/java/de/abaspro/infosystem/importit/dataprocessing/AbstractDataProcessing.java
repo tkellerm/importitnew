@@ -364,7 +364,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 		}
 	}
 
-	private void checkReferenceField(Field field, EDPEKSArtInfo edpeksartinfo) {
+	private void checkReferenceField(Field field, EDPEKSArtInfo edpeksartinfo) throws ImportitException {
 		String value = field.getValue();
 		int databaseNumber = edpeksartinfo.getRefDatabaseNr();
 		int groupNumber = edpeksartinfo.getRefGroupNr();

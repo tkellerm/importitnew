@@ -55,6 +55,7 @@ public class AbasDataCheckAndComplete {
 			throws ImportitException {
 
 		this.edpSessionHandler = edpSessionHandler;
+		this.dataList = dataList;
 
 	}
 

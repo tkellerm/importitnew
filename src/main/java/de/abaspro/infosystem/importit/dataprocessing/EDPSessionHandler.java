@@ -1,8 +1,5 @@
 package de.abaspro.infosystem.importit.dataprocessing;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 import org.apache.log4j.Logger;
 
 import de.abas.ceks.jedp.CantBeginSessionException;
@@ -15,23 +12,25 @@ import de.abas.ceks.jedp.TransactionException;
 import de.abaspro.infosystem.importit.ImportitException;
 import de.abaspro.utils.Util;
 
-public class EDPSessionHandler {
-
-	private static final int MAX_ACTIVE_EDPSESSIONS = 3;
-
-	private static String edpLogFile = "java/log/importit21edp.log";
+public class EDPSessionHandler extends Thread {
 
 	protected Logger logger = Logger.getLogger(EDPSessionHandler.class);
+	private static String edpLogFile = "java/log/importit21edp.log";
 
 	private EDPSession edpSession;
 	private String server;
 	private Integer port;
 	private String client;
 	private String password;
+
 	private Boolean edpsessionOnWork;
 	private Boolean activeTransaction;
 
-	Queue<EDPSession> fifo = new LinkedList<EDPSession>();
+	private Thread sessionPoolThread;
+
+	private boolean activeHandler;
+
+	private EDPSessionPool edpSessionPool;
 
 	private static EDPSessionHandler instance;
 
@@ -42,6 +41,8 @@ public class EDPSessionHandler {
 		this.password = null;
 		this.edpsessionOnWork = false;
 		this.activeTransaction = false;
+		this.activeHandler = true;
+		this.sessionPoolThread = null;
 	}
 
 	public static synchronized EDPSessionHandler getInstance() {
@@ -58,7 +59,10 @@ public class EDPSessionHandler {
 		this.password = password;
 		this.edpSession = createSession(this.server, this.port, this.client, this.password,
 				EDPVariableLanguage.ENGLISH);
-		fillqueue();
+		this.edpSessionPool = new EDPSessionPool(this);
+		this.sessionPoolThread = new Thread(this.edpSessionPool);
+		this.sessionPoolThread.start();
+
 	}
 
 	public Boolean isInit() {
@@ -69,14 +73,15 @@ public class EDPSessionHandler {
 		}
 	}
 
-	public EDPSession getEDPSession(EDPVariableLanguage varLang) {
+	public EDPSession getEDPSession(EDPVariableLanguage varLang) throws ImportitException {
 
-		EDPSession edpSession = this.fifo.remove();
+		EDPSession edpSession = this.edpSessionPool.getEDPSession();
+
 		changeVariableLanguage(edpSession, varLang);
 		return edpSession;
 	}
 
-	public EDPSession getEDPSessionWriteData(EDPVariableLanguage varLang) {
+	public EDPSession getEDPSessionWriteData(EDPVariableLanguage varLang) throws ImportitException {
 		if (this.activeTransaction) {
 			return getTransactionEdpSession(varLang);
 		} else {
@@ -84,7 +89,7 @@ public class EDPSessionHandler {
 		}
 	}
 
-	private EDPSession getTransactionEdpSession(EDPVariableLanguage varLang) {
+	private synchronized EDPSession getTransactionEdpSession(EDPVariableLanguage varLang) {
 		try {
 			if (!this.edpSession.isConnected()) {
 				this.edpSession = createSession(this.server, this.port, this.client, this.password,
@@ -113,29 +118,10 @@ public class EDPSessionHandler {
 
 	public void freeEDPSession(EDPSession edpSession) {
 		if (edpSession != this.edpSession) {
-			closeEDPSession(edpSession);
+			this.edpSessionPool.addEDPsession(edpSession);
 		}
-		this.edpsessionOnWork = false;
 		logger.info(Util.getMessage("info.edp.session.release"));
-		fillqueue();
-	}
 
-	private void fillqueue() {
-		while (this.fifo.size() < MAX_ACTIVE_EDPSESSIONS) {
-			EDPSession createSession = null;
-			try {
-				createSession = createSession(this.server, this.port, this.client, this.password,
-						EDPVariableLanguage.ENGLISH);
-				if (createSession.isConnected()) {
-					fifo.add(createSession);
-				}
-			} catch (ImportitException e) {
-				// hier ein Logeintrag aus, da bei Init schon geprüft wird ob es
-				// klappt
-				logger.error(e);
-			}
-		}
-		logger.info(Util.getMessage("info.EDPHandler.fillqueue", fifo.size()));
 	}
 
 	public void startTransaction() throws ImportitException {
@@ -213,23 +199,35 @@ public class EDPSessionHandler {
 		return activeTransaction;
 	}
 
-	public void closeAllConnections() {
+	public synchronized void closeAllConnections() {
+		this.activeHandler = false;
+
 		if (this.edpSession != null) {
 			if (this.edpSession.isConnected()) {
 				closeEDPSession(this.edpSession);
 			}
 		}
-		if (fifo != null) {
-			while (fifo.size() > 0) {
-				EDPSession edpSession2 = fifo.remove();
-				if (edpSession2 != null) {
-					if (edpSession2.isConnected()) {
-						closeEDPSession(edpSession2);
-					}
-				}
-			}
-
+		this.edpSessionPool.closeSessions();
+		while (this.sessionPoolThread.getState() != State.TERMINATED) {
+			logger.debug(Util.getMessage("debug.EDPSessionHandler.waitEndThread"));
 		}
+		this.edpSessionPool.logger.info(Util.getMessage("info.EDPSessionHandler.allSessions.closed"));
+	}
+
+	public String getServer() {
+		return server;
+	}
+
+	public Integer getPort() {
+		return port;
+	}
+
+	public String getClient() {
+		return client;
+	}
+
+	public String getPassword() {
+		return password;
 	}
 
 }

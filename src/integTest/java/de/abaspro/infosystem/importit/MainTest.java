@@ -50,21 +50,25 @@ public class MainTest extends AbstractTest {
 		long startKunden = System.currentTimeMillis();
 		importDataFile(importfile);
 		long endkunden = System.currentTimeMillis();
+		System.out.println("Kunden : " + (endkunden - startKunden));
 		importfile = "owfw7/Test2_Mitarb.xlsx";
 		long startMitarbeiter = System.currentTimeMillis();
 		importDataFile(importfile);
 		long endMitarbeiter = System.currentTimeMillis();
-		System.out.println(
-				"Kunden : " + (endkunden - startKunden) + " Mitarbeiter : " + (endMitarbeiter - startMitarbeiter));
+		System.out.println(" Mitarbeiter : " + (endMitarbeiter - startMitarbeiter));
 
 	}
 
 	private void importDataFile(String importfile) {
 		setInfosysloginInfo();
 		infosys.setYdatafile(importfile);
+		System.out.println("StrukturPrüfung " + importfile);
 		infosys.invokeYpruefstrukt();
+		System.out.println("Datenprüfung " + importfile);
 		infosys.invokeYpruefdat();
+		System.out.println("Datemimport " + importfile);
 		infosys.invokeYimport();
+		System.out.println("Ende Datemimport " + importfile);
 	}
 
 	@Test

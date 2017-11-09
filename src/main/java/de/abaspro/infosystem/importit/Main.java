@@ -288,6 +288,8 @@ public class Main {
 			}
 			new TextBox(ctx, Util.getMessage("main.structure.check.box.title"),
 					Util.getMessage("main.data.check.box.message")).show();
+		} else {
+			showErrorBox(ctx, Util.getMessage("error.data.check.datalist.empty"));
 		}
 		logger.debug(Util.getMessage("info.check.data.end"));
 	}
@@ -318,6 +320,7 @@ public class Main {
 
 			this.edpSessionhandler.initSession(infosys.getYserver(), infosys.getYport(), infosys.getYmandant(),
 					infosys.getYpasswort());
+
 			logger.info(Util.getMessage("info.structure.check.start.processing"));
 			ExcelImportProcessing excelProcessing = new ExcelImportProcessing(infosys.getYdatafile());
 			dataList = excelProcessing.getDataList();
