@@ -39,10 +39,11 @@ public class EDPSessionPool implements Runnable {
 			} catch (Exception e) {
 				logger.error(e);
 			}
-			if (zaehler > 100000) {
-				logger.debug("Thread aktiv " + zaehler + "queue size: " + this.fifo.size());
-				zaehler = 0;
-			}
+			// if (zaehler > 10000000) {
+			// logger.debug("Thread aktiv " + zaehler + "queue size: " +
+			// this.fifo.size());
+			// zaehler = 0;
+			// }
 		}
 		logger.info(Util.getMessage("info.edpSessionPool.closeConnections"));
 		Integer xiof = fifo.size();

@@ -8,50 +8,55 @@
 <a href="Dokumentation.html">Dokumentation</a><br>
 <h1>Version-Historie </h1>
 <ol>
-<li>1.0: Erste veröffentlichte Version<br>
+<li>1.0: Erste ver&uuml;ffentlichte Version<br>
 <br>
 <li>Version 1.1:
-<blockquote>            1. Bugfix: Wenn Option "Datensätze anzeigen" gewählt wurde, so wurde bei einem erfolgreichen Import die Fehlerinfo in der Zeile nicht gelöscht.<br>
+<blockquote>            1. Bugfix: Wenn Option "Datens&auml;tze anzeigen" gew&auml;hlt wurde, so wurde bei einem erfolgreichen Import die Fehlerinfo in der Zeile nicht gel&ouml;scht.<br>
                            Somit war ein Fehler eines Imports zuvor immer noch sichtbar<br>
-                        2. @skip in feldnamen eingeführt -> Übergehen der Spalte<br>
-                        3. Versionsfeld eingeführt -  Ruhe mit "Welche Version kann was?"<br>
-                        4.  erste version für subeditor.-> klappt aber noch nicht<br>
+                        2. @skip in feldnamen eingef&uuml;hrt -> &uuml;bergehen der Spalte<br>
+                        3. Versionsfeld eingef&uuml;hrt -  Ruhe mit "Welche Version kann was?"<br>
+                        4.  erste version f&uuml;r subeditor.-> klappt aber noch nicht<br>
                         </blockquote>
 <li>Version 1.2:<blockquote>
-                        1. Bugfix - > Importzähler korrigiert<br>
-                        2. Es wird nicht mehr nach Import jeder Tabellenzeile gespeichert. Erst beim nächsten Datensatz wird gespeichert!<br>
-                            => Fibu Buchungen sind möglich zu importieren<br></blockquote>
+                        1. Bugfix - > Importz&auml;hler korrigiert<br>
+                        2. Es wird nicht mehr nach Import jeder Tabellenzeile gespeichert. Erst beim n&auml;chsten Datensatz wird gespeichert!<br>
+                            => Fibu Buchungen sind m&uuml;glich zu importieren<br></blockquote>
 <li>Version 1.3<blockquote>
-                        1.  Bugfix -> "Datensätze immer neu Anlegen" funktionierte nicht - korrigiert!<br></blockquote>
+                        1.  Bugfix -> "Datens&auml;tze immer neu Anlegen" funktionierte nicht - korrigiert!<br></blockquote>
 <li>Version 1.4<blockquote>
-                        1. Option Modifiable eingeführt - Alle Felder werden optional auf "änderbar" geprüft<br>
-                        2. Optionen in Excel vorbelegbar über Zelle C1<br>
-                           Binärcode wird angegeben und wird auch in IS angezeigt in neuem Feld!<br>
-                        3. Bugfix -> Auch ohne die Option "Datensätze anzeigen" wird im Fehlerfall die Zeileninfo bez. Selektion<br>
+                        1. Option Modifiable eingef&uuml;hrt - Alle Felder werden optional auf "&auml;nderbar" gepr&uuml;ft<br>
+                        2. Optionen in Excel vorbelegbar &uuml;ber Zelle C1<br>
+                           Bin&uuml;rcode wird angegeben und wird auch in IS angezeigt in neuem Feld!<br>
+                        3. Bugfix -> Auch ohne die Option "Datens&auml;tze anzeigen" wird im Fehlerfall die Zeileninfo bez. Selektion<br>
                            und Datensatzverweis korrekt dargestellt.<br>
-                        4. Bugfix -> Durch die Änderung des Speicherverhaltens in Version 1.2 wurde bei jedem Importfehler eine Java<br>
-                           Exception ausgelöst. Dadurch wurden ab dieser Excelzeile keine weiteren Daten mehr importiert.<br>
+                        4. Bugfix -> Durch die &uuml;nderung des Speicherverhaltens in Version 1.2 wurde bei jedem Importfehler eine Java<br>
+                           Exception ausgel&uuml;st. Dadurch wurden ab dieser Excelzeile keine weiteren Daten mehr importiert.<br>
                         5. TABABSPALTE wird nun mit 0 vorbelegt, wenn in Excel File als Leere Zelle vorhanden<br>
                         6. @modifiable als Spalten Option<br>
                         7. Fehleranalyse mittels Maskenaufruf integriert.<br>
                         8. @notempty als Spalten Option<br></blockquote>
 <li>Version 2.0<blockquote>
            		1. Umstieg auf das Framework POI<br>
-           		2. Der Import des neuen Excel-Format ist nun möglich<br></blockquote>
+           		2. Der Import des neuen Excel-Format ist nun m&ouml;glich<br></blockquote>
 <li>Version 2.1.0 :<blockquote>
 				1. neuer Infosystemsuchwort Importit21<br>
 				2. komplette Neuprogrammierung<br>
 				3. neue Vorgehensweise :<br>
-					 Strukturprüfung	<br>
-					 	-Prüfung, ob alle Variablen in der Excel-Tabelle auch in der Variablentabelle vorhanden sind.<br>
-					 Daten prüfen<br>
-					 	-Es werden die Textfelder, Zahlen, Datums auf richtige Angaben geprüft.<br>
-					 	-Es werden bei normalen Verweis-Feldern geprüft, ob die entsprechenden Datensätze vorhanden sind<br>
-					 	-Multiverweisfelder : Typ VPK1 wird auch geprüft, die anderen werden gerade nicht geprüft,  <br>
+					 Strukturpr&uuml;fung	<br>
+					 	-Pr&uuml;fung, ob alle Variablen in der Excel-Tabelle auch in der Variablentabelle vorhanden sind.<br>
+					 Daten pr&uuml;fen<br>
+					 	-Es werden die Textfelder, Zahlen, Datums auf richtige Angaben gepr&uuml;ft.<br>
+					 	-Es werden bei normalen Verweis-Feldern gepr&uuml;ft, ob die entsprechenden Datens&uuml;tze vorhanden sind<br>
+					 	-Multiverweisfelder : Typ VPK1 wird auch gepr&uuml;ft, die anderen werden gerade nicht gepr&uuml;ft,  <br>
 				4. neue Feldoption :<br>
 					@dontChangeIfEqual : Beschreibung siehe in der Dokumentation<br>
 				5. Option zum Verarbeiten von den englischen Variablennamen<br>
 </blockquote>						 
+<li>Version 3.0.1 :<blockquote> 
+                1.Schnelleres Handling der EDPSessions<br>
+                2.neue Option @keyselection<br>
+                3.neue Option @selection<br>
+                </blockquote>
 </ol>
 </body>
 </html>

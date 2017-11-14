@@ -30,6 +30,7 @@ import de.abas.jfop.base.buffer.EnvBuffer;
 import de.abaspro.infosystem.importit.dataprocessing.AbasDataProcessFactory;
 import de.abaspro.infosystem.importit.dataprocessing.AbasDataProcessable;
 import de.abaspro.infosystem.importit.dataprocessing.EDPSessionHandler;
+import de.abaspro.infosystem.importit.dataset.Data;
 import de.abaspro.utils.Util;
 
 @Stateful
@@ -49,7 +50,7 @@ public class Main {
 	@ScreenEventHandler(type = ScreenEventType.ENTER)
 	public void screenEnter(InfosystemImportit infosys, ScreenControl screenControl, DbContext ctx) {
 
-		infosys.setYversion("2.1.2");
+		infosys.setYversion("3.0.1");
 		fillClientFields(infosys);
 		extractHelpTar(ctx);
 	}
@@ -329,10 +330,7 @@ public class Main {
 
 			abasDataProcessing = new AbasDataProcessFactory().createAbasDataProcess(this.edpSessionhandler, dataList);
 			abasDataProcessing.checkDataListStructure(dataList);
-			// edpProcessing = new EdpProcessing(infosys.getYserver(),
-			// infosys.getYport(), infosys.getYmandant(),
-			// infosys.getYpasswort());
-			// edpProcessing.checkDataListStructure(dataList);
+
 			logger.info(Util.getMessage("info.structure.check.end.data"));
 			infosys.setYfehlerstruktur(getErrorCount());
 			showDatabaseInfo(infosys);

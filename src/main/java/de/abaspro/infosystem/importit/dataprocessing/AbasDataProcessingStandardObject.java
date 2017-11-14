@@ -1,5 +1,6 @@
 package de.abaspro.infosystem.importit.dataprocessing;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 import de.abas.ceks.jedp.CantBeginEditException;
@@ -14,9 +15,9 @@ import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
 import de.abas.ceks.jedp.ServerActionException;
-import de.abaspro.infosystem.importit.Data;
-import de.abaspro.infosystem.importit.Field;
 import de.abaspro.infosystem.importit.ImportitException;
+import de.abaspro.infosystem.importit.dataset.Data;
+import de.abaspro.infosystem.importit.dataset.Field;
 import de.abaspro.utils.Util;
 
 public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
@@ -83,8 +84,18 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 				logger.info(Util.getMessage("info.editor.not.active"));
 			}
 		} else {
-			String criteria = data.getNameOfKeyfield() + "=" + data.getValueOfKeyField();
-			String objectId = getSelObject(criteria, data);
+			String criteria = "";
+			String objectId;
+			if (data.getAbasId().isEmpty()) {
+				if (!data.getNameOfKeyfield().isEmpty()) {
+					criteria = data.getNameOfKeyfield() + "=" + data.getValueOfKeyField();
+				} else {
+					criteria = MessageFormat.format(data.getFieldKeySelectionString(), data.getKeyFieldValue());
+				}
+				objectId = getSelObject(criteria, data);
+			} else {
+				objectId = data.getAbasId();
+			}
 			if (!objectId.equals("Z")) {
 
 				if (!objectId.equals("0")) {
@@ -133,9 +144,9 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 			// validTable = false;
 			try {
 
-				validHead = getAbasType(headerFields, data.getDatabase(), data.getGroup(), false,
+				validHead = checkFieldList(headerFields, data.getDatabase(), data.getGroup(), false,
 						data.getOptionCode().useEnglishVariables());
-				validTable = getAbasType(tableFields, data.getDatabase(), data.getGroup(), true,
+				validTable = checkFieldList(tableFields, data.getDatabase(), data.getGroup(), true,
 						data.getOptionCode().useEnglishVariables());
 
 			} catch (ImportitException e) {
@@ -154,6 +165,37 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 		Boolean exists = false;
 		exists = checkDatabaseName(data);
 		return exists;
+	}
+
+	@Override
+	protected void writeAbasIDinData(Data data) throws ImportitException {
+		if (!data.getKeyOfKeyfield().isEmpty()) {
+
+			String criteria = data.getNameOfKeyfield() + "=" + data.getValueOfKeyField();
+			makeSelection(data, criteria);
+
+		} else if (!data.getSelectionStringOfKeyfield().isEmpty()) {
+
+			String criteria = MessageFormat.format(data.getSelectionStringOfKeyfield(), data.getValueOfKeyField());
+			makeSelection(data, criteria);
+
+		}
+	}
+
+	private void makeSelection(Data data, String criteria) throws ImportitException {
+		try {
+			String abasID = getSelObject(criteria, data);
+			if (!abasID.equals("Z") && !abasID.equals("0")) {
+				data.setAbasId(abasID);
+			} else {
+				data.setAbasId("");
+				if (abasID.equals("Z")) {
+					data.appendError(Util.getMessage("error.checkdata.toManyResults"));
+				}
+			}
+		} catch (ImportitException e) {
+			data.appendError(e);
+		}
 	}
 
 }

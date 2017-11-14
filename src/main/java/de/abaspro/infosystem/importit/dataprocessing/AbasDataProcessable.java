@@ -2,8 +2,8 @@ package de.abaspro.infosystem.importit.dataprocessing;
 
 import java.util.ArrayList;
 
-import de.abaspro.infosystem.importit.Data;
 import de.abaspro.infosystem.importit.ImportitException;
+import de.abaspro.infosystem.importit.dataset.Data;
 
 public interface AbasDataProcessable {
 

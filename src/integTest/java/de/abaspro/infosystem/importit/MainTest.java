@@ -80,7 +80,77 @@ public class MainTest extends AbstractTest {
 		long startpruef = System.currentTimeMillis();
 		infosys.invokeYpruefstrukt();
 		long endpruef = System.currentTimeMillis();
-		System.out.println("Strukturprüfung: " + (endpruef - startpruef));
+		System.out.println("Strukturprüfung: " + (endpruef - startpruef) + " " + infosys.getYdatafile());
+
+		assertThat(infosys.getYfehlerstruktur(), is(0));
+		assertThat(infosys.getYstatus(), is(Util.getMessage("main.status.structure.check.success")));
+
+		long startpruefdat = System.currentTimeMillis();
+		infosys.invokeYpruefdat();
+		long endpruefdat = System.currentTimeMillis();
+		System.out.println("Datenprüfung: " + (endpruefdat - startpruefdat));
+
+		assertThat(infosys.getYstatus(), is(Util.getMessage("main.err.check.data")));
+		assertThat(infosys.getYfehlerdatpruef(), is(Util.getMessage("main.err.check.data")));
+
+		long startimport = System.currentTimeMillis();
+		infosys.invokeYimport();
+		long endimport = System.currentTimeMillis();
+		long diffimport = endimport - startimport;
+		System.out.println("Import: " + diffimport + " " + infosys.getYdatafile());
+
+		assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
+		// assertThat(infosys.getYfehler(), is(0));
+
+		assertFalse(diffimport > 0);
+
+	}
+
+	@Test
+	public void integKeySelect() throws Exception {
+		setInfosysloginInfo();
+
+		infosys.setYdatafile("owfw7/TestCustomer_selkey.xlsx");
+
+		long startpruef = System.currentTimeMillis();
+		infosys.invokeYpruefstrukt();
+		long endpruef = System.currentTimeMillis();
+		System.out.println("Strukturprüfung: " + (endpruef - startpruef) + " " + infosys.getYdatafile());
+
+		assertThat(infosys.getYfehlerstruktur(), is(0));
+		assertThat(infosys.getYstatus(), is(Util.getMessage("main.status.structure.check.success")));
+
+		long startpruefdat = System.currentTimeMillis();
+		infosys.invokeYpruefdat();
+		long endpruefdat = System.currentTimeMillis();
+		System.out.println("Datenprüfung: " + (endpruefdat - startpruefdat));
+
+		assertThat(infosys.getYstatus(), is(Util.getMessage("main.err.check.data")));
+		assertThat(infosys.getYfehlerdatpruef(), is(Util.getMessage("main.err.check.data")));
+
+		long startimport = System.currentTimeMillis();
+		infosys.invokeYimport();
+		long endimport = System.currentTimeMillis();
+		long diffimport = endimport - startimport;
+		System.out.println("Import: " + diffimport + " " + infosys.getYdatafile());
+
+		assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
+		// assertThat(infosys.getYfehler(), is(0));
+
+		assertFalse(diffimport > 0);
+
+	}
+
+	@Test
+	public void integFieldSelect() throws Exception {
+		setInfosysloginInfo();
+
+		infosys.setYdatafile("owfw7/TestCustomer_selkeyfield.xlsx");
+
+		long startpruef = System.currentTimeMillis();
+		infosys.invokeYpruefstrukt();
+		long endpruef = System.currentTimeMillis();
+		System.out.println("Strukturprüfung: " + (endpruef - startpruef) + " " + infosys.getYdatafile());
 
 		assertThat(infosys.getYfehlerstruktur(), is(0));
 		assertThat(infosys.getYstatus(), is(Util.getMessage("main.status.structure.check.success")));
@@ -91,18 +161,18 @@ public class MainTest extends AbstractTest {
 		System.out.println("Datenprüfung: " + (endpruefdat - startpruefdat));
 
 		assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
+		assertThat(infosys.getYfehlerdatpruef(), is(0));
 
 		long startimport = System.currentTimeMillis();
 		infosys.invokeYimport();
 		long endimport = System.currentTimeMillis();
 		long diffimport = endimport - startimport;
-		System.out.println("Import: " + diffimport);
+		System.out.println("Import: " + diffimport + " " + infosys.getYdatafile());
 
 		assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
-		assertThat(infosys.getYfehler(), is(0));
+		// assertThat(infosys.getYfehler(), is(0));
 
-		assertFalse(diffimport > 0);
-
+		assertFalse(diffimport == 0);
 	}
 
 	private void setInfosysloginInfo() {

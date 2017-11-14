@@ -16,11 +16,11 @@ import de.abas.erp.common.type.enums.EnumTypeCommands;
 import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.GlobalTextBuffer;
 import de.abas.jfop.base.buffer.UserTextBuffer;
-import de.abaspro.infosystem.importit.Data;
 import de.abaspro.infosystem.importit.Enumeration;
 import de.abaspro.infosystem.importit.EnumerationItem;
-import de.abaspro.infosystem.importit.Field;
 import de.abaspro.infosystem.importit.ImportitException;
+import de.abaspro.infosystem.importit.dataset.Data;
+import de.abaspro.infosystem.importit.dataset.Field;
 import de.abaspro.utils.Util;
 
 public class AbasDataProcessingTypeCommands extends AbstractDataProcessing {
@@ -89,9 +89,9 @@ public class AbasDataProcessingTypeCommands extends AbstractDataProcessing {
 			validTable = false;
 			try {
 
-				validHead = getAbasType(headerFields, data.getDatabase(), data.getGroup(), false,
+				validHead = checkFieldList(headerFields, data.getDatabase(), data.getGroup(), false,
 						data.getOptionCode().useEnglishVariables());
-				validTable = getAbasType(tableFields, data.getDatabase(), data.getGroup(), true,
+				validTable = checkFieldList(tableFields, data.getDatabase(), data.getGroup(), true,
 						data.getOptionCode().useEnglishVariables());
 
 			} catch (ImportitException e) {
@@ -202,5 +202,11 @@ public class AbasDataProcessingTypeCommands extends AbstractDataProcessing {
 			}
 		}
 		return enumeration;
+	}
+
+	@Override
+	protected void writeAbasIDinData(Data data) {
+		// Nichts machen da Tipkommandos keine ID haben
+
 	}
 }

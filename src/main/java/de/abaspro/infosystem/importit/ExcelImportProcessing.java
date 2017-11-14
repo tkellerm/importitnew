@@ -20,6 +20,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import de.abas.erp.common.type.AbasDate;
+import de.abaspro.infosystem.importit.dataset.Data;
+import de.abaspro.infosystem.importit.dataset.DataTable;
+import de.abaspro.infosystem.importit.dataset.Field;
 import de.abaspro.utils.Util;
 
 public class ExcelImportProcessing {
@@ -51,7 +54,6 @@ public class ExcelImportProcessing {
 		getFromSheet();
 		this.smlString = getSML();
 		this.headerFields = readFieldsInHead();
-		this.headerFields = readFieldsInHead();
 		this.tableFields = readFieldsInTable();
 		this.dataList = readAllData();
 	}
@@ -73,7 +75,7 @@ public class ExcelImportProcessing {
 					data = fillValueInHead(row);
 					dataList.add(data);
 				} else {
-					String valueKeyfield = getCellContents(data.getKeyField(), row);
+					String valueKeyfield = getCellContents(data.getKeyFieldPosition(), row);
 					if ((!data.getValueOfKeyField().equals(valueKeyfield)) || this.tableFields == null) {
 						data = fillValueInHead(row);
 						dataList.add(data);
@@ -143,7 +145,7 @@ public class ExcelImportProcessing {
 			String content = getCellContents(col, row);
 			if (content != null) {
 				if (!content.isEmpty()) {
-					Field field = new Field(content, true, col);
+					Field field = new Field(content, true, col, this.optionCode);
 					headerFields.add(field);
 				}
 			}
@@ -160,7 +162,7 @@ public class ExcelImportProcessing {
 				String content;
 				content = getCellContents(col, row);
 				if (!content.isEmpty()) {
-					Field field = new Field(content, true, col);
+					Field field = new Field(content, true, col, this.optionCode);
 					tableFields.add(field);
 				}
 			}

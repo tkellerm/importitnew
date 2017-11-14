@@ -16,10 +16,10 @@ import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
 import de.abas.ceks.jedp.ServerActionException;
-import de.abaspro.infosystem.importit.Data;
-import de.abaspro.infosystem.importit.DataTable;
-import de.abaspro.infosystem.importit.Field;
 import de.abaspro.infosystem.importit.ImportitException;
+import de.abaspro.infosystem.importit.dataset.Data;
+import de.abaspro.infosystem.importit.dataset.DataTable;
+import de.abaspro.infosystem.importit.dataset.Field;
 import de.abaspro.utils.Util;
 
 public class AbasDataProzessingCustomerPartProperties extends AbstractDataProcessing {
@@ -245,7 +245,7 @@ public class AbasDataProzessingCustomerPartProperties extends AbstractDataProces
 			try {
 
 				validHead = checkCustomerPartProperties(headerFields, data.getOptionCode().useEnglishVariables());
-				validTable = getAbasType(tableFields, 2, 6, false, data.getOptionCode().useEnglishVariables());
+				validTable = checkFieldList(tableFields, 2, 6, false, data.getOptionCode().useEnglishVariables());
 
 			} catch (ImportitException e) {
 				logger.error(e);
@@ -265,13 +265,19 @@ public class AbasDataProzessingCustomerPartProperties extends AbstractDataProces
 			for (Field field : headerFields) {
 				String varName = field.getName();
 				if (varName.equals("product") || varName.equals("art") || varName.equals("artikel")) {
-					return getAbasType(headerFields, 2, 6, false, englishVariables);
+					return checkFieldList(headerFields, 2, 6, false, englishVariables);
 				}
 			}
 			throw new ImportitException(Util.getMessage("err.variables.missing"));
 		} else {
 			throw new ImportitException(Util.getMessage("err.too.many.head.fields"));
 		}
+	}
+
+	@Override
+	protected void writeAbasIDinData(Data data) {
+		// TODO Noch umzusetzen
+
 	}
 
 }

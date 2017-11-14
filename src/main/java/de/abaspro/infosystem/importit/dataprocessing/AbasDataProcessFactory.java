@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import org.apache.log4j.Logger;
 
 import de.abaspro.infosystem.importit.AbasDataCheckAndComplete;
-import de.abaspro.infosystem.importit.Data;
 import de.abaspro.infosystem.importit.ImportitException;
+import de.abaspro.infosystem.importit.dataset.Data;
 import de.abaspro.utils.Util;
 
 public class AbasDataProcessFactory {

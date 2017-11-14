@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.EDPConstants;
 import de.abas.ceks.jedp.EDPEditor;
-import de.abas.ceks.jedp.EDPFactory;
 import de.abas.ceks.jedp.EDPQuery;
 import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.EDPVariableLanguage;
@@ -21,35 +20,16 @@ import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.GlobalTextBuffer;
 import de.abas.jfop.base.buffer.UserTextBuffer;
 import de.abaspro.infosystem.importit.dataprocessing.EDPSessionHandler;
+import de.abaspro.infosystem.importit.dataset.Data;
+import de.abaspro.infosystem.importit.dataset.Field;
 import de.abaspro.utils.Util;
 
 public class AbasDataCheckAndComplete {
 
-	private static String edpLogFile = "java/log/importit21edp.log";
-	private String server;
-	private Integer port;
-	private String client;
-	private String password;
 	private EDPSession edpSession;
 	private Logger logger = Logger.getLogger(AbasDataCheckAndComplete.class);
 	private ArrayList<Data> dataList;
 	private EDPSessionHandler edpSessionHandler;
-
-	public AbasDataCheckAndComplete(String server, Integer port, String client, String password,
-			ArrayList<Data> dataList) throws ImportitException {
-
-		this.edpSession = EDPFactory.createEDPSession();
-		this.server = server;
-		this.port = port;
-		this.client = client;
-		this.password = password;
-		this.dataList = dataList;
-		this.edpSessionHandler = EDPSessionHandler.getInstance();
-		if (!this.edpSessionHandler.isInit()) {
-			this.edpSessionHandler.initSession(server, port, client, password);
-		}
-
-	}
 
 	public AbasDataCheckAndComplete(EDPSessionHandler edpSessionHandler, ArrayList<Data> dataList)
 			throws ImportitException {
@@ -65,11 +45,9 @@ public class AbasDataCheckAndComplete {
 		if (data != null) {
 			if (checkandcompleteData(data)) {
 				List<Field> smlFieldList = createDefaultSMLFieldList(data);
-
 				for (Data dataset : dataList) {
 					dataset.copyDatabase(data);
 					dataset.copyAbasType(data);
-
 					if (smlFieldList != null) {
 						if (!dataset.getSmlString().isEmpty()) {
 							fillSmlArray(dataset, smlFieldList);
@@ -343,33 +321,5 @@ public class AbasDataCheckAndComplete {
 		}
 		return enumeration;
 	}
-
-	// private void startEdpSession(EDPVariableLanguage english) throws
-	// ImportitException {
-	// try {
-	// this.edpSession.beginSession(server, port, client, password,
-	// "ImportIt_21_CheckDatabase");
-	// this.edpSession.loggingOn(edpLogFile);
-	// this.edpSession.setVariableLanguage(EDPVariableLanguage.ENGLISH);
-	// } catch (CantBeginSessionException e) {
-	// logger.error(e);
-	// throw new ImportitException(Util.getMessage("err.edp.session.start", e));
-	// } catch (Exception e) {
-	// logger.error(e);
-	// throw new ImportitException(Util.getMessage("err.edp.session.start", e));
-	// }
-	//
-	// }
-	//
-	// private void closeEdpSession(EDPSession edpSession) {
-	// if (edpSession.isConnected()) {
-	// edpSession.endSession();
-	// logger.info(Util.getMessage("info.edp.session.closed",
-	// edpSession.getSessionTag()));
-	// } else {
-	// logger.error(Util.getMessage("err.edp.session.lost",
-	// edpSession.getSessionTag()));
-	// }
-	// }
 
 }
