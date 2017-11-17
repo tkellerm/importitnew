@@ -21,6 +21,7 @@ public class Field {
 	private String name;
 	private String value;
 	private String keySelectionString;
+	private String key;
 	private Boolean optionNotEmpty;
 	private Boolean optionModifiable;
 	private Boolean optionGlobalModifiable;
@@ -35,6 +36,73 @@ public class Field {
 	private String abasID;
 	private String fieldSelectionString;
 	private OptionCode optionCode;
+	private boolean optionKey;
+	private boolean optionfieldseletion;
+
+	public Field(String completeContent, Boolean fieldToCopy, Integer col, OptionCode optionCode) {
+		initField();
+		this.completeContent = completeContent;
+		this.fieldToCopy = fieldToCopy;
+		this.colNumber = col;
+		this.optionCode = optionCode;
+		this.name = extractValue(completeContent);
+		if (fieldToCopy) {
+			fillOptions();
+			fillkeyfield();
+		}
+	}
+
+	protected void fillkeyfield() {
+		if (this.optionKey) {
+			this.key = extractkey(ImportOptions.KEY);
+		} else {
+			if (this.optionKeySelection) {
+
+				this.key = extractKeyFromSelection();
+			}
+		}
+
+	}
+
+	protected String extractKeyFromSelection() {
+		final String SORT = "@sort=";
+		;
+		String key = "";
+		if (this.keySelectionString.contains(SORT)) {
+			int indexOf = this.keySelectionString.indexOf(SORT);
+			String test = this.keySelectionString.substring(indexOf + SORT.length(), this.keySelectionString.length());
+			if (test.contains(";")) {
+				key = test.substring(0, test.indexOf(";"));
+			} else if (test.contains("'")) {
+				key = test.substring(0, test.indexOf("'"));
+			} else {
+				key = test;
+			}
+
+		}
+		return key;
+	}
+
+	public Field(String completeContent, Field headfield) throws ImportitException {
+		this.optionGlobalModifiable = false;
+		if (headfield.getFieldInHead()) {
+			initField();
+			this.completeContent = completeContent;
+			this.name = headfield.getName();
+			this.key = key;
+			this.value = extractValue(completeContent);
+			this.optionModifiable = headfield.getOptionModifiable();
+			this.optionNotEmpty = headfield.getOptionNotEmpty();
+			this.optionSkip = headfield.getOptionSkip();
+			this.optionDontChangeIfEqual = headfield.getOptionDontChangeIfEqual();
+			this.optionKeySelection = headfield.getOptionKeySelection();
+			this.keySelectionString = headfield.getKeySelectionString();
+			this.fieldSelectionString = headfield.getFieldSelectionString();
+			this.colNumber = headfield.colNumber;
+		} else {
+			throw new ImportitException(Util.getMessage("error.Field.noFieldinHead"));
+		}
+	}
 
 	protected String getKeySelectionString() {
 		return keySelectionString;
@@ -60,26 +128,14 @@ public class Field {
 		this.abasID = abasID;
 	}
 
-	public Field(String completeContent, Boolean fieldToCopy, Integer col, OptionCode optionCode) {
-		initField();
-		this.completeContent = completeContent;
-		this.fieldToCopy = fieldToCopy;
-		this.colNumber = col;
-		this.optionCode = optionCode;
-		if (fieldToCopy) {
-			this.name = extractValue(completeContent);
-			fillOptions(completeContent);
-		} else {
-			this.value = extractValue(completeContent);
-		}
-	}
-
 	private void initField() {
 		this.error = "";
 		this.name = "";
 		this.abasTyp = "";
 		this.abasID = "";
 		this.value = "";
+		this.key = "";
+		this.fieldToCopy = false;
 		this.keySelectionString = "";
 		this.fieldSelectionString = "";
 		this.optionGlobalModifiable = false;
@@ -88,26 +144,6 @@ public class Field {
 		this.optionSkip = false;
 		this.optionKeySelection = false;
 		this.optionDontChangeIfEqual = false;
-	}
-
-	public Field(String completeContent, Field headfield) throws ImportitException {
-		this.optionGlobalModifiable = false;
-		if (headfield.getFieldInHead()) {
-			initField();
-			this.completeContent = completeContent;
-			this.name = headfield.getName();
-			this.value = extractValue(completeContent);
-			this.optionModifiable = headfield.getOptionModifiable();
-			this.optionNotEmpty = headfield.getOptionNotEmpty();
-			this.optionSkip = headfield.getOptionSkip();
-			this.optionDontChangeIfEqual = headfield.getOptionDontChangeIfEqual();
-			this.optionKeySelection = headfield.getOptionKeySelection();
-			this.keySelectionString = headfield.getKeySelectionString();
-			this.fieldSelectionString = headfield.getFieldSelectionString();
-			this.colNumber = headfield.colNumber;
-		} else {
-			throw new ImportitException(Util.getMessage("error.Field.noFieldinHead"));
-		}
 	}
 
 	public void setOptionGlobalModifiable(Boolean optionGlobalModifiable) {
@@ -127,36 +163,80 @@ public class Field {
 		this.optionDontChangeIfEqual = optionDontChangeIfEqual;
 	}
 
-	protected void fillOptions(String completeContent) {
-		if (!completeContent.isEmpty()) {
-			optionNotEmpty = completeContent.contains(NOTEMPTY.toString());
-			optionModifiable = completeContent.contains(MODIFIABLE.toString());
-			optionSkip = completeContent.contains(SKIP.toString());
-			optionDontChangeIfEqual = completeContent.contains(DONT_CHANGE_IF_EQUAL.toString());
-			if (completeContent.contains(KEY.toString())) {
-				String modifiable = completeContent.substring(completeContent.indexOf(KEY.toString() + "="));
-				this.keySelectionString = modifiable.substring(0, modifiable.indexOf("@"));
+	protected void fillOptions() {
+		if (!this.completeContent.isEmpty()) {
+			optionNotEmpty = this.completeContent.contains(NOTEMPTY.toString());
+			optionModifiable = this.completeContent.contains(MODIFIABLE.toString());
+			optionSkip = this.completeContent.contains(SKIP.toString());
+			optionDontChangeIfEqual = this.completeContent.contains(DONT_CHANGE_IF_EQUAL.toString());
+
+			if (this.completeContent.contains(KEY.toString())) {
+				this.optionKey = true;
+				this.keySelectionString = extractSelectionString(ImportOptions.KEY);
 			}
-			if (completeContent.contains(ImportOptions.KEYSELECTION.toString())) {
+			if (this.completeContent.contains(ImportOptions.KEYSELECTION.toString())) {
 				this.optionKeySelection = true;
-				this.keySelectionString = extractSelectionString(completeContent, ImportOptions.KEYSELECTION);
+				this.keySelectionString = extractSelectionString(ImportOptions.KEYSELECTION);
 			}
 			if (completeContent.contains(ImportOptions.SELECTION.toString())) {
-				this.setFieldSelectionString(extractSelectionString(completeContent, ImportOptions.SELECTION));
+				this.optionfieldseletion = true;
+				this.setFieldSelectionString(extractSelectionString(ImportOptions.SELECTION));
 			}
+
 		} else {
 			optionSkip = true;
 		}
 	}
 
-	protected static String extractSelectionString(String completeContent2, ImportOptions importOptions) {
+	protected String extractSelectionString(ImportOptions importOptions) {
+		switch (importOptions) {
+		case SELECTION:
+			return createSelfromSelection(importOptions);
+		case KEYSELECTION:
+			return createSelfromSelection(importOptions);
+		case KEY:
+			return createSelFromKey(importOptions);
+		default:
+			return createSelFromFieldname();
+		}
+	}
+
+	protected String createSelFromFieldname() {
+		String selectionString = this.name + "={0}";
+		return selectionString;
+	}
+
+	protected String createSelFromKey(ImportOptions importOptions) {
+
+		String key = extractkey(importOptions);
+
+		String selectionString = this.name + "={0};@sort=" + key;
+
+		return selectionString;
+	}
+
+	private String extractkey(ImportOptions importOptions) {
+		int indexoftrenner = this.completeContent.indexOf("@");
+		int optionpluslength = (importOptions.toString() + "=").length();
+
+		String key = this.completeContent.substring(optionpluslength + indexoftrenner, this.completeContent.length());
+		return key;
+	}
+
+	protected String createSelfromSelection(ImportOptions importOptions) {
 		// @selection=selectionString
 		String testString = importOptions.toString() + "='";
 		int lengthTestString = testString.length();
-		int index = completeContent2.indexOf(testString);
+		int index = this.completeContent.indexOf(testString);
 
-		String substring = completeContent2.substring(index + lengthTestString, completeContent2.length());
-		String result = substring.substring(0, substring.indexOf("'"));
+		String substring = this.completeContent.substring(index + lengthTestString, this.completeContent.length());
+		String result = "";
+		if (substring.contains("'")) {
+			result = substring.substring(0, substring.indexOf("'"));
+		} else {
+			result = substring;
+		}
+
 		if (result.startsWith("$,,") || result.startsWith("%,,")) {
 			return result.substring(3);
 		}
@@ -211,17 +291,12 @@ public class Field {
 	}
 
 	public String getKey() {
-		if (!optionKeySelection) {
-			return keySelectionString;
-		}
-		return "";
+		return this.key;
+
 	}
 
 	public String getKeySelection() {
-		if (optionKeySelection) {
-			return keySelectionString;
-		}
-		return "";
+		return keySelectionString;
 	}
 
 	public String getError() {
@@ -316,10 +391,17 @@ public class Field {
 		if (this.optionKeySelection) {
 			return true;
 		}
-		if (!this.keySelectionString.isEmpty()) {
+		if (!this.keySelectionString.isEmpty() && this.name.isEmpty()) {
 			return true;
 		}
 		return false;
+	}
+
+	public void convertToKeyField() {
+		if (this.keySelectionString.isEmpty()) {
+			this.keySelectionString = createSelFromFieldname();
+		}
+
 	}
 
 }

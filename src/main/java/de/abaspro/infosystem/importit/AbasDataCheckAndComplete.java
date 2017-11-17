@@ -278,13 +278,13 @@ public class AbasDataCheckAndComplete {
 	}
 
 	private void releaseQuery(EDPQuery query) {
-		if (!query.isReleased()) {
-			try {
-				query.release();
-			} catch (ServerActionException e) {
-				logger.error(e);
-			}
+
+		try {
+			query.release();
+		} catch (ServerActionException e) {
+			logger.error(e);
 		}
+
 	}
 
 	private Enumeration fillEnumeration() {

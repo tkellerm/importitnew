@@ -10,7 +10,6 @@ import de.abas.ceks.jedp.CantSaveException;
 import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.EDPVariableLanguage;
-import de.abas.ceks.jedp.ServerActionException;
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.erp.common.type.enums.EnumTypeCommands;
 import de.abas.jfop.base.buffer.BufferFactory;
@@ -49,16 +48,8 @@ public class AbasDataProcessingTypeCommands extends AbstractDataProcessing {
 				logger.error(e);
 				data.appendError(e);
 			} finally {
-				if (!edpEditor.isReleased()) {
-					try {
-						edpEditor.release();
-					} catch (ServerActionException e) {
-						logger.error(e);
-					}
-				} else {
-					logger.error(Util.getMessage("err.end.editor"));
-				}
-				edpSessionHandler.freeEDPSession(edpSession);
+				EDPUtils.releaseEDPEditor(edpEditor, logger);
+				this.edpSessionHandler.freeEDPSession(edpSession);
 			}
 		} else {
 			logger.error(Util.getMessage("err.no.edp.session"));
@@ -136,7 +127,7 @@ public class AbasDataProcessingTypeCommands extends AbstractDataProcessing {
 	private void findDatabaseForTypeCommand(Data data) throws ImportitException {
 		if (data.getTypeCommand() != null) {
 
-			EDPSession edpSession = edpSessionHandler.getEDPSession(EDPVariableLanguage.ENGLISH);
+			EDPSession edpSession = this.edpSessionHandler.getEDPSession(EDPVariableLanguage.ENGLISH);
 
 			EDPEditor edpEditor = edpSession.createEditor();
 			try {
@@ -147,14 +138,8 @@ public class AbasDataProcessingTypeCommands extends AbstractDataProcessing {
 			} catch (CantBeginEditException e) {
 				throw new ImportitException(Util.getMessage("err.getting.database", e));
 			} finally {
-				if (!edpEditor.isReleased()) {
-					try {
-						edpEditor.release();
-					} catch (ServerActionException e) {
-						logger.error(e);
-					}
-				}
-				edpSessionHandler.freeEDPSession(edpSession);
+				EDPUtils.releaseEDPEditor(edpEditor, logger);
+				this.edpSessionHandler.freeEDPSession(edpSession);
 			}
 		}
 	}

@@ -125,7 +125,7 @@ public class MainTest extends AbstractTest {
 		long endpruefdat = System.currentTimeMillis();
 		System.out.println("Datenprüfung: " + (endpruefdat - startpruefdat));
 
-		assertThat(infosys.getYstatus(), is(Util.getMessage("main.err.check.data")));
+		assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
 		assertThat(infosys.getYfehlerdatpruef(), is(Util.getMessage("main.err.check.data")));
 
 		long startimport = System.currentTimeMillis();

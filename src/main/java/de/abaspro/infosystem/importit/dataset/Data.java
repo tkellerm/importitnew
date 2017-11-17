@@ -378,4 +378,11 @@ public class Data {
 		}
 	}
 
+	public void fillKeyfield() {
+		Integer pos = getKeyFieldPosition();
+		Field keyfield = this.headerFields.get(pos);
+		keyfield.convertToKeyField();
+
+	}
+
 }

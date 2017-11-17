@@ -15,7 +15,6 @@ import de.abas.ceks.jedp.EDPQuery;
 import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
-import de.abas.ceks.jedp.ServerActionException;
 import de.abaspro.infosystem.importit.ImportitException;
 import de.abaspro.infosystem.importit.dataset.Data;
 import de.abaspro.infosystem.importit.dataset.DataTable;
@@ -43,7 +42,7 @@ public class AbasDataProzessingCustomerPartProperties extends AbstractDataProces
 			throws ImportitException, InvalidQueryException, CantChangeSettingException, CantBeginEditException,
 			InvalidRowOperationException, CantSaveException, CantReadSettingException {
 
-		EDPSession edpSession = edpSessionHandler.getEDPSessionWriteData(data.getEDPLanguage());
+		EDPSession edpSession = this.edpSessionHandler.getEDPSessionWriteData(data.getEDPLanguage());
 		EDPEditor edpEditor = edpSession.createEditor();
 		EDPQuery edpQuery = null;
 		data.setImported(false);
@@ -111,21 +110,9 @@ public class AbasDataProzessingCustomerPartProperties extends AbstractDataProces
 				}
 			}
 		} finally {
-			if (!edpEditor.isReleased()) {
-				try {
-					edpEditor.release();
-				} catch (ServerActionException e) {
-					logger.error(e);
-				}
-			}
+			EDPUtils.releaseEDPEditor(edpEditor, logger);
 
-			if (!edpQuery.isReleased()) {
-				try {
-					edpQuery.release();
-				} catch (ServerActionException e) {
-					logger.error(e);
-				}
-			}
+			EDPUtils.releaseQuery(edpQuery, logger);
 			edpSessionHandler.freeEDPSession(edpSession);
 		}
 

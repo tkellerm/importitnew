@@ -207,11 +207,14 @@ public class EDPSessionHandler extends Thread {
 				closeEDPSession(this.edpSession);
 			}
 		}
-		this.edpSessionPool.closeSessions();
-		while (this.sessionPoolThread.getState() != State.TERMINATED) {
-			logger.debug(Util.getMessage("debug.EDPSessionHandler.waitEndThread"));
+		if (this.edpSessionPool != null) {
+			this.edpSessionPool.closeSessions();
+			while (this.sessionPoolThread.getState() != State.TERMINATED) {
+				logger.debug(Util.getMessage("debug.EDPSessionHandler.waitEndThread"));
+			}
+
 		}
-		this.edpSessionPool.logger.info(Util.getMessage("info.EDPSessionHandler.allSessions.closed"));
+		logger.info(Util.getMessage("info.EDPSessionHandler.allSessions.closed"));
 	}
 
 	public String getServer() {

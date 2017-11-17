@@ -45,10 +45,10 @@ public class ExcelImportProcessing {
 
 	public ExcelImportProcessing(String importFilename) throws ImportitException {
 		super();
-		this.headerFields = new ArrayList<>();
+		this.headerFields = new ArrayList<Field>();
 		this.tableFields = new DataTable();
-		this.dataList = new ArrayList<>();
-		this.smlFields = new ArrayList<>();
+		this.dataList = new ArrayList<Data>();
+		this.smlFields = new ArrayList<Field>();
 		checkImportFile(importFilename);
 		this.importSheet = initWorkbook(importFilename).getSheetAt(0);
 		getFromSheet();
@@ -67,7 +67,7 @@ public class ExcelImportProcessing {
 	}
 
 	private ArrayList<Data> readAllData() throws ImportitException {
-		ArrayList<Data> dataList = new ArrayList<>();
+		ArrayList<Data> dataList = new ArrayList<Data>();
 		Data data = null;
 		for (Integer row = 2; row <= importSheet.getLastRowNum(); row++) {
 			if (!getCellContents(0, row).isEmpty()) {
@@ -107,6 +107,7 @@ public class ExcelImportProcessing {
 		for (Field field : headerFields) {
 			field.setValue(getCellContents(field.getColNumber(), tableBeginAtRow));
 		}
+
 		return data;
 
 	}
@@ -114,6 +115,7 @@ public class ExcelImportProcessing {
 	private Data initNewData() throws ImportitException {
 		Data data = new Data();
 		data.setHeaderFields(getCopyOfHeaderFields());
+		data.fillKeyfield();
 		data.setDatabase(this.database);
 		data.setDbString(this.databaseString);
 		data.setGroup(this.group);

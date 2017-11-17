@@ -706,13 +706,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			data.appendError(Util.getMessage("err.invalid.selection.criteria", criteria, e));
 			return false;
 		} finally {
-			if (!query.isReleased()) {
-				try {
-					query.release();
-				} catch (ServerActionException e) {
-					logger.error(e);
-				}
-			}
+			EDPUtils.releaseQuery(query, logger);
 			this.edpSessionHandler.freeEDPSession(edpSession);
 		}
 		return false;
@@ -772,5 +766,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			throw new ImportitException(Util.getMessage("err.invalid.head.fields"));
 		}
 	}
+
+	
 
 }

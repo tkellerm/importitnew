@@ -38,13 +38,7 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 				logger.error(e);
 				data.appendError(e);
 			} finally {
-				if (!edpEditor.isReleased()) {
-					try {
-						edpEditor.release();
-					} catch (ServerActionException e) {
-						logger.error(e);
-					}
-				}
+				EDPUtils.releaseEDPEditor(edpEditor, logger);
 
 				this.edpSessionHandler.freeEDPSession(edpSession);
 			}
@@ -169,6 +163,7 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 
 	@Override
 	protected void writeAbasIDinData(Data data) throws ImportitException {
+		String keyOfKeyfield = data.getKeyOfKeyfield();
 		if (!data.getKeyOfKeyfield().isEmpty()) {
 
 			String criteria = data.getNameOfKeyfield() + "=" + data.getValueOfKeyField();
