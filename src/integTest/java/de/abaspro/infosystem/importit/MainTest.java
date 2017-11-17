@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import org.apache.log4j.Logger;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.abas.erp.db.schema.customer.Customer;
@@ -43,7 +42,6 @@ public class MainTest extends AbstractTest {
 		}
 	}
 
-	@BeforeClass
 	public void prepareTestManyData() throws Exception {
 		setInfosysloginInfo();
 		String importfile = "owfw7/Test2_Kunden.xlsx";
@@ -73,6 +71,7 @@ public class MainTest extends AbstractTest {
 
 	@Test
 	public void integManyData() throws Exception {
+		prepareTestManyData();
 		setInfosysloginInfo();
 
 		infosys.setYdatafile("owfw7/Test2_Kundenakt_kurz.xlsx");
@@ -126,7 +125,7 @@ public class MainTest extends AbstractTest {
 		System.out.println("Datenprüfung: " + (endpruefdat - startpruefdat));
 
 		assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
-		assertThat(infosys.getYfehlerdatpruef(), is(Util.getMessage("main.err.check.data")));
+		assertThat(infosys.getYfehlerdatpruef(), is(0));
 
 		long startimport = System.currentTimeMillis();
 		infosys.invokeYimport();
@@ -136,9 +135,7 @@ public class MainTest extends AbstractTest {
 
 		assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
 		// assertThat(infosys.getYfehler(), is(0));
-
-		assertFalse(diffimport > 0);
-
+		assertFalse(diffimport == 0);
 	}
 
 	@Test

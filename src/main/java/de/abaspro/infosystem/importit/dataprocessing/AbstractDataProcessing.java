@@ -27,7 +27,6 @@ import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
 import de.abas.ceks.jedp.InvalidSettingValueException;
-import de.abas.ceks.jedp.ServerActionException;
 import de.abas.ceks.jedp.StandardEDPSelection;
 import de.abas.ceks.jedp.StandardEDPSelectionCriteria;
 import de.abas.eks.jfop.remote.FOe;
@@ -383,8 +382,9 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 				query.breakQuery();
 				logger.info(Util.getMessage("info.end.edp.query"));
 			}
+			this.edpSessionHandler.freeEDPSession(query.getSession());
 		}
-		this.edpSessionHandler.freeEDPSession(query.getSession());
+
 	}
 
 	private String fillValueWithFractionDigits(String value, int fractionDigits) throws BadAttributeValueExpException {
@@ -475,7 +475,9 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 	private String analyzeSelectionQuery(Field field, EDPQuery query) {
 		query.getLastRecord();
+		String[] fields = query.getFields();
 		String abasID = query.getField("id");
+		String abasIDNUM = query.getField("idno");
 		int recordCount = query.getRecordCount();
 		if (recordCount == 0) {
 			field.setError(Util.getMessage("err.check.reference.not.found", field.getAbasTyp(), field.getValue()));
@@ -490,19 +492,30 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 	private EDPQuery getQueryWithSelectionString(Integer database, Integer group, EDPSession edpSession,
 			String selectionString) throws ImportitException {
-		String[] fieldNames = { "id", "nummer" };
-		String tableName = constructTableName(database, group);
-		EDPQuery query = edpSession.createQuery();
-		StandardEDPSelectionCriteria criteria = new StandardEDPSelectionCriteria(selectionString);
-		StandardEDPSelection edpCriteria = new StandardEDPSelection(tableName, criteria);
-		edpCriteria.setDatabase(database.toString());
-		if (group != null) {
-			edpCriteria.setGroup(group.toString());
-		}
+		String fieldNames;
+		EDPQuery query = null;
 		try {
-			query.startQuery(edpCriteria, fieldNames.toString());
+			if (edpSession.getVariableLanguage() == EDPVariableLanguage.GERMAN) {
+				fieldNames = "id,nummer,sn";
+			} else {
+				fieldNames = "id,idno,recordNo";
+			}
+
+			String tableName = constructTableName(database, group);
+			query = edpSession.createQuery();
+			StandardEDPSelectionCriteria criteria = new StandardEDPSelectionCriteria(selectionString);
+			StandardEDPSelection edpCriteria = new StandardEDPSelection(tableName, criteria);
+			edpCriteria.setDatabase(database.toString());
+			if (group != null) {
+				edpCriteria.setGroup(group.toString());
+			}
+
+			query.startQuery(edpCriteria, fieldNames);
 		} catch (InvalidQueryException e) {
 			throw new ImportitException(Util.getMessage("err.edp.query.bad.selection.string", selectionString), e);
+		} catch (CantReadSettingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		return query;
 	}
@@ -735,7 +748,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 						vartabField = vartab.checkVartabGerman(field.getName());
 					}
 
-					if (!field.iswithSelection()) {
+					if (!field.iswithKeySelection()) {
 						if (vartabField != null) {
 							field.setAbasType(vartabField.getActiveType());
 							logger.trace(Util.getMessage("info.found.field.with.type", field.getName(),
@@ -766,7 +779,5 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			throw new ImportitException(Util.getMessage("err.invalid.head.fields"));
 		}
 	}
-
-	
 
 }

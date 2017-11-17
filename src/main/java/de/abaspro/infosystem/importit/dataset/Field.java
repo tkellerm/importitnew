@@ -89,7 +89,8 @@ public class Field {
 			initField();
 			this.completeContent = completeContent;
 			this.name = headfield.getName();
-			this.key = key;
+			this.key = headfield.getKey();
+			this.optionCode = headfield.optionCode;
 			this.value = extractValue(completeContent);
 			this.optionModifiable = headfield.getOptionModifiable();
 			this.optionNotEmpty = headfield.getOptionNotEmpty();
@@ -377,13 +378,13 @@ public class Field {
 
 	}
 
-	public Boolean iswithSelection() {
+	public Boolean iswithKeySelection() {
 		if (this.optionKeySelection) {
 			return true;
 		}
-		if (!this.fieldSelectionString.isEmpty()) {
-			return true;
-		}
+		// if (!this.fieldSelectionString.isEmpty()) {
+		// return true;
+		// }
 		return false;
 	}
 
