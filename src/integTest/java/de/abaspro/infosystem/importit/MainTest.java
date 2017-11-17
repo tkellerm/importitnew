@@ -8,7 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import org.apache.log4j.Logger;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.abas.erp.db.schema.customer.Customer;
@@ -43,7 +43,7 @@ public class MainTest extends AbstractTest {
 		}
 	}
 
-	@Before
+	@BeforeClass
 	public void prepareTestManyData() throws Exception {
 		setInfosysloginInfo();
 		String importfile = "owfw7/Test2_Kunden.xlsx";
