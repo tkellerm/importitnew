@@ -12,7 +12,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -281,7 +280,8 @@ public class ExcelImportProcessing {
 		if (cell == null) {
 			return true;
 		} else {
-			if (importSheet.getRow(y).getCell(x).getCellTypeEnum().equals(CellType.BLANK)) {
+
+			if (importSheet.getRow(y).getCell(x).getCellType() == Cell.CELL_TYPE_BLANK) {
 				return true;
 			} else {
 				if (getCellContents(x, y).equals("")) {

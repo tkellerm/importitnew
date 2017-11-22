@@ -172,6 +172,29 @@ public class MainTest extends AbstractTest {
 		assertFalse(diffimport == 0);
 	}
 
+	public void structureTestbykeyselection() {
+		infosys.setYdatafile("owfw7/TestCustomer_selkey_FehlerStruktur.xlsx");
+		infosys.invokeYpruefstrukt();
+		assertThat(infosys.getYfehlerstruktur(), is(1));
+
+	}
+
+	public void dataTest() {
+		infosys.setYdatafile("owfw7/TestCustomer_Fehlerdaten.xls");
+		infosys.invokeYpruefstrukt();
+		assertThat(infosys.getYfehlerstruktur(), is(0));
+		infosys.invokeYpruefdat();
+		assertThat(infosys.getYfehlerdatpruef(), is(1));
+
+	}
+
+	public void selfieldMitFehlerinStrukturTest() {
+		infosys.setYdatafile("owfw7/TestCustomer_selkeyfield_FehlerStruktur.xlsx");
+		infosys.invokeYpruefstrukt();
+		assertThat(infosys.getYfehlerstruktur(), is(1));
+
+	}
+
 	private void setInfosysloginInfo() {
 		infosys.setYserver(getHostname());
 		infosys.setYmandant(getClient());

@@ -762,7 +762,6 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 					} else {
 						logger.info(Util.getMessage("info.found.field.with.keyselection", field.getName(),
 								field.getKeySelection()));
-						return true;
 					}
 				}
 			}

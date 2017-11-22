@@ -67,7 +67,7 @@ Z#0#isauswahl##n####(0)######n#0#n#0##n##
 Z#0#isstufe##n####(0)######n#0#n#0##n##
 Z#0#isbstart##n####(0)######y#0#n#0##n##
 Z#0#isstartzeit##n####(0)######n#0#n#0##n##
-Z#1#isydatafile#GL50#n#Import Excel File#A#A#(2)######y#1#n#0##n##
+Z#1#isydatafile#GL255#n#Import Excel File#A#A#(2)######y#1#n#0##n##
 Z#1#isyerrorfile#GL50#n#Error File#A#A#(2)######y#1#n#0##n##
 Z#1#isypruefstrukt#BU3#n#Struktur überprüfen#A#A#(1)##java:de.abaspro.infosystem.importit.Main@importitApp####y#1#n#0##n##
 Z#1#isypruefdat#BU3#n#Daten überprüfen#A#A#(1)##java:de.abaspro.infosystem.importit.Main@importitApp####y#1#n#0##n##

@@ -56,6 +56,7 @@ Beim Import der Daten werden im Neu bzw. Update-Modus die einzelnen Datens&uuml;
  
 <li><h2>Aufbau der Import-Datei</h2>
 <p>!! Achtung es wird nur die erste Tabelle des Excel-Sheet ausgewertet.</p>
+<p>!! Es muss das erste Feld einer Zeile gef&uuml;llt sein, ansonsten sieht Importit diese Zeile als leer an.</p>  
 	<img src="excelaufbau.jpg">
 <br>
 <h3><b>Feldbeschreibungen</b></h3>
@@ -107,9 +108,9 @@ Beim Import der Daten werden im Neu bzw. Update-Modus die einzelnen Datens&uuml;
         daraus ergibt sich eine Selektion  $,,iso3=DEU 
         
         Die die Sprache der Variablen wird &uuml;ber die Steuerung der Variablensprache im Infosystem gesteuert. 
-        Das heisst, wenn englische Variablensprache dann muss der Ausdruck oben stateOfTaxOffice@selection='$,,ctryCode3Char={0}' heißen.
+        Das heisst, wenn englische Variablensprache dann muss der Ausdruck oben stateOfTaxOffice@selection='$,,ctryCode3Char={0}' hei&szlig;en.
 
-	<li>@selection:      <br>
+	<li>@keyselection:      <br>
         Mit der Option "@keyselection" wird f&uuml;r die Selektion des Datensatzes eine selbstdefinierte Selektion verwendet<br>
         Syntax @keyselection='<Selektionsausdruck>'
         Beispiel: @keyselection='$,,alteIdent={0}' 
@@ -119,7 +120,7 @@ Beim Import der Daten werden im Neu bzw. Update-Modus die einzelnen Datens&uuml;
 	vorhanden sein. Ein "." in einem Datumsfeld bewirkt also den Eintrag des<br>
 	Tagesdatums im Datensatz in abas-ERP. Wird ein Datum mit 4 stelliger Jahreszahl<br>
 	dargestellt, in abas ist das Datenfeld aber mit 2-stelliger Jahreszahl definiert<br>
-	so scheitert der Import. Mehrzeilige Texte werden abas konform behandelt, das hei&uuml;t<br>
+	so scheitert der Import. Mehrzeilige Texte werden abas konform behandelt, das hei&szlig;t<br>
 	ein Zeilenvorschub wird mit ";" im Text erreicht.<br>
 	</li>
 </ol>
