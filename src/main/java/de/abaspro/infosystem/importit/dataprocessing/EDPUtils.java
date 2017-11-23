@@ -29,4 +29,11 @@ public class EDPUtils {
 		}
 
 	}
+
+	static protected String ReplaceCharPlusBlank(String sign, String value) {
+		String regexpr = "^[" + sign + "]\\s";
+		value = value.replaceAll(regexpr, "");
+		return value;
+	}
+
 }

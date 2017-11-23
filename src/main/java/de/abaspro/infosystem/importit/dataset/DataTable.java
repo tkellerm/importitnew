@@ -12,7 +12,15 @@ public class DataTable {
 
 	public DataTable() {
 		super();
-		this.tableFields = new ArrayList<>();
+		this.tableFields = new ArrayList<Field>();
+	}
+
+	public DataTable(DataTable dataTable) throws ImportitException {
+		this.tableFields = new ArrayList<Field>();
+		for (Field field : dataTable.getTableFields()) {
+			Field field2 = new Field(field.getCompleteContent(), field);
+			tableFields.add(field2);
+		}
 	}
 
 	public String getTableFieldValue(String fieldname) throws ImportitException {
@@ -26,12 +34,6 @@ public class DataTable {
 
 	public ArrayList<Field> getTableFields() {
 		return tableFields;
-	}
-
-	public DataTable(DataTable dataTable) throws ImportitException {
-		for (Field field : dataTable.getTableFields()) {
-			tableFields.add(new Field(field.getCompleteContent(), field));
-		}
 	}
 
 	public void copyAbasType(List<Field> tabellenfeldertoCopy) {

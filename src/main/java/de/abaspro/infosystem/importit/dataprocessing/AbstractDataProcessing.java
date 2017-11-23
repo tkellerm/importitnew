@@ -161,7 +161,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 						if (edpEditor.fieldIsModifiable(rowNumber, field.getName())) {
 
-							String dataFieldValue = field.getValue();
+							String dataFieldValue = field.getValidateFieldValue();
 
 							if (checkWriteifDontChangeIfEqual(field, edpEditor, rowNumber)) {
 
@@ -361,9 +361,6 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 		String value = field.getValue();
 		int databaseNumber = edpeksartinfo.getRefDatabaseNr();
 		int groupNumber = edpeksartinfo.getRefGroupNr();
-		if (databaseNumber == 7 && groupNumber == 0) {
-			value = value.replaceAll("[A ]", "");
-		}
 		if (!value.isEmpty()) {
 
 			if (field.getFieldSelectionString().isEmpty()) {
@@ -459,8 +456,12 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 		try {
 			edpSession = this.edpSessionHandler.getEDPSession(field.getEDPVariableLanguage());
 			logger.debug(Util.getMessage("debug.getedpsession", "searchAbasIDforField"));
+			String value = field.getValue();
+			if (database == 7 && group == 0) {
+				value = EDPUtils.ReplaceCharPlusBlank("A", value);
+			}
 
-			String selectionString = MessageFormat.format(field.getFieldSelectionString(), field.getValue());
+			String selectionString = MessageFormat.format(field.getFieldSelectionString(), value);
 
 			selectionString = selectionString + ";@database=" + constructTableName(database, group);
 			query = getQueryWithSelectionString(database, group, edpSession, selectionString);

@@ -21,9 +21,12 @@ public class EDPSessionPool implements Runnable {
 	private static final int MAX_ACTIVE_EDPSESSIONS = 50;
 
 	private Boolean activePool = true;
+	private Integer sleeptime;
+	private static Integer MAX_SLEEP_TIME = 2000;
 
 	public EDPSessionPool(EDPSessionHandler edpSessionHandler) {
 		this.edpSessionHandler = edpSessionHandler;
+		this.sleeptime = 0;
 	}
 
 	private EDPSessionHandler edpSessionHandler;
@@ -36,14 +39,14 @@ public class EDPSessionPool implements Runnable {
 
 				zaehler++;
 				fillqueue();
+				// if (fifo.size() == MAX_ACTIVE_EDPSESSIONS) {
+				// Thread.sleep(sleeptime);
+				// }
 			} catch (Exception e) {
-				logger.error(e);
+				logger.error("run ", e);
+
 			}
-			// if (zaehler > 10000000) {
-			// logger.debug("Thread aktiv " + zaehler + "queue size: " +
-			// this.fifo.size());
-			// zaehler = 0;
-			// }
+
 		}
 		logger.info(Util.getMessage("info.edpSessionPool.closeConnections"));
 		Integer xiof = fifo.size();
@@ -101,7 +104,7 @@ public class EDPSessionPool implements Runnable {
 	}
 
 	private void fillqueue() {
-
+		Boolean newSession = false;
 		while (this.fifo.size() < MAX_ACTIVE_EDPSESSIONS) {
 			EDPSession createSession = null;
 			try {
@@ -109,6 +112,8 @@ public class EDPSessionPool implements Runnable {
 				if (createSession.isConnected()) {
 					fifo.add(createSession);
 				}
+				this.sleeptime = 0;
+				newSession = true;
 				logger.info(Util.getMessage("info.EDPHandler.fillqueue", fifo.size()));
 			} catch (ImportitException e) {
 				// hier ein Logeintrag aus, da bei Init schon geprüft wird ob es
@@ -118,7 +123,16 @@ public class EDPSessionPool implements Runnable {
 				logger.error(e);
 			}
 		}
+		if (!newSession) {
+			ascendingSleepTime();
 
+		}
+	}
+
+	private void ascendingSleepTime() {
+		if (this.sleeptime <= MAX_SLEEP_TIME) {
+			this.sleeptime++;
+		}
 	}
 
 	private void closeEDPSession(EDPSession edpSession) {

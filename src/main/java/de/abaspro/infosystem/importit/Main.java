@@ -53,6 +53,19 @@ public class Main {
 		infosys.setYversion("3.0.1");
 		fillClientFields(infosys);
 		extractHelpTar(ctx);
+		protectoptionFields(infosys, screenControl, true);
+
+	}
+
+	private void protectoptionFields(InfosystemImportit infosys, ScreenControl screenControl, Boolean protect) {
+
+		screenControl.setProtection(infosys, InfosystemImportit.META.yoptalwaysnew, protect);
+		screenControl.setProtection(infosys, InfosystemImportit.META.yoptnofop, protect);
+		screenControl.setProtection(infosys, InfosystemImportit.META.yoptdontchangeifeq, protect);
+		screenControl.setProtection(infosys, InfosystemImportit.META.yoptdeltab, protect);
+		screenControl.setProtection(infosys, InfosystemImportit.META.yoptmodifiable, protect);
+		screenControl.setProtection(infosys, InfosystemImportit.META.yoptuseenglvars, protect);
+
 	}
 
 	@ScreenEventHandler(type = ScreenEventType.END)
@@ -159,7 +172,7 @@ public class Main {
 	}
 
 	@ButtonEventHandler(field = "yimport", type = ButtonEventType.AFTER)
-	public void importData(DbContext ctx, InfosystemImportit infosys) {
+	public void importData(DbContext ctx, ScreenControl screenControl, InfosystemImportit infosys) {
 		try {
 			logger.info(Util.getMessage("info.import.data.start"));
 			if (dataListNotEmpty()) {
@@ -308,7 +321,7 @@ public class Main {
 	}
 
 	@ButtonEventHandler(field = "ypruefstrukt", type = ButtonEventType.AFTER)
-	public void checkStructureAfter(DbContext ctx, InfosystemImportit infosys) {
+	public void checkStructureAfter(DbContext ctx, ScreenControl screenControl, InfosystemImportit infosys) {
 		infosys.table().clear();
 		infosys.setYok(0);
 		infosys.setYfehler(0);
@@ -335,6 +348,7 @@ public class Main {
 			infosys.setYfehlerstruktur(getErrorCount());
 			showDatabaseInfo(infosys);
 			setOptions(infosys);
+			protectoptionFields(infosys, screenControl, false);
 			if (infosys.getYfehlerstruktur() == 0) {
 				infosys.setYstatus(Util.getMessage("main.status.structure.check.success"));
 			} else {
