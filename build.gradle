@@ -2,6 +2,7 @@ plugins {
     id "java"
     id "maven-publish"
     id "de.abas.esdk" version "0.7.1"
+    id 'net.saliman.cobertura' version '2.5.2'
 }
 
 repositories {
@@ -137,7 +138,8 @@ dependencies {
     compile 'org.scala-lang:scala-library-all:2.11.7'
     
     compile group: 'org.apache.commons', name: 'commons-compress', version: '1.5'
-    
+
+    testRuntime "org.slf4j:slf4j-api:1.7.10"
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
 
