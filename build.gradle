@@ -1,14 +1,14 @@
 plugins {
     id "java"
     id "maven-publish"
-	id "com.palantir.git-version" version "0.5.3"
-    id "de.abas.esdk" version "0.7.0"
+    id "de.abas.esdk" version "0.7.1"
 }
 
 repositories {
     mavenLocal()
     jcenter()
     maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME" }
+    maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME-SNAPSHOTS" }
 }
 
 createApp.doLast {
@@ -21,7 +21,7 @@ esdk {
     app {
         name="importitApp"
         vendorId="abasGmbH"
-        appId="importit"
+        appId="porti"
         shared=true
         infosystems = ["IS.OWFW7.IMPORTIT21"]
         tables = []
@@ -60,6 +60,12 @@ esdk {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+task printVersion {
+    doLast {
+        println(project.version)
+    }
 }
 
 compileJava {
@@ -105,37 +111,30 @@ publishing {
 
 dependencies {
     provided 'de.abas.homedir:log4j:1.0.0'
-    //provided 'de.abas.homedir:abas-axi2:1.0.0'
-    //provided 'de.abas.homedir:abas-axi:1.0.0'
-    //provided 'de.abas.homedir:abas-jedp-util:1.0.0'
-    //provided 'de.abas.homedir:utilities:1.0.0'
-    //provided 'de.abas.homedir:abas-jfop-base:1.0.0'
-    //provided 'de.abas.homedir:abas-barcode:1.0.0'
-    //provided 'de.abas.homedir:abas-jfop-runtime:1.0.0'
-    
+
     compile 'xmlbeans:xmlbeans:2.3.0'
     
     compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.10.1'
     compile group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '3.10.1'
     compile group: 'org.apache.poi', name: 'poi', version: '3.10.1'
 
-    //compile 'org.apache.poi:poi:3.15'
-    //compile 'org.apache.poi:poi-ooxml:3.15'
-    //compile 'org.apache.poi:poi-ooxml-schemas:3.15'
+    compile 'org.apache.poi:poi:3.15'
+    compile 'org.apache.poi:poi-ooxml:3.15'
+    compile 'org.apache.poi:poi-ooxml-schemas:3.15'
 
-    //compile group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '2.6.0'
+    compile group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '2.6.0'
 
-    //compile group: 'org.apache.poi', name: 'poi', version: '3.17'
-    //compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.17'
-	//compile group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '3.17'
+    compile group: 'org.apache.poi', name: 'poi', version: '3.17'
+    compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.17'
+	compile group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '3.17'
 	
 	
-    //compile 'org.jgrapht:jgrapht-core:0.9.1'
-    //compile 'com.github.monkeysintown:jgraphx:3.3.1.1'
-    //compile 'org.jgrapht:jgrapht-ext:0.9.1'
+    compile 'org.jgrapht:jgrapht-core:0.9.1'
+    compile 'com.github.monkeysintown:jgraphx:3.3.1.1'
+    compile 'org.jgrapht:jgrapht-ext:0.9.1'
     
     compile 'org.apache.commons:commons-lang3:3.4'
-    //compile 'org.scala-lang:scala-library-all:2.11.7'
+    compile 'org.scala-lang:scala-library-all:2.11.7'
     
     compile group: 'org.apache.commons', name: 'commons-compress', version: '1.5'
     

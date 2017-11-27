@@ -1,25 +1,16 @@
-# dev env specific files
-.idea/
-.classpath
-.settings/
-.project
-
-# build files
-bin/
-classes/
-build/
-
-# gradle specific files
-.gradle
-gradle.properties
-/cebitmaster40.pub
-/dockererp.image
-/gradle.err
-/gradle.log
-/gradle.properties.cebitmaster
-/gradle.properties.docker
-/installBaseFile.log
-/CWINDOWSsystem32.keyring
-/exportEnums_stacktrace.log
-/gradle.properties.cebitmaster48.2017
-/gradle.properties.vm-git-gmbh
+**/.gradle
+**/.DS_Store
+**/build
+#
+# ignore eclipse specific files
+**/.project
+**/.settings
+**/.classpath
+**/bin/
+#
+# ignore idea specific files
+**/.iml
+**/.idea
+**/out/
+# ignore real files as template files exist
+**/gradle.properties
