@@ -38,7 +38,7 @@ timestamps {
 					shGradle("createAppJar")
 				}
 				stage('Verify') {
-					shGradle("verify")
+					shGradle("cobertura")
 				}
 				stage('IntegTest') {
 					// esdk-installer test
