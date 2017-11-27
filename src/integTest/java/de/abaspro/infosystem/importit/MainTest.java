@@ -22,7 +22,7 @@ public class MainTest extends AbstractTest {
 	public void integTestImport() throws Exception {
 		setInfosysloginInfo();
 
-		infosys.setYdatafile("owfw7/TestCustomer.xls");
+		infosys.setYdatafile("ow1/TestCustomer.xls");
 
 		infosys.invokeYpruefstrukt();
 
@@ -44,12 +44,12 @@ public class MainTest extends AbstractTest {
 
 	public void prepareTestManyData() throws Exception {
 		setInfosysloginInfo();
-		String importfile = "owfw7/Test2_Kunden.xlsx";
+		String importfile = "ow1/Test2_Kunden.xlsx";
 		long startKunden = System.currentTimeMillis();
 		importDataFile(importfile);
 		long endkunden = System.currentTimeMillis();
 		System.out.println("Kunden : " + (endkunden - startKunden));
-		importfile = "owfw7/Test2_Mitarb.xlsx";
+		importfile = "ow1/Test2_Mitarb.xlsx";
 		long startMitarbeiter = System.currentTimeMillis();
 		importDataFile(importfile);
 		long endMitarbeiter = System.currentTimeMillis();
@@ -74,7 +74,7 @@ public class MainTest extends AbstractTest {
 		prepareTestManyData();
 		setInfosysloginInfo();
 
-		infosys.setYdatafile("owfw7/Test2_Kundenakt_kurz.xlsx");
+		infosys.setYdatafile("ow1/Test2_Kundenakt_kurz.xlsx");
 
 		long startpruef = System.currentTimeMillis();
 		infosys.invokeYpruefstrukt();
@@ -109,7 +109,7 @@ public class MainTest extends AbstractTest {
 	public void integKeySelect() throws Exception {
 		setInfosysloginInfo();
 
-		infosys.setYdatafile("owfw7/TestCustomer_selkey.xlsx");
+		infosys.setYdatafile("ow1/TestCustomer_selkey.xlsx");
 
 		long startpruef = System.currentTimeMillis();
 		infosys.invokeYpruefstrukt();
@@ -142,7 +142,7 @@ public class MainTest extends AbstractTest {
 	public void integFieldSelect() throws Exception {
 		setInfosysloginInfo();
 
-		infosys.setYdatafile("owfw7/TestCustomer_selkeyfield.xlsx");
+		infosys.setYdatafile("ow1/TestCustomer_selkeyfield.xlsx");
 
 		long startpruef = System.currentTimeMillis();
 		infosys.invokeYpruefstrukt();
@@ -173,14 +173,14 @@ public class MainTest extends AbstractTest {
 	}
 
 	public void structureTestbykeyselection() {
-		infosys.setYdatafile("owfw7/TestCustomer_selkey_FehlerStruktur.xlsx");
+		infosys.setYdatafile("ow1/TestCustomer_selkey_FehlerStruktur.xlsx");
 		infosys.invokeYpruefstrukt();
 		assertThat(infosys.getYfehlerstruktur(), is(1));
 
 	}
 
 	public void dataTest() {
-		infosys.setYdatafile("owfw7/TestCustomer_Fehlerdaten.xls");
+		infosys.setYdatafile("ow1/TestCustomer_Fehlerdaten.xls");
 		infosys.invokeYpruefstrukt();
 		assertThat(infosys.getYfehlerstruktur(), is(0));
 		infosys.invokeYpruefdat();
@@ -189,7 +189,7 @@ public class MainTest extends AbstractTest {
 	}
 
 	public void selfieldMitFehlerinStrukturTest() {
-		infosys.setYdatafile("owfw7/TestCustomer_selkeyfield_FehlerStruktur.xlsx");
+		infosys.setYdatafile("ow1/TestCustomer_selkeyfield_FehlerStruktur.xlsx");
 		infosys.invokeYpruefstrukt();
 		assertThat(infosys.getYfehlerstruktur(), is(1));
 

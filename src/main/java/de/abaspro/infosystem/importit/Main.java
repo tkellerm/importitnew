@@ -22,7 +22,7 @@ import de.abas.erp.axi2.type.FieldEventType;
 import de.abas.erp.axi2.type.ScreenEventType;
 import de.abas.erp.common.type.enums.EnumDialogBox;
 import de.abas.erp.db.DbContext;
-import de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit;
+import de.abas.erp.db.infosystem.custom.ow1.InfosystemImportit;
 import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
 import de.abas.jfop.base.Color;
 import de.abas.jfop.base.buffer.BufferFactory;
@@ -39,7 +39,7 @@ import de.abaspro.utils.Util;
 public class Main {
 
 	private Logger logger = Logger.getLogger(Main.class);
-	static private String HELPFILE = "owfw7/owimportitDocumentation.tar";
+	static private String HELPFILE = "ow1/owimportitDocumentation.tar";
 	static private String HELPDEST = "win/tmp/owimportitDocumentation";
 	static private String HELPDESTTAR = "win/tmp/";
 

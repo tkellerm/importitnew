@@ -1,10 +1,10 @@
 V#21
-K#n#IMPORTIT21#Import IT 2.1#A#isrein/screen.OWFW7.IMPORTIT21#25B.1##
+K#n#IMPORTIT21#Import IT 2.1#A#isrein/screen.OW1.IMPORTIT21#25B.1##
 K#(0)#(0)#4000077##n#n#InfosystemImportit#y
 K#n#(1)#
 K#java:de.abaspro.infosystem.importit.Main@importitApp###java:de.abaspro.infosystem.importit.Main@importitApp##
 K#######
-K#owfw7#(127)##(116)#(98)###0#0#
+K#ow1#(127)##(116)#(98)###0#0#
 K#########
 Z#0#itgrust##n####(0)######n#0#n#0##n##
 Z#0#itgruppe##n####(0)######n#2#n#0##n##
@@ -105,7 +105,7 @@ Z#1#isyeigmandant#GL50#n#eigener Mandant#A#A#(2)######n#1#n#0##n##
 Z#1#isystatus#GL30#n#Status#A#A#(2)######y#1#n#0##n##
 Z#1#isymitdmsexport#B#n#mit DMS-Export#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@importitApp#y#1#n#0##n##
 Z#1#isyupdate#BU3#n#Update Infosystem#A#A#(1)##java:de.abaspro.infosystem.importit.Main@importitApp####y#1#n#0##n##
-Z#1#isyversionverf#GL6#n#Verf�?ügbare Version#A#A#(0)######y#1#n#0##n##
+Z#1#isyversionverf#GL6#n#Verf�?ügbare Version#A#A#(0)######y#1#n#0##n##
 Z#1#isymitsml#B#n#Mit SML#A#A#(0)######y#1#n#0##n##
 Z#1#isysml#P12:24#n#SML#A#A#(0)######y#1#n#0##n##
 Z#0#ittabnr##y####(0)######n#0#n#0##n##

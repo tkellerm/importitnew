@@ -15,7 +15,7 @@ import de.abas.erp.db.DbMessage;
 import de.abas.erp.db.Deletable;
 import de.abas.erp.db.MessageListener;
 import de.abas.erp.db.SelectableObject;
-import de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit;
+import de.abas.erp.db.infosystem.custom.ow1.InfosystemImportit;
 import de.abas.erp.db.selection.Conditions;
 import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.erp.db.util.ContextHelper;
@@ -23,7 +23,7 @@ import de.abas.erp.db.util.ContextHelper;
 public class AbstractTest {
 
 	public DbContext ctx;
-	public de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit infosys;
+	public de.abas.erp.db.infosystem.custom.ow1.InfosystemImportit infosys;
 
 	String hostname;
 
