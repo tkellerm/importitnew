@@ -23,7 +23,7 @@ esdk {
         vendorId="abasGmbH"
         appId="porti"
         shared=true
-        infosystems = ["IS.OWFW7.IMPORTIT21"]
+        infosystems = ["IS.OW1.IMPORTIT21"]
         tables = []
         data = []
         keys = []
