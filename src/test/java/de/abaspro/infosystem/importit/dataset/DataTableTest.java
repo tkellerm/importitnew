@@ -27,9 +27,4 @@ public class DataTableTest {
 		// fail("Not yet implemented"); // TODO
 	}
 
-	@Test
-	public void testIsEmpty() {
-		fail("Not yet implemented"); // TODO
-	}
-
 }
