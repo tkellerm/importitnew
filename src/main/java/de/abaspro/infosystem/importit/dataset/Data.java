@@ -185,6 +185,7 @@ public class Data {
 	}
 
 	public String getKeyOfKeyfield() throws ImportitException {
+
 		if (getHeaderFields() != null) {
 			Field field = getHeaderFields().get(this.keyFieldPosition);
 			if (field != null) {

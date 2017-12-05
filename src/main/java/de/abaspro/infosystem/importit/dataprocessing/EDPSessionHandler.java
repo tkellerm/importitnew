@@ -14,7 +14,7 @@ import de.abaspro.utils.Util;
 
 public class EDPSessionHandler extends Thread {
 
-	protected Logger logger = Logger.getLogger(EDPSessionHandler.class);
+	protected Logger logger = Logger.getLogger("EDPSessionHandlerSpezial");
 	private static String edpLogFile = "java/log/importit21edp.log";
 
 	private EDPSession edpSession;

@@ -18,7 +18,7 @@ public class EDPSessionPool implements Runnable {
 	private static String edpLogFile = "java/log/importit21edp.log";
 	Queue<EDPSession> fifo = new ConcurrentLinkedQueue<EDPSession>();
 	protected Logger logger = Logger.getLogger(EDPSessionPool.class);
-	private static final int MAX_ACTIVE_EDPSESSIONS = 50;
+	private static final int MAX_ACTIVE_EDPSESSIONS = 10;
 
 	private Boolean activePool = true;
 	private Integer sleeptime;
@@ -39,9 +39,9 @@ public class EDPSessionPool implements Runnable {
 
 				zaehler++;
 				fillqueue();
-				// if (fifo.size() == MAX_ACTIVE_EDPSESSIONS) {
-				// Thread.sleep(sleeptime);
-				// }
+				if (fifo.size() == MAX_ACTIVE_EDPSESSIONS) {
+					Thread.sleep(sleeptime);
+				}
 			} catch (Exception e) {
 				logger.error("run ", e);
 

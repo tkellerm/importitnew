@@ -8,7 +8,7 @@ import de.abas.ceks.jedp.CantChangeFieldValException;
 import de.abas.ceks.jedp.CantChangeSettingException;
 import de.abas.ceks.jedp.CantReadFieldPropertyException;
 import de.abas.ceks.jedp.CantReadSettingException;
-import de.abas.ceks.jedp.CantReadStatusException;
+import de.abas.ceks.jedp.CantReadStatusError;
 import de.abas.ceks.jedp.CantSaveException;
 import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPSession;
@@ -48,82 +48,106 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 		}
 	}
 
-	private void writeDatabase(Data data, EDPEditor edpEditor)
-			throws CantBeginEditException, CantChangeSettingException, ImportitException, CantSaveException,
-			InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException,
-			InvalidRowOperationException, ServerActionException, CantReadStatusException, CantReadSettingException {
+	private void writeDatabase(Data data, EDPEditor edpEditor) throws CantChangeSettingException, ImportitException,
+			CantSaveException, InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException,
+			InvalidRowOperationException, ServerActionException, CantReadSettingException {
 
-		data.setImported(false);
-		data.initOptions();
-		setEditorOption(data, edpEditor);
+		try {
+			data.setImported(false);
+			data.initOptions();
+			setEditorOption(data, edpEditor);
 
-		if (data.getOptionCode().getAlwaysNew()) {
+			if (data.getOptionCode().getAlwaysNew()) {
 
-			logger.info(Util.getMessage("info.start.editor.new", data.getDatabase().toString(),
-					data.getGroup().toString()));
-			edpEditor.beginEditNew(data.getDatabase().toString(), data.getGroup().toString());
-			writeFieldsInEditor(data, edpEditor);
-			edpEditor.saveReload();
-			String abasId = edpEditor.getEditRef();
-			logger.info(Util.getMessage("info.save.editor.new", data.getDatabase().toString(),
-					data.getGroup().toString(), abasId));
-			data.setAbasId(abasId);
-			edpEditor.endEditSave();
-			data.setImported(true);
-			if (edpEditor.isActive()) {
-				edpEditor.endEditCancel();
-				logger.info(Util.getMessage("info.cancel.editor.save", data.getDatabase().toString(),
-						data.getGroup().toString(), abasId));
-			} else {
-				logger.info(Util.getMessage("info.editor.not.active"));
-			}
-		} else {
-			String criteria = "";
-			String objectId;
-			if (data.getAbasId().isEmpty()) {
-				if (!data.getNameOfKeyfield().isEmpty()) {
-					criteria = data.getNameOfKeyfield() + "=" + data.getValueOfKeyField();
-				} else {
-					criteria = MessageFormat.format(data.getFieldKeySelectionString(), data.getKeyFieldValue());
-				}
-				objectId = getSelObject(criteria, data);
-			} else {
-				objectId = data.getAbasId();
-			}
-			if (!objectId.equals("Z")) {
-
-				if (!objectId.equals("0")) {
-					edpEditor.beginEdit(objectId);
-					if (edpEditor.getRowCount() > 0 && data.getOptionCode().getDeleteTable()) {
-						edpEditor.deleteAllRows();
-					}
-					logger.info(Util.getMessage("info.editor.start.update", data.getDatabase().toString(),
-							data.getGroup().toString(), edpEditor.getEditRef()));
-
-				} else {
-					logger.info(Util.getMessage("info.editor.start.new", data.getDatabase().toString(),
-							data.getGroup().toString()));
-					edpEditor.beginEditNew(data.getDatabase().toString(), data.getGroup().toString());
-				}
+				logger.info(Util.getMessage("info.start.editor.new", data.getDatabase().toString(),
+						data.getGroup().toString()));
+				edpEditor = createEDPEditorNew(data.getDatabase().toString(), data.getGroup().toString(),
+						data.getEDPLanguage());
+				// edpEditor.beginEditNew(data.getDatabase().toString(),
+				// data.getGroup().toString());
 				writeFieldsInEditor(data, edpEditor);
 				edpEditor.saveReload();
 				String abasId = edpEditor.getEditRef();
 				logger.info(Util.getMessage("info.save.editor.new", data.getDatabase().toString(),
-						data.getGroup().toString()));
+						data.getGroup().toString(), abasId));
 				data.setAbasId(abasId);
 				edpEditor.endEditSave();
 				data.setImported(true);
 				if (edpEditor.isActive()) {
 					edpEditor.endEditCancel();
+
 					logger.info(Util.getMessage("info.cancel.editor.save", data.getDatabase().toString(),
 							data.getGroup().toString(), abasId));
 				} else {
 					logger.info(Util.getMessage("info.editor.not.active"));
 				}
+				releaseAndFreeEDPEditor(edpEditor);
 			} else {
-				data.appendError(Util.getMessage("err.selection.ambiguous", criteria));
+				String criteria = "";
+				String objectId;
+				if (data.getAbasId().isEmpty()) {
+					if (!data.getNameOfKeyfield().isEmpty()) {
+						criteria = data.getNameOfKeyfield() + "=" + data.getValueOfKeyField();
+					} else {
+						criteria = MessageFormat.format(data.getFieldKeySelectionString(), data.getKeyFieldValue());
+					}
+					objectId = getSelObject(criteria, data);
+				} else {
+					objectId = data.getAbasId();
+				}
+
+				if (!objectId.equals("Z")) {
+
+					if (!objectId.equals("0")) {
+						edpEditor = createEDPEditorEdit(objectId, data.getEDPLanguage());
+						edpEditor.beginEdit(objectId);
+						if (edpEditor.getRowCount() > 0 && data.getOptionCode().getDeleteTable()) {
+							edpEditor.deleteAllRows();
+						}
+						logger.info(Util.getMessage("info.editor.start.update", data.getDatabase().toString(),
+								data.getGroup().toString(), edpEditor.getEditRef()));
+
+					} else {
+						logger.info(Util.getMessage("info.editor.start.new", data.getDatabase().toString(),
+								data.getGroup().toString()));
+
+						edpEditor = createEDPEditorNew(data.getDatabase().toString(), data.getGroup().toString(),
+								data.getEDPLanguage());
+						// edpEditor.beginEditNew(data.getDatabase().toString(),
+						// data.getGroup().toString());
+					}
+					writeFieldsInEditor(data, edpEditor);
+					edpEditor.saveReload();
+					String abasId = edpEditor.getEditRef();
+					logger.info(Util.getMessage("info.save.editor.new", data.getDatabase().toString(),
+							data.getGroup().toString()));
+					data.setAbasId(abasId);
+					edpEditor.endEditSave();
+					data.setImported(true);
+					if (edpEditor.isActive()) {
+						edpEditor.endEditCancel();
+						logger.info(Util.getMessage("info.cancel.editor.save", data.getDatabase().toString(),
+								data.getGroup().toString(), abasId));
+					} else {
+						logger.info(Util.getMessage("info.editor.not.active"));
+					}
+					releaseAndFreeEDPEditor(edpEditor);
+				} else {
+					data.appendError(Util.getMessage("err.selection.ambiguous", criteria));
+				}
 			}
+		} catch (CantBeginEditException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (CantReadStatusError e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+	}
+
+	private void releaseAndFreeEDPEditor(EDPEditor edpEditor) {
+		EDPUtils.releaseEDPEditor(edpEditor, logger);
+		this.edpSessionHandler.freeEDPSession(edpEditor.getSession());
 	}
 
 	@Override
@@ -163,18 +187,23 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 
 	@Override
 	protected void writeAbasIDinData(Data data) throws ImportitException {
+		String criteria = null;
 		String keyOfKeyfield = data.getKeyOfKeyfield();
-		if (!data.getKeyOfKeyfield().isEmpty()) {
+		Field keyField = data.getKeyField();
 
-			String criteria = data.getNameOfKeyfield() + "=" + data.getValueOfKeyField();
-			makeSelection(data, criteria);
+		if (!data.getSelectionStringOfKeyfield().isEmpty()) {
+			criteria = MessageFormat.format(data.getSelectionStringOfKeyfield(), data.getValueOfKeyField());
 
-		} else if (!data.getSelectionStringOfKeyfield().isEmpty()) {
+		} else if (!data.getKeyOfKeyfield().isEmpty()) {
 
-			String criteria = MessageFormat.format(data.getSelectionStringOfKeyfield(), data.getValueOfKeyField());
-			makeSelection(data, criteria);
+			criteria = data.getNameOfKeyfield() + "=" + data.getValueOfKeyField();
 
 		}
+
+		if (criteria != null) {
+			makeSelection(data, criteria);
+		}
+
 	}
 
 	private void makeSelection(Data data, String criteria) throws ImportitException {

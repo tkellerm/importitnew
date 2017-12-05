@@ -12,6 +12,7 @@ import javax.management.BadAttributeValueExpException;
 
 import org.apache.log4j.Logger;
 
+import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantChangeFieldValException;
 import de.abas.ceks.jedp.CantChangeSettingException;
 import de.abas.ceks.jedp.CantReadFieldPropertyException;
@@ -778,6 +779,44 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 		} else {
 			throw new ImportitException(Util.getMessage("err.invalid.head.fields"));
 		}
+	}
+
+	protected EDPEditor createEDPEditorNew(String database, String group, EDPVariableLanguage edpVariableLanguage)
+			throws ImportitException {
+
+		EDPEditor edpEditor = null;
+		do {
+			EDPSession edpSession = this.edpSessionHandler.getEDPSessionWriteData(edpVariableLanguage);
+			try {
+				edpEditor = edpSession.createEditor();
+				edpEditor.beginEditNew(database, group);
+
+			} catch (CantBeginEditException e) {
+				edpEditor = null;
+				logger.error(Util.getMessage("edpEditor.createEditor.error"), e);
+
+			}
+		} while (edpEditor.equals(null));
+		return edpEditor;
+
+	}
+
+	protected EDPEditor createEDPEditorEdit(String objectId, EDPVariableLanguage edpVariableLanguage)
+			throws ImportitException {
+
+		EDPEditor edpEditor = null;
+		do {
+			EDPSession edpSession = this.edpSessionHandler.getEDPSessionWriteData(edpVariableLanguage);
+			try {
+				edpEditor = edpSession.createEditor();
+				edpEditor.beginEdit(objectId);
+
+			} catch (CantBeginEditException e) {
+				logger.error(Util.getMessage("edpEditor.createEditor.error"), e);
+			}
+		} while (edpEditor != null);
+		return edpEditor;
+
 	}
 
 }
