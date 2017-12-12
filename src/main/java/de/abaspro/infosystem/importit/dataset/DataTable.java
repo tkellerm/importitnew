@@ -9,10 +9,13 @@ import de.abaspro.utils.Util;
 public class DataTable {
 
 	ArrayList<Field> tableFields;
+	// AbasID wegen den Kundenartikeleigenschaften
+	String abasID;
 
 	public DataTable() {
 		super();
 		this.tableFields = new ArrayList<Field>();
+		this.abasID = "";
 	}
 
 	public DataTable(DataTable dataTable) throws ImportitException {
@@ -70,6 +73,14 @@ public class DataTable {
 			}
 		}
 		return isEmpty;
+	}
+
+	public void setAbasID(String abasID) {
+		this.abasID = abasID;
+	}
+
+	public String getAbasID() {
+		return abasID;
 	}
 
 }

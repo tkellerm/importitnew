@@ -2,12 +2,13 @@ plugins {
     id "java"
     id "maven-publish"
 	id "com.palantir.git-version" version "0.5.3"
-    id "de.abas.esdk" version "0.7.0"
+    id "de.abas.esdk" version "0.7.3"
 }
 
 repositories {
     mavenLocal()
     jcenter()
+    maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME-SNAPSHOTS" }
     maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME" }
 }
 
@@ -21,7 +22,7 @@ esdk {
     app {
         name="importitApp"
         vendorId="abasGmbH"
-        appId="importit"
+        appId="gm007"
         shared=true
         infosystems = ["IS.OWFW7.IMPORTIT21"]
         tables = []

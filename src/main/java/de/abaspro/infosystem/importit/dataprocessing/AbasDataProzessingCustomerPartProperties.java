@@ -3,8 +3,6 @@ package de.abaspro.infosystem.importit.dataprocessing;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import de.abas.ceks.jedp.CantBeginEditException;
 import de.abas.ceks.jedp.CantChangeSettingException;
 import de.abas.ceks.jedp.CantReadSettingException;
@@ -12,7 +10,6 @@ import de.abas.ceks.jedp.CantSaveException;
 import de.abas.ceks.jedp.EDPEditAction;
 import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPQuery;
-import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
 import de.abaspro.infosystem.importit.ImportitException;
@@ -42,83 +39,61 @@ public class AbasDataProzessingCustomerPartProperties extends AbstractDataProces
 			throws ImportitException, InvalidQueryException, CantChangeSettingException, CantBeginEditException,
 			InvalidRowOperationException, CantSaveException, CantReadSettingException {
 
-		EDPSession edpSession = this.edpSessionHandler.getEDPSessionWriteData(data.getEDPLanguage());
-		EDPEditor edpEditor = edpSession.createEditor();
+		EDPEditor edpEditor = null;
 		EDPQuery edpQuery = null;
 		data.setImported(false);
-		try {
-			String[] varNames = checkDataCustomerPartProperties(data);
-			if (varNames.length == 2) {
-				logger.info(Util.getMessage("info.import.cust.part.props"));
-				data.setDatabase(2);
-				data.setGroup(6);
-				String artField = varNames[0];
-				String klField = varNames[1];
-				List<DataTable> tableRows = data.getTableRows();
-				for (DataTable dataTable : tableRows) {
-					dataTable.getTableFieldValue(klField);
-					edpQuery = edpSession.createQuery();
-					String criteria = artField + "=" + data.getValueOfHeadField(artField) + ";" + klField + "="
-							+ dataTable.getTableFieldValue(klField);
-					String key = "Kundenartikeleigenschaften";
-					int recordCount = getQueryTotalHits(criteria, key, data, edpQuery);
-					if (recordCount == 1 || recordCount == 0) {
-						setEditorOption(data, edpEditor);
-						if (recordCount == 1) {
-							String abasVersion = edpSession.getABASVersionNumber().substring(0, 4);
-							if (2013 <= new Integer(abasVersion)) {
-								String idField = edpQuery.getField("id");
-								edpEditor.beginEdit("2:6", idField);
-								if (edpEditor.getRowCount() > 0 && data.getOptionCode().getDeleteTable()) {
-									edpEditor.deleteAllRows();
-								}
-								logger.info(
-										Util.getMessage("info.update.cust.part.props", data.getDatabase().toString(),
-												data.getGroup().toString(), edpEditor.getEditRef()));
-							} else {
-								logger.error(String.format("%s %s",
-										Util.getMessage("err.edit.cust.part.props", criteria, edpQuery.getField("id")),
-										Util.getMessage("err.edit.cust.part.props.2013")));
-								throw new ImportitException(Util.getMessage("err.edit.cust.part.props.2013"));
-							}
-						} else {
-							logger.info(Util.getMessage("info.new.cust.part.props", data.getDatabase().toString(),
-									data.getGroup().toString()));
-							edpEditor.beginEditNew(data.getDatabase().toString(), data.getGroup().toString());
-						}
-						final String[] IgnoreFieldNames = { "art", "artikel", "product", "kl", "custVendor" };
-						writeFieldsInEditor(data, dataTable, edpEditor, IgnoreFieldNames);
-						edpEditor.endEditSave();
-						data.setImported(true);
-						edpSession.loggingOff();
-						recordCount = getQueryTotalHits(criteria, key, data, edpQuery);
-						if (recordCount == 0) {
-							String errorText = Util.getMessage("err.data.not.found.small",
-									data.getValueOfHeadField(artField), dataTable.getTableFieldValue(klField));
-							logger.error(errorText);
-							data.appendError(errorText);
 
-						} else if (recordCount > 1) {
-							String errorText = Util.getMessage("err.data.not.found.major",
-									data.getValueOfHeadField(artField), dataTable.getTableFieldValue(klField));
-							logger.error(errorText);
-							data.appendError(errorText);
-						}
-					} else {
-						data.appendError(Util.getMessage("err.selection.ambiguous", criteria));
-					}
+		logger.info(Util.getMessage("info.import.cust.part.props"));
+
+		List<DataTable> tableRows = data.getTableRows();
+		for (DataTable dataTable : tableRows) {
+
+			try {
+				String criteria = "";
+				String objectId;
+				if (dataTable.getAbasID().isEmpty()) {
+					criteria = getObjectSearchCriteria(dataTable, data);
+					objectId = getSelObject(criteria, data);
+				} else {
+
+					objectId = dataTable.getAbasID();
 				}
-			}
-		} finally {
-			EDPUtils.releaseEDPEditor(edpEditor, logger);
 
-			EDPUtils.releaseQuery(edpQuery, logger);
-			edpSessionHandler.freeEDPSession(edpSession);
+				if (!objectId.equals("Z")) {
+
+					edpEditor = getEPDEditorforObjectId(data, objectId);
+
+					final String[] IgnoreFieldNames = { "art", "artikel", "product", "kl", "custVendor" };
+					writeFieldsInEditor(data, dataTable, edpEditor, IgnoreFieldNames);
+
+					edpEditor.saveReload();
+					String abasId = edpEditor.getEditRef();
+					logger.info(Util.getMessage("info.save.editor.new", data.getDatabase().toString(),
+							data.getGroup().toString(), abasId));
+					dataTable.setAbasID(abasId);
+					edpEditor.endEditSave();
+					data.setImported(true);
+					if (edpEditor.isActive()) {
+						edpEditor.endEditCancel();
+						logger.info(Util.getMessage("info.cancel.editor.save", data.getDatabase().toString(),
+								data.getGroup().toString(), abasId));
+					} else {
+						logger.info(Util.getMessage("info.editor.not.active"));
+					}
+					releaseAndFreeEDPEditor(edpEditor);
+				} else {
+					data.appendError(Util.getMessage("err.selection.ambiguous", criteria));
+				}
+
+			} finally {
+				EDPUtils.releaseEDPEditor(edpEditor, logger);
+				EDPUtils.releaseQuery(edpQuery, logger);
+			}
 		}
 
 	}
 
-	private String[] checkDataCustomerPartProperties(Data data) {
+	private String[] checkDataCustomerPartProperties(Data data) throws ImportitException {
 		Integer database = data.getDatabase();
 		Integer group = data.getGroup();
 		Boolean artVarFound = false;
@@ -146,31 +121,13 @@ public class AbasDataProzessingCustomerPartProperties extends AbstractDataProces
 				varNames[0] = varNameArt;
 				varNames[1] = varNameKl;
 				return varNames;
+			} else {
+				throw new ImportitException(Util.getMessage("err.check.CostumerPartProperties.missingField"));
 			}
-		}
-		return ArrayUtils.EMPTY_STRING_ARRAY;
 
-	}
-
-	private int getQueryTotalHits(String criteria, String key, Data data, EDPQuery edpQuery)
-			throws InvalidQueryException {
-		Integer database = data.getDatabase();
-		Integer group = data.getGroup();
-		String databaseDescr;
-		if (group != -1) {
-			databaseDescr = database + ":" + group;
-		} else {
-			databaseDescr = database.toString();
 		}
-		if (data.getOptionCode().useEnglishVariables()) {
-			criteria = criteria + ";@englvar=true;@language=en";
-			edpQuery.startQuery(databaseDescr, key, criteria, "id");
-		} else {
-			criteria = criteria + ";@englvar=false;@language=de";
-			edpQuery.startQuery(databaseDescr, key, criteria, "id");
-		}
-		edpQuery.getLastRecord();
-		return edpQuery.getRecordCount();
+		throw new ImportitException(
+				Util.getMessage("err.check.CostumerPartProperties.falseDatabase", data.getDatabase(), data.getGroup()));
 	}
 
 	private void writeFieldsInEditor(Data data, DataTable dataTable, EDPEditor edpEditor, String[] ignoreFields)
@@ -221,9 +178,13 @@ public class AbasDataProzessingCustomerPartProperties extends AbstractDataProces
 
 	@Override
 	protected boolean checkDataStructure(Data data) throws ImportitException {
+		// Da die Datenbank fix ist bei den Kundenartikeleigenschaften
+		data.setDatabase(2);
+		data.setGroup(6);
 		boolean validDb = checkDatabaseName(data);
 		boolean validHead = false;
 		boolean validTable = false;
+		boolean existImportantFields = false;
 		if (validDb) {
 			List<Field> headerFields = data.getHeaderFields();
 			List<Field> tableFields = data.getTableFields();
@@ -233,13 +194,15 @@ public class AbasDataProzessingCustomerPartProperties extends AbstractDataProces
 
 				validHead = checkCustomerPartProperties(headerFields, data.getOptionCode().useEnglishVariables());
 				validTable = checkFieldList(tableFields, 2, 6, false, data.getOptionCode().useEnglishVariables());
+				String[] checkDataCustomerPartProperties = checkDataCustomerPartProperties(data);
+				existImportantFields = checkDataCustomerPartProperties.length == 2;
 
 			} catch (ImportitException e) {
 				logger.error(e);
-				data.appendError(Util.getMessage("err.structure.check", e));
+				data.appendError(Util.getMessage("err.structure.check", e.getMessage()));
 			}
 		}
-		if (validTable && validHead && validDb) {
+		if (validTable && validHead && validDb & existImportantFields) {
 			return true;
 		} else {
 			return false;
@@ -255,6 +218,7 @@ public class AbasDataProzessingCustomerPartProperties extends AbstractDataProces
 					return checkFieldList(headerFields, 2, 6, false, englishVariables);
 				}
 			}
+
 			throw new ImportitException(Util.getMessage("err.variables.missing"));
 		} else {
 			throw new ImportitException(Util.getMessage("err.too.many.head.fields"));
@@ -263,8 +227,27 @@ public class AbasDataProzessingCustomerPartProperties extends AbstractDataProces
 
 	@Override
 	protected void writeAbasIDinData(Data data) {
-		// TODO Noch umzusetzen
+		try {
+			List<DataTable> tableRows = data.getTableRows();
+			for (DataTable dataTable : tableRows) {
+				String criteria = getObjectSearchCriteria(dataTable, data);
+				String abasID = getSelObject(criteria, data);
+				dataTable.setAbasID(abasID);
+			}
 
+		} catch (ImportitException e) {
+			data.appendError(e);
+		}
 	}
 
+	private String getObjectSearchCriteria(DataTable datatable, Data data) throws ImportitException {
+
+		String[] varNames = checkDataCustomerPartProperties(data);
+
+		String artField = varNames[0];
+		String klField = varNames[1];
+		String criteria = artField + "=" + data.getValueOfHeadField(artField) + ";" + klField + "="
+				+ datatable.getTableFieldValue(klField) + ";@sort=Kundenartikeleigenschaften";
+		return criteria;
+	}
 }

@@ -1,22 +1,26 @@
-ABAS_HOMEDIR=/u1/gmbh/framework/2015/2015r4/s3
-ABAS_CLIENTDIR=/u1/gmbh/framework/2015/2015r4/gmbhtest15r4
-ABAS_CLIENTID=gmbhtest15r4
+ABAS_HOMEDIR=/u1/gmbh/framework/2016/2016r4/s3
+ABAS_CLIENTDIR=/u1/gmbh/framework/2016/2016r4/gmbhdevelop16r4
+ABAS_CLIENTID=gmbhdevelop16r4
 
-EDP_CLIENT=/u1/gmbh/framework/2015/2015r4/gmbhtest15r4
+EDP_CLIENT=/u1/gmbh/framework/2016/2016r4/gmbhdevelop16r4
 EDP_USER=
 EDP_PASSWORD=system
-EDP_HOST=magellan.abasag.intra
-EDP_PORT=6560
+EDP_HOST=magellan
+EDP_PORT=6550
 
-NEXUS_HOST=192.168.222.71
+NEXUS_HOST=192.168.226.34
 NEXUS_PORT=8081
 NEXUS_NAME=docker
 NEXUS_PASSWORD=admin123
 
-SSH_HOST=magellan.abasag.intra
-SSH_PORT=2205
-SSH_USER=s3gmbh15r4
-SSH_PASSWORD=s3gmbh15r4
+SSH_HOST=magellan
+SSH_PORT=22
+SSH_USER=gmbhdevelop16r4
+    
+SSH_PASSWORD=gmbhdevelop16r4
 SSH_KEY=
 
 installType=SSH
+
+version=3.2016.1
+

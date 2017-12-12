@@ -11,7 +11,6 @@ import de.abas.ceks.jedp.CantReadSettingException;
 import de.abas.ceks.jedp.CantReadStatusError;
 import de.abas.ceks.jedp.CantSaveException;
 import de.abas.ceks.jedp.EDPEditor;
-import de.abas.ceks.jedp.EDPSession;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
 import de.abas.ceks.jedp.ServerActionException;
@@ -29,43 +28,34 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 	@Override
 	protected void writeData(Data data) throws ImportitException {
 		logger.debug(Util.getMessage("debug.getedpsession", "writeData"));
-		EDPSession edpSession = this.edpSessionHandler.getEDPSessionWriteData(data.getEDPLanguage());
-		if (edpSession.isConnected()) {
-			EDPEditor edpEditor = edpSession.createEditor();
-			try {
-				writeDatabase(data, edpEditor);
-			} catch (Exception e) {
-				logger.error(e);
-				data.appendError(e);
-			} finally {
-				EDPUtils.releaseEDPEditor(edpEditor, logger);
 
-				this.edpSessionHandler.freeEDPSession(edpSession);
-			}
-		} else {
-			super.logger.error(Util.getMessage("err.no.edp.session"));
-			throw new ImportitException(Util.getMessage("err.no.edp.session"));
+		try {
+			writeDatabase(data);
+		} catch (Exception e) {
+			logger.error(e);
+			data.appendError(e);
 		}
 	}
 
-	private void writeDatabase(Data data, EDPEditor edpEditor) throws CantChangeSettingException, ImportitException,
-			CantSaveException, InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException,
+	private void writeDatabase(Data data) throws CantChangeSettingException, ImportitException, CantSaveException,
+			InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException,
 			InvalidRowOperationException, ServerActionException, CantReadSettingException {
+		EDPEditor edpEditor;
 
 		try {
 			data.setImported(false);
 			data.initOptions();
-			setEditorOption(data, edpEditor);
 
 			if (data.getOptionCode().getAlwaysNew()) {
 
 				logger.info(Util.getMessage("info.start.editor.new", data.getDatabase().toString(),
 						data.getGroup().toString()));
+
 				edpEditor = createEDPEditorNew(data.getDatabase().toString(), data.getGroup().toString(),
-						data.getEDPLanguage());
-				// edpEditor.beginEditNew(data.getDatabase().toString(),
-				// data.getGroup().toString());
+						data.getEDPLanguage(), data);
+
 				writeFieldsInEditor(data, edpEditor);
+
 				edpEditor.saveReload();
 				String abasId = edpEditor.getEditRef();
 				logger.info(Util.getMessage("info.save.editor.new", data.getDatabase().toString(),
@@ -98,24 +88,8 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 
 				if (!objectId.equals("Z")) {
 
-					if (!objectId.equals("0")) {
-						edpEditor = createEDPEditorEdit(objectId, data.getEDPLanguage());
-						edpEditor.beginEdit(objectId);
-						if (edpEditor.getRowCount() > 0 && data.getOptionCode().getDeleteTable()) {
-							edpEditor.deleteAllRows();
-						}
-						logger.info(Util.getMessage("info.editor.start.update", data.getDatabase().toString(),
-								data.getGroup().toString(), edpEditor.getEditRef()));
+					edpEditor = getEPDEditorforObjectId(data, objectId);
 
-					} else {
-						logger.info(Util.getMessage("info.editor.start.new", data.getDatabase().toString(),
-								data.getGroup().toString()));
-
-						edpEditor = createEDPEditorNew(data.getDatabase().toString(), data.getGroup().toString(),
-								data.getEDPLanguage());
-						// edpEditor.beginEditNew(data.getDatabase().toString(),
-						// data.getGroup().toString());
-					}
 					writeFieldsInEditor(data, edpEditor);
 					edpEditor.saveReload();
 					String abasId = edpEditor.getEditRef();
@@ -137,17 +111,10 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 				}
 			}
 		} catch (CantBeginEditException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e);
 		} catch (CantReadStatusError e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e);
 		}
-	}
-
-	private void releaseAndFreeEDPEditor(EDPEditor edpEditor) {
-		EDPUtils.releaseEDPEditor(edpEditor, logger);
-		this.edpSessionHandler.freeEDPSession(edpEditor.getSession());
 	}
 
 	@Override
@@ -189,12 +156,11 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 	protected void writeAbasIDinData(Data data) throws ImportitException {
 		String criteria = null;
 		String keyOfKeyfield = data.getKeyOfKeyfield();
-		Field keyField = data.getKeyField();
 
 		if (!data.getSelectionStringOfKeyfield().isEmpty()) {
 			criteria = MessageFormat.format(data.getSelectionStringOfKeyfield(), data.getValueOfKeyField());
 
-		} else if (!data.getKeyOfKeyfield().isEmpty()) {
+		} else if (!keyOfKeyfield.isEmpty()) {
 
 			criteria = data.getNameOfKeyfield() + "=" + data.getValueOfKeyField();
 

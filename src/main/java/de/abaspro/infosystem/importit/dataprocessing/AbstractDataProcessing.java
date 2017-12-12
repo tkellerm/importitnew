@@ -17,6 +17,7 @@ import de.abas.ceks.jedp.CantChangeFieldValException;
 import de.abas.ceks.jedp.CantChangeSettingException;
 import de.abas.ceks.jedp.CantReadFieldPropertyException;
 import de.abas.ceks.jedp.CantReadSettingException;
+import de.abas.ceks.jedp.CantReadStatusError;
 import de.abas.ceks.jedp.ConnectionLostException;
 import de.abas.ceks.jedp.EDPConstants;
 import de.abas.ceks.jedp.EDPEKSArtInfo;
@@ -781,27 +782,34 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 		}
 	}
 
-	protected EDPEditor createEDPEditorNew(String database, String group, EDPVariableLanguage edpVariableLanguage)
-			throws ImportitException {
+	protected EDPEditor createEDPEditorNew(String database, String group, EDPVariableLanguage edpVariableLanguage,
+			Data data) throws ImportitException {
 
 		EDPEditor edpEditor = null;
 		do {
 			EDPSession edpSession = this.edpSessionHandler.getEDPSessionWriteData(edpVariableLanguage);
 			try {
 				edpEditor = edpSession.createEditor();
+				setEditorOption(data, edpEditor);
 				edpEditor.beginEditNew(database, group);
 
 			} catch (CantBeginEditException e) {
 				edpEditor = null;
 				logger.error(Util.getMessage("edpEditor.createEditor.error"), e);
 
+			} catch (CantChangeSettingException e) {
+				edpEditor = null;
+				logger.error(Util.getMessage("edpEditor.createEditor.error"), e);
+			} catch (CantReadSettingException e) {
+				edpEditor = null;
+				logger.error(Util.getMessage("edpEditor.createEditor.error"), e);
 			}
 		} while (edpEditor.equals(null));
 		return edpEditor;
 
 	}
 
-	protected EDPEditor createEDPEditorEdit(String objectId, EDPVariableLanguage edpVariableLanguage)
+	protected EDPEditor createEDPEditorEdit(String objectId, EDPVariableLanguage edpVariableLanguage, Data data)
 			throws ImportitException {
 
 		EDPEditor edpEditor = null;
@@ -809,14 +817,61 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			EDPSession edpSession = this.edpSessionHandler.getEDPSessionWriteData(edpVariableLanguage);
 			try {
 				edpEditor = edpSession.createEditor();
+				setEditorOption(data, edpEditor);
 				edpEditor.beginEdit(objectId);
 
 			} catch (CantBeginEditException e) {
 				logger.error(Util.getMessage("edpEditor.createEditor.error"), e);
+			} catch (CantChangeSettingException e) {
+				edpEditor = null;
+				logger.error(Util.getMessage("edpEditor.createEditor.error"), e);
+			} catch (CantReadSettingException e) {
+				edpEditor = null;
+				logger.error(Util.getMessage("edpEditor.createEditor.error"), e);
 			}
-		} while (edpEditor != null);
+		} while (edpEditor.equals(null));
 		return edpEditor;
 
 	}
 
+	protected void releaseAndFreeEDPEditor(EDPEditor edpEditor) {
+		EDPUtils.releaseEDPEditor(edpEditor, logger);
+		this.edpSessionHandler.freeEDPSession(edpEditor.getSession());
+	}
+
+	/**
+	 * @param data
+	 * @param objectId
+	 * @return
+	 * @throws ImportitException
+	 * @throws CantBeginEditException
+	 * @throws CantReadStatusError
+	 * @throws InvalidRowOperationException
+	 */
+	protected EDPEditor getEPDEditorforObjectId(Data data, String objectId)
+			throws ImportitException, CantBeginEditException, CantReadStatusError, InvalidRowOperationException {
+		EDPEditor edpEditor;
+		if (!objectId.equals("Z")) {
+			if (!objectId.equals("0")) {
+				edpEditor = createEDPEditorEdit(objectId, data.getEDPLanguage(), data);
+				// edpEditor.beginEdit(objectId);
+				if (edpEditor.getRowCount() > 0 && data.getOptionCode().getDeleteTable()) {
+					edpEditor.deleteAllRows();
+				}
+				logger.info(Util.getMessage("info.editor.start.update", data.getDatabase().toString(),
+						data.getGroup().toString(), edpEditor.getEditRef()));
+
+			} else {
+				logger.info(Util.getMessage("info.editor.start.new", data.getDatabase().toString(),
+						data.getGroup().toString()));
+
+				edpEditor = createEDPEditorNew(data.getDatabase().toString(), data.getGroup().toString(),
+						data.getEDPLanguage(), data);
+
+			}
+		} else {
+			throw new IllegalArgumentException(Util.getMessage("error.getEDPEditorforObjectID.ObjectIDZ"));
+		}
+		return edpEditor;
+	}
 }

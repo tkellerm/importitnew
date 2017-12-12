@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -89,8 +90,8 @@ public class MainTest extends AbstractTest {
 		long endpruefdat = System.currentTimeMillis();
 		System.out.println("Datenprüfung: " + (endpruefdat - startpruefdat));
 
-		assertThat(infosys.getYstatus(), is(Util.getMessage("main.err.check.data")));
-		assertThat(infosys.getYfehlerdatpruef(), is(Util.getMessage("main.err.check.data")));
+		assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
+		assertThat(infosys.getYfehlerdatpruef(), is(0));
 
 		long startimport = System.currentTimeMillis();
 		infosys.invokeYimport();
@@ -101,7 +102,7 @@ public class MainTest extends AbstractTest {
 		assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
 		// assertThat(infosys.getYfehler(), is(0));
 
-		assertFalse(diffimport > 0);
+		assertTrue(diffimport > 0);
 
 	}
 
@@ -186,6 +187,17 @@ public class MainTest extends AbstractTest {
 		infosys.invokeYpruefdat();
 		assertThat(infosys.getYfehlerdatpruef(), is(1));
 
+	}
+
+	@Test
+	public void CostumerPartNumberTest() {
+		infosys.setYdatafile("owfw7/TestCustomerPartNumber.xlsx");
+		infosys.invokeYpruefstrukt();
+		assertThat(infosys.getYfehlerstruktur(), is(0));
+		infosys.invokeYpruefdat();
+		assertThat(infosys.getYfehlerdatpruef(), is(0));
+		infosys.invokeYimport();
+		assertThat(infosys.getYok(), is(1));
 	}
 
 	public void selfieldMitFehlerinStrukturTest() {
