@@ -123,6 +123,7 @@ public class ExcelImportProcessing {
 		data.setTypeCommandString(this.typeCommandString);
 		data.setOptionCode(this.optionCode);
 		data.setTableStartsAtField(this.tableFromField);
+		data.setSmlString(this.smlString);
 		return data;
 
 	}
