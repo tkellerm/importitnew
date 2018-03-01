@@ -47,14 +47,16 @@ public class AbasDataCheckAndComplete {
 				List<Field> smlFieldList = createDefaultSMLFieldList(data);
 				for (Data dataset : dataList) {
 					dataset.copyDatabase(data);
-					dataset.copyAbasType(data);
 					if (smlFieldList != null) {
 						if (!dataset.getSmlString().isEmpty()) {
 							fillSmlArray(dataset, smlFieldList);
 							deleteSmlFieldfromHeaderFields(dataset);
 						}
 					}
+					dataset.copyAbasType(data);
+
 				}
+
 				return true;
 			} else
 				return false;
@@ -66,84 +68,111 @@ public class AbasDataCheckAndComplete {
 
 	private List<Field> createDefaultSMLFieldList(Data data) throws ImportitException {
 		if (data.getSmlString() != null) {
-			List<Field> smlFieldlist = null;
-			String fieldNames = "vdn,vgr,grpDBDescr,grpGrpNo";
-			String tableName = "12:24";
-			String key = "Nummer";
-			Boolean inTable = false;
-			int aliveFlag = 1;
-			logger.debug(Util.getMessage("debug.getedpsession", "createDefaultSMLFieldList"));
-			EDPSession edpSession = this.edpSessionHandler.getEDPSession(EDPVariableLanguage.ENGLISH);
-			EDPQuery query = edpSession.createQuery();
 
-			String criteria = "nummer=" + data.getSmlString() + ";@englvar=true;@language=en";
+			moveSmlFieldsfromHeaderArrayToSmlArray(data);
+
+			List<Field> smlFieldlist = data.getSmlFields();
 
 			try {
+				if (checkSMLFieldList(smlFieldlist, data.getSmlString())) {
+					return smlFieldlist;
+				}
+			} catch (Exception e) {
+				throw new ImportitException(e.getMessage());
+			}
+
+		}
+		return null;
+
+	}
+
+	private boolean checkSMLFieldList(List<Field> smlFieldlist, String smlString) throws ImportitException {
+		String fieldNames = "idno,varName,typeOfAdditionalVar";
+		String tableName = "12:24";
+		String key = "Nummer";
+		Boolean inTable = true;
+		int aliveFlag = 1;
+		logger.debug(Util.getMessage("debug.getedpsession", "createDefaultSMLFieldList"));
+
+		Boolean notFound = false;
+		for (Field field : smlFieldlist) {
+			EDPSession edpSession = this.edpSessionHandler.getEDPSession(EDPVariableLanguage.ENGLISH);
+
+			EDPQuery query = edpSession.createQuery();
+			String criteria = "idno=" + smlString + ";varName==" + field.getName().replace("S.", "").replace("s.", "")
+					+ ";@englvar=true;@language=en";
+			try {
 				query.startQuery(tableName, key, criteria, inTable, aliveFlag, true, true, fieldNames, 0, 10000);
+				query.getLastRecord();
+				if (query.getRecordCount() != 1) {
+					notFound = true;
+				}
+
+				String[] fields = query.getFields();
+				if (query.getRecordCount() == 1) {
+					field.setAbasType(query.getField("typeOfAdditionalVar"));
+				}
+
 			} catch (InvalidQueryException e) {
 				e.printStackTrace();
 			} finally {
 				releaseQuery(query);
 				edpSessionHandler.freeEDPSession(edpSession);
 			}
-
-			return smlFieldlist;
-		} else {
-			return null;
 		}
+
+		if (notFound) {
+			return false;
+		} else
+			return true;
+	}
+
+	private void fillSmlArray(Data dataset, List<Field> smlFieldList) throws ImportitException {
+		List<Field> smlFieldsnew = createDefaultSMLFieldList(dataset);
+
+		dataset.setSmlFields(smlFieldsnew);
 
 	}
 
-	private void fillSmlArray(Data dataset, List<Field> smlFieldList) {
-		String smlString = dataset.getSmlString();
-		// TODO SML ist nicht fertig
-		// Suche nach SML in abas
-		// String key = "";
-		//
-		// String fieldNames = "vdn,vgr,grpDBDescr,grpGrpNo";
-		// String tableName = "12:24";
-		// Boolean inTable = false;
-		// int mode = EDPConstants.ENUMPOS_CODE;
-		// try {
-		// this.edpSession.setEnumMode(mode);
-		// } catch (InvalidSettingValueException e) {
-		// logger.error(e);
-		// }
-		// EDPQuery query = this.edpSession.createQuery();
-		// try {
-		// query.startQuery(tableName, key, criteria, inTable, aliveFlag, true,
-		// true, fieldNames, 0, 10000);
-		// query.getLastRecord();
-		// if (query.getRecordCount() == 1) {
-		// String dbString = query.getField("grpDBDescr");
-		// dbString = dbString.replaceAll("\\(*", "");
-		// dbString = dbString.replaceAll("\\)*", "");
-		// data.setDatabase(new Integer(dbString));
-		// String group = query.getField("grpGrpNo");
-		// group = group.replaceAll(" ", "");
-		// data.setGroup(new Integer(group));
-		//
-		// }
-		// Suche nach den Checke ob die verwendeten Felder in SML vorhanden.
-		// Wenn ja dann nehme Sie in SML-Array auf
+	private String getSMLFieldValue(Field field, Data dataset) throws ImportitException {
+
+		List<Field> headFields = dataset.getHeaderFields();
+
+		for (Field headField : headFields) {
+			if (headField.getName().equals(field.getName()) || headField.getName().equals(field.getName())) {
+				return headField.getValue();
+			}
+		}
+
+		List<Field> smlFields = dataset.getSmlFields();
+		for (Field field2 : smlFields) {
+			if (field2.getName().equals(field.getName()) || field2.getName().equals(field.getName())) {
+				return field2.getValue();
+			}
+		}
+
+		throw new ImportitException(Util.getMessage("SML.error.fieldnotfound", field.getName()));
 
 	}
 
 	private void deleteSmlFieldfromHeaderFields(Data dataset) {
-		// TODO SML noch nicht fertig
 
+		List<Field> headerFields = dataset.getHeaderFields();
+
+		headerFields.removeIf((Field field) -> (field.getCompleteContent().startsWith("S.")
+				|| field.getCompleteContent().startsWith("s.")));
 	}
 
 	private void moveSmlFieldsfromHeaderArrayToSmlArray(Data dataset) {
 		List<Field> headerFields = dataset.getHeaderFields();
 		List<Field> smlFields = dataset.getSmlFields();
-		for (Field field : smlFields) {
+		for (Field field : headerFields) {
 			String completeContent = field.getCompleteContent();
-			if (completeContent.startsWith("S.")) {
+			if (completeContent.startsWith("S.") || completeContent.startsWith("s.")) {
 				smlFields.add(field);
-				headerFields.remove(field);
 			}
 		}
+		deleteSmlFieldfromHeaderFields(dataset);
 	}
 
 	private boolean checkandcompleteData(Data data) throws ImportitException {
@@ -170,7 +199,9 @@ public class AbasDataCheckAndComplete {
 			}
 		}
 		exists = checkDatabaseName(data);
+
 		return exists;
+
 	}
 
 	private void findDatabaseForTypeCommand(Data data) throws ImportitException {
@@ -209,7 +240,7 @@ public class AbasDataCheckAndComplete {
 	private Boolean checkDatabaseName(Data data) throws ImportitException {
 		if (data.getDatabase() != null && data.getGroup() != null) {
 			String criteria = "0:grpDBDescr=(" + data.getDatabase().toString() + ");0:grpGrpNo="
-					+ data.getGroup().toString() + ";" + ";@englvar=true;@language=en";
+					+ data.getGroup().toString() + ";swd<>VVAR;@englvar=true;@language=en";
 			if (searchDatabase(data, criteria)) {
 				return true;
 			} else {
@@ -219,17 +250,17 @@ public class AbasDataCheckAndComplete {
 		} else {
 			if (data.getDbString() != null && data.getDbGroupString() != null) {
 				String criteria = "0:vdntxt==" + data.getDbString() + ";0:vgrtxtbspr==" + data.getDbGroupString() + ";"
-						+ ";@englvar=false;@language=de";
+						+ ";such<>VVAR;@englvar=false;@language=de";
 				if (searchDatabase(data, criteria)) {
 					return true;
 				} else {
 					criteria = "0:DBCmd==" + data.getDbString() + ";0:grpGrpCmd==" + data.getDbGroupString() + ";"
-							+ ";@englvar=true;@language=en";
+							+ ";swd<>VVAR;@englvar=true;@language=en";
 					if (searchDatabase(data, criteria)) {
 						return true;
 					} else {
-						data.appendError(
-								Util.getMessage("err.invalid.database.group", data.getDatabase(), data.getGroup()));
+						data.appendError(Util.getMessage("err.invalid.database.group", data.getDbString(),
+								data.getDbGroupString()));
 						return false;
 					}
 				}
@@ -262,6 +293,10 @@ public class AbasDataCheckAndComplete {
 				group = group.replaceAll(" ", "");
 				data.setGroup(new Integer(group));
 				return true;
+			}
+
+			if (query.getRecordCount() > 1) {
+				data.appendError(Util.getMessage("err.invalid.selection.notUnique", criteria, query.getRecordCount()));
 			}
 
 		} catch (InvalidQueryException e) {

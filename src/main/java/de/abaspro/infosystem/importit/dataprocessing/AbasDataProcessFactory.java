@@ -43,6 +43,11 @@ public class AbasDataProcessFactory {
 				break;
 			}
 		}
+		// else {
+		// throw new
+		// ImportitException(Util.getMessage("error.checkancomplete"));
+		// }
+
 		return abasDataProcessable;
 
 	}

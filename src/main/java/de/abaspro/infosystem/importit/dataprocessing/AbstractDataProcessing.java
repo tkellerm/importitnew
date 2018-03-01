@@ -128,6 +128,16 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 					includeError = true;
 				}
 			}
+
+			List<Field> smlfields = data.getSmlFields();
+
+			for (Field field : smlfields) {
+
+				if (!checkDataField(field)) {
+					includeError = true;
+				}
+			}
+
 			List<DataTable> tableRows = data.getTableRows();
 			for (DataTable dataTable : tableRows) {
 				ArrayList<Field> tableFields = dataTable.getTableFields();
@@ -579,6 +589,9 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			for (Field field : headerFields) {
 				writeField(data, field, edpEditor, 0);
 			}
+			if (data.getSmlFields() != null & !data.getSmlString().isEmpty()) {
+				writeSMLFields(data, edpEditor, 0);
+			}
 			List<DataTable> tableRows = data.getTableRows();
 			if (tableRows != null && edpEditor.hasTablePart()) {
 				for (DataTable dataTable : tableRows) {
@@ -591,6 +604,25 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 				}
 			}
 		}
+	}
+
+	private void writeSMLFields(Data data, EDPEditor edpEditor, int i) throws ImportitException {
+
+		String smlNumber = data.getSmlString();
+
+		try {
+			if (edpEditor.getVariableLanguage().equals(EDPVariableLanguage.GERMAN)) {
+				edpEditor.setFieldVal("sach", smlNumber);
+				List<Field> smlfields = data.getSmlFields();
+				for (Field field : smlfields) {
+					writeField(data, field, edpEditor, 0);
+				}
+
+			}
+		} catch (CantChangeFieldValException | CantReadSettingException e) {
+			throw new ImportitException(Util.getMessage("error.writeSML"), e);
+		}
+
 	}
 
 	protected Integer insertRow(Data data, EDPEditor edpEditor, Integer rowCount) throws ImportitException {
@@ -661,7 +693,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 	protected Boolean checkDatabaseName(Data data) throws ImportitException {
 		if (data.getDatabase() != null && data.getGroup() != null) {
 			String criteria = "0:grpDBDescr=(" + data.getDatabase().toString() + ");0:grpGrpNo="
-					+ data.getGroup().toString() + ";" + ";@englvar=true;@language=en";
+					+ data.getGroup().toString() + ";" + ";swd<>VVAR;@englvar=true;@language=en";
 			if (searchDatabase(data, criteria)) {
 				return true;
 			} else {
@@ -671,12 +703,12 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 		} else {
 			if (data.getDbString() != null && data.getDbGroupString() != null) {
 				String criteria = "0:vdntxt==" + data.getDbString() + ";0:vgrtxtbspr==" + data.getDbGroupString() + ";"
-						+ ";@englvar=false;@language=de";
+						+ ";such<>VVAR;@englvar=false;@language=de";
 				if (searchDatabase(data, criteria)) {
 					return true;
 				} else {
 					criteria = "0:DBCmd==" + data.getDbString() + ";0:grpGrpCmd==" + data.getDbGroupString() + ";"
-							+ ";@englvar=true;@language=en";
+							+ ";swd<>VVAR;@englvar=true;@language=en";
 					if (searchDatabase(data, criteria)) {
 						return true;
 					} else {
