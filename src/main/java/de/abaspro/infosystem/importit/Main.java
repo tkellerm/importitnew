@@ -342,8 +342,9 @@ public class Main {
 			logger.info(Util.getMessage("info.structure.check.start.data"));
 
 			abasDataProcessing = new AbasDataProcessFactory().createAbasDataProcess(this.edpSessionhandler, dataList);
-			abasDataProcessing.checkDataListStructure(dataList);
-
+			if (abasDataProcessing != null) {
+				abasDataProcessing.checkDataListStructure(dataList);
+			}
 			logger.info(Util.getMessage("info.structure.check.end.data"));
 			infosys.setYfehlerstruktur(getErrorCount());
 			showDatabaseInfo(infosys);
