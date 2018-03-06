@@ -11,8 +11,11 @@ import static org.junit.Assert.assertTrue;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
+import de.abas.erp.db.EditorAction;
 import de.abas.erp.db.schema.customer.Customer;
 import de.abas.erp.db.schema.notes.Note;
+import de.abas.erp.db.schema.part.Product;
+import de.abas.erp.db.schema.part.ProductEditor;
 import de.abaspro.infosystem.importit.util.AbstractTest;
 import de.abaspro.utils.Util;
 
@@ -221,6 +224,65 @@ public class MainTest extends AbstractTest {
 		infosys.invokeYdoku();
 
 		assertFalse(getMessage().contains(Util.getMessage("main.docu.error")));
+	}
+
+	@Test
+	public void integTestSMLImport() throws Exception {
+		setInfosysloginInfo();
+		infosys.setYdatafile("owfw7/TestPartWithSml.xlsx");
+		infosys.invokeYpruefstrukt();
+		assertThat(infosys.getYfehlerstruktur(), is(0));
+		infosys.invokeYpruefdat();
+		assertThat(infosys.getYfehlerdatpruef(), is(0));
+		infosys.invokeYimport();
+		assertThat(infosys.getYok(), is(8));
+		infosys.close();
+
+		Product part = getObject(Product.class, "1Test0");
+		ProductEditor productEditor = null;
+		if (part != null) {
+
+			try {
+
+				productEditor = part.createEditor();
+				productEditor.open(EditorAction.VIEW);
+
+				String qlang = productEditor.getString("s.qlang");
+				String qdurch = productEditor.getString("s.qdurch");
+				assertThat(qlang, is("100.00"));
+				assertThat(qdurch, is("6.00"));
+				productEditor.commit();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (productEditor.active()) {
+				productEditor.delete();
+			}
+		}
+
+		ProductEditor productEditor2 = null;
+		Product part2 = getObject(Product.class, "1TEST7");
+		if (part != null) {
+			try {
+				productEditor2 = part2.createEditor();
+				productEditor2.open(EditorAction.VIEW);
+
+				String qlang = productEditor2.getString("s.qlang");
+				String qdurch = productEditor2.getString("s.qdurch");
+
+				assertThat(qlang, is("60.00"));
+				assertThat(qdurch, is("5.00"));
+				productEditor2.abort();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (productEditor2.active()) {
+				productEditor2.delete();
+			}
+		}
+
 	}
 
 	@Override

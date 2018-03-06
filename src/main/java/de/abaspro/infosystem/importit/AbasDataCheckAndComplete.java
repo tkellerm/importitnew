@@ -198,6 +198,7 @@ public class AbasDataCheckAndComplete {
 				data.appendError(Util.getMessage("err.invalid.type.command", data.getTypeCommand()));
 			}
 		}
+
 		exists = checkDatabaseName(data);
 
 		return exists;

@@ -55,6 +55,32 @@ public class ExcelImportProcessing {
 		this.headerFields = readFieldsInHead();
 		this.tableFields = readFieldsInTable();
 		this.dataList = readAllData();
+		addSachField();
+	}
+
+	private void addSachField() {
+		if (!this.smlString.isEmpty()) {
+			if (!this.dataList.isEmpty()) {
+
+				for (Data data : dataList) {
+					int maxcol = 0;
+					List<Field> headerFieldList = data.getHeaderFields();
+					Boolean found = false;
+					for (Field field : headerFieldList) {
+						if (field.getName().toUpperCase().equals(new String("sach").toUpperCase())) {
+							found = true;
+						}
+						maxcol = field.getColNumber();
+					}
+					if (found == false) {
+						Field field = new Field("sach@dontChangeIfEqual", true, maxcol + 1, this.optionCode);
+						field.setValue(this.smlString);
+						headerFieldList.add(field);
+					}
+				}
+			}
+		}
+
 	}
 
 	private String getSML() {
@@ -143,15 +169,19 @@ public class ExcelImportProcessing {
 	private List<Field> readFieldsInHead() throws ImportitException {
 		List<Field> headerFields = new ArrayList<>();
 		Integer row = 1;
+		int maxheadcol = 0;
 		for (int col = 0; (col < getMaxCol()) && (col < (this.tableFromField) || this.tableFromField == 0); col++) {
 			String content = getCellContents(col, row);
+			maxheadcol = col;
 			if (content != null) {
 				if (!content.isEmpty()) {
 					Field field = new Field(content, true, col, this.optionCode);
 					headerFields.add(field);
+
 				}
 			}
 		}
+
 		return headerFields;
 	}
 
@@ -168,6 +198,7 @@ public class ExcelImportProcessing {
 					tableFields.add(field);
 				}
 			}
+
 			return dataTable;
 		} else {
 			return null;
