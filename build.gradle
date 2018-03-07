@@ -29,7 +29,7 @@ esdk {
         data = []
         keys = []
         enums = []
-        essentialsVersions = ["2016r1n01-2016r4n15", "2017r1n00-2017r2n17"]
+        essentialsVersions = ["2016r1n01-2016r4n15", "2017r1n00-2017r4n17"]
     }
 
     abas {
