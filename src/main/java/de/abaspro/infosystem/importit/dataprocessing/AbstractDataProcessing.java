@@ -36,6 +36,7 @@ import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.UserTextBuffer;
 import de.abaspro.infosystem.importit.ImportitException;
 import de.abaspro.infosystem.importit.OptionCode;
+import de.abaspro.infosystem.importit.ProgressListener;
 import de.abaspro.infosystem.importit.Vartab;
 import de.abaspro.infosystem.importit.VartabField;
 import de.abaspro.infosystem.importit.dataset.Data;
@@ -44,6 +45,8 @@ import de.abaspro.infosystem.importit.dataset.Field;
 import de.abaspro.utils.Util;
 
 public abstract class AbstractDataProcessing implements AbasDataProcessable {
+
+	private List<ProgressListener> progressListener = new ArrayList<ProgressListener>();
 
 	protected EDPSessionHandler edpSessionHandler;
 	protected Logger logger = Logger.getLogger(AbstractDataProcessing.class);
@@ -74,7 +77,11 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 				Data data = dataList.get(0);
 				if (data != null) {
 					if (checkDataStructure(data)) {
+						Integer zaehler = 0;
 						for (Data dataset : dataList) {
+							zaehler = zaehler + 1;
+							sendProgress(Util.getMessage("progress.message.structurecheck", zaehler.toString(),
+									dataList.size()));
 							dataset.copyDatabase(data);
 							dataset.copyAbasType(data);
 						}
@@ -91,8 +98,10 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 	@Override
 	public void importDataList(ArrayList<Data> dataList) throws ImportitException {
-
+		Integer zaehler = 0;
 		for (Data data : dataList) {
+			zaehler = zaehler + 1;
+			sendProgress(Util.getMessage("progress.message.import", zaehler.toString(), dataList.size()));
 			writeData(data);
 		}
 
@@ -118,8 +127,10 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 	@Override
 	public void checkDataListValues(ArrayList<Data> dataList) throws ImportitException {
-
+		Integer zaehler = 0;
 		for (Data data : dataList) {
+			zaehler = zaehler + 1;
+			sendProgress(Util.getMessage("progress.message.datacheck", zaehler.toString(), dataList.size()));
 			List<Field> headerFields = data.getHeaderFields();
 			writeAbasIDinData(data);
 			Boolean includeError = false;
@@ -906,4 +917,14 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 		}
 		return edpEditor;
 	}
+
+	public void addListener(ProgressListener toAdd) {
+		this.progressListener.add(toAdd);
+	}
+
+	private void sendProgress(String message) {
+		for (ProgressListener pl : this.progressListener)
+			pl.edpProgress(message);
+	}
+
 }

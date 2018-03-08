@@ -36,7 +36,7 @@ import de.abaspro.utils.Util;
 @Stateful
 @EventHandler(head = InfosystemImportit.class, row = InfosystemImportit.Row.class)
 @RunFopWith(EventHandlerRunner.class)
-public class Main {
+public class Main implements ProgressListener {
 
 	private Logger logger = Logger.getLogger(Main.class);
 	static private String HELPFILE = "owfw7/owimportitDocumentation.tar";
@@ -46,6 +46,7 @@ public class Main {
 	private ArrayList<Data> dataList;
 	private AbasDataProcessable abasDataProcessing;
 	private EDPSessionHandler edpSessionhandler = EDPSessionHandler.getInstance();
+	private ScreenControl screenControl;
 
 	@ScreenEventHandler(type = ScreenEventType.ENTER)
 	public void screenEnter(InfosystemImportit infosys, ScreenControl screenControl, DbContext ctx) {
@@ -54,6 +55,7 @@ public class Main {
 		fillClientFields(infosys);
 		extractHelpTar(ctx);
 		protectoptionFields(infosys, screenControl, true);
+		this.screenControl = screenControl;
 
 	}
 
@@ -322,6 +324,7 @@ public class Main {
 
 	@ButtonEventHandler(field = "ypruefstrukt", type = ButtonEventType.AFTER)
 	public void checkStructureAfter(DbContext ctx, ScreenControl screenControl, InfosystemImportit infosys) {
+		this.screenControl = screenControl;
 		infosys.table().clear();
 		infosys.setYok(0);
 		infosys.setYfehler(0);
@@ -343,6 +346,7 @@ public class Main {
 
 			abasDataProcessing = new AbasDataProcessFactory().createAbasDataProcess(this.edpSessionhandler, dataList);
 			if (abasDataProcessing != null) {
+				abasDataProcessing.addListener(this);
 				abasDataProcessing.checkDataListStructure(dataList);
 			}
 			logger.info(Util.getMessage("info.structure.check.end.data"));
@@ -431,4 +435,14 @@ public class Main {
 		}
 		throw new ImportitException(Util.getMessage("main.err.no.data.read"));
 	}
+
+	@Override
+	public void edpProgress(String message) {
+		if (message == null) {
+			message = "null";
+		}
+		this.screenControl.setNote(message, true, false);
+
+	}
+
 }

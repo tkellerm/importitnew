@@ -3,6 +3,7 @@ package de.abaspro.infosystem.importit.dataprocessing;
 import java.util.ArrayList;
 
 import de.abaspro.infosystem.importit.ImportitException;
+import de.abaspro.infosystem.importit.ProgressListener;
 import de.abaspro.infosystem.importit.dataset.Data;
 
 public interface AbasDataProcessable {
@@ -21,4 +22,5 @@ public interface AbasDataProcessable {
 
 	public void importDataList(ArrayList<Data> dataList) throws ImportitException;
 
+	public void addListener(ProgressListener toAdd);
 }
