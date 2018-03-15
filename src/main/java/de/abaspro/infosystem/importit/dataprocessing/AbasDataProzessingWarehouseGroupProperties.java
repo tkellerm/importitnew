@@ -67,11 +67,13 @@ public class AbasDataProzessingWarehouseGroupProperties extends AbstractDataProc
 					writeFieldsInEditor(data, dataTable, edpEditor, IgnoreFieldNames);
 
 					edpEditor.saveReload();
+
 					String abasId = edpEditor.getEditRef();
+
 					logger.info(Util.getMessage("info.save.editor.new", data.getDatabase().toString(),
 							data.getGroup().toString(), abasId));
 					dataTable.setAbasID(abasId);
-					edpEditor.endEditSave();
+					// edpEditor.endEditSave();
 					data.setImported(true);
 					if (edpEditor.isActive()) {
 						edpEditor.endEditCancel();
@@ -85,6 +87,9 @@ public class AbasDataProzessingWarehouseGroupProperties extends AbstractDataProc
 					data.appendError(Util.getMessage("err.selection.ambiguous", criteria));
 				}
 
+			} catch (Exception e) {
+				logger.error(e);
+				data.appendError(e);
 			} finally {
 				EDPUtils.releaseEDPEditor(edpEditor, logger);
 				EDPUtils.releaseQuery(edpQuery, logger);
@@ -231,6 +236,7 @@ public class AbasDataProzessingWarehouseGroupProperties extends AbstractDataProc
 			List<DataTable> tableRows = data.getTableRows();
 			for (DataTable dataTable : tableRows) {
 				String criteria = getObjectSearchCriteria(dataTable, data);
+				String test;
 				String abasID = getSelObject(criteria, data);
 				dataTable.setAbasID(abasID);
 			}

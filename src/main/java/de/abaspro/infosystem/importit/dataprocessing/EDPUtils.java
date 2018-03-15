@@ -10,10 +10,12 @@ public class EDPUtils {
 
 	static protected void releaseQuery(EDPQuery query, Logger logger) {
 
-		try {
-			query.release();
-		} catch (ServerActionException e) {
-			logger.error(e);
+		if (query != null) {
+			try {
+				query.release();
+			} catch (ServerActionException e) {
+				logger.error(e);
+			}
 		}
 
 	}

@@ -8,6 +8,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
@@ -16,7 +18,9 @@ import de.abas.erp.db.schema.customer.Customer;
 import de.abas.erp.db.schema.notes.Note;
 import de.abas.erp.db.schema.part.Product;
 import de.abas.erp.db.schema.part.ProductEditor;
+import de.abas.erp.db.schema.warehouse.WarehouseGroupProperty;
 import de.abaspro.infosystem.importit.util.AbstractTest;
+import de.abaspro.infosystem.importit.util.ValuePair;
 import de.abaspro.utils.Util;
 
 public class MainTest extends AbstractTest {
@@ -282,6 +286,34 @@ public class MainTest extends AbstractTest {
 				productEditor2.delete();
 			}
 		}
+
+	}
+
+	@Test
+	public void integTestWarehousePropertiesImport() throws Exception {
+
+		setInfosysloginInfo();
+		infosys.setYdatafile("owfw7/Test2_WarehouseGroupProperties.xlsx");
+		infosys.invokeYpruefstrukt();
+		assertThat(infosys.getYfehlerstruktur(), is(0));
+		infosys.invokeYpruefdat();
+		assertThat(infosys.getYfehlerdatpruef(), is(0));
+		infosys.invokeYimport();
+		assertThat(infosys.getYok(), is(1));
+		infosys.close();
+
+		ArrayList<ValuePair> valPairs = new ArrayList<ValuePair>();
+
+		valPairs.add(new ValuePair("product", "10028"));
+		valPairs.add(new ValuePair("warehGrp", "20"));
+		WarehouseGroupProperty wGP = getObjectSel(WarehouseGroupProperty.class, valPairs);
+		assertTrue(wGP != null);
+
+		ArrayList<ValuePair> valPairs2 = new ArrayList<ValuePair>();
+		valPairs2.add(new ValuePair("product", "10028"));
+		valPairs2.add(new ValuePair("warehGrp", "26"));
+		WarehouseGroupProperty wGP2 = getObjectSel(WarehouseGroupProperty.class, valPairs2);
+		assertTrue(wGP2 != null);
 
 	}
 
