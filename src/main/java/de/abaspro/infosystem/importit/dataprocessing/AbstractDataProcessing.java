@@ -466,6 +466,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 		} catch (ImportitException e) {
 			field.setError(Util.getMessage("err.check.reference", field.getAbasTyp(), field.getValue()));
 		} finally {
+			logger.debug(Util.getMessage("debug.getedpsession", "getEDPQueryReference"));
 			endQuery(query);
 		}
 		return "";
@@ -533,8 +534,9 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			if (group != null) {
 				edpCriteria.setGroup(group.toString());
 			}
-
+			logger.debug(Util.getMessage("debug.getedpsession", "getEDPQueryReference startQuery"));
 			query.startQuery(edpCriteria, fieldNames);
+			logger.debug(Util.getMessage("debug.getedpsession", "getEDPQueryReference endQuery"));
 		} catch (InvalidQueryException e) {
 			throw new ImportitException(Util.getMessage("err.edp.query.bad.selection.string", selectionString), e);
 		} catch (CantReadSettingException e1) {

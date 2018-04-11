@@ -351,6 +351,7 @@ public class Main implements ProgressListener {
 			}
 			logger.info(Util.getMessage("info.structure.check.end.data"));
 			infosys.setYfehlerstruktur(getErrorCount());
+
 			showDatabaseInfo(infosys);
 			setOptions(infosys);
 			protectoptionFields(infosys, screenControl, false);
@@ -406,6 +407,11 @@ public class Main implements ProgressListener {
 			}
 			if (data.getTypeCommand() != null) {
 				infosys.setYtippkommando(data.getTypeCommand().toString());
+			}
+			if (data.getSmlString() != null) {
+
+				infosys.setString(InfosystemImportit.META.ysml, data.getSmlString());
+
 			}
 			infosys.setYtababspalte(data.getTableStartsAtField() + 1);
 		}
