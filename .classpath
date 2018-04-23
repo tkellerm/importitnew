@@ -1,15 +1,340 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="/Client"/>
-	<classpathentry kind="lib" path="includejar/abas-jfopapi.jar"/>
-	<classpathentry kind="lib" path="includejar/jedp.jar"/>
-	<classpathentry kind="lib" path="/S3Java/lib/jxl.jar"/>
-	<classpathentry kind="lib" path="includejar/poi-3.9-20121203.jar"/>
-	<classpathentry kind="lib" path="includejar/poi-ooxml-3.9-20121203.jar"/>
-	<classpathentry kind="lib" path="includejar/poi-ooxml-schemas-3.9-20121203.jar"/>
-	<classpathentry kind="lib" path="includejar/xmlbeans-2.3.0.jar"/>
-	<classpathentry kind="lib" path="includejar/commons-lang3-3.4.jar"/>
-	<classpathentry kind="output" path="classes"/>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="src" path="src/test/java"/>
+	<classpathentry kind="src" path="src/integTest/java"/>
+	<classpathentry kind="src" path="src/integTest/resources"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.poi/poi-ooxml/3.10.1/c62b1db67f2a7cafd4dd55c41256a2fa0793191/poi-ooxml-3.10.1.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.poi/poi-ooxml/3.10.1/6fd6245c9ab6cf26366e498cdea6e783e186b005/poi-ooxml-3.10.1-sources.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.poi/poi-ooxml-schemas/3.10.1/7a61214b7dc2f1d25d9c265ca7f7fd12cee72fd7/poi-ooxml-schemas-3.10.1.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.poi/poi/3.10.1/95174823e13aa828cb715b542e647e56096ffcb2/poi-3.10.1.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.poi/poi/3.10.1/dcbcab74270ee3f68da61ef13c6f0858fb532e52/poi-3.10.1-sources.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.4/5fe28b9518e58819180a43a850fbc0dd24b7c050/commons-lang3-3.4.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.4/b49dafc9cfef24c356827f322e773e7c26725dd2/commons-lang3-3.4-sources.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-compress/1.5/d2bd2c0bd328f1dabdf33e10b6d223ebcbe93343/commons-compress-1.5.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-compress/1.5/d843cfe3f25612ba1b11f136e478317c81e47b69/commons-compress-1.5-sources.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/utilities/1.0.0/e41dbc4d2b909477293dae11e0d2088698eec476/utilities-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-jedp-util/1.0.0/67fa4ef1607f9a9ce1f16663388ff9abd60717b4/abas-jedp-util-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-jfop-base/1.0.0/861698c2e9bd53ee15cdfbfeac09e3f7eb4bad6f/abas-jfop-base-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-print/1.0.0/f06e97020f1ffaaf22f9f2d6a4b6205377eb278a/abas-print-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-print-core/1.0.0/a71b049d8acaa0bc12b1f2b9704a6de894e3550a/abas-print-core-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-print-channel/1.0.0/1423492336f71238a8d876c3e9cb17836587580c/abas-print-channel-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-print-remote/1.0.0/6c079119f9174d1840707b54e671ab2c2d6f9157/abas-print-remote-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/edi/1.0.0/dcaea8ddfa61833e0c2d62a31cd05d3ce27b165f/edi-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-edi-dbutil/1.0.0/e8d2da502f9260b5917fd886938caf19a16802cf/abas-edi-dbutil-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-ediprocessing/1.0.0/425427526245b444700d099eeeae145710467805/abas-ediprocessing-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-report-utils/1.0.0/3dd4b7a66ac761aa45c2fc367a3099046f213d05/abas-report-utils-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-openoffice/1.0.0/d1f3fcc1eb0b8b23b79d900a0006d3bc703a7c46/abas-openoffice-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-barcode/1.0.0/539006d48dbeec0cc1d69636e42fa74812184d3e/abas-barcode-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-etl/1.0.0/741cdbd414ed8953f660f69e568d9cd3ffed9be2/abas-etl-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-net/1.0.0/9b851765ce140b09455813af3342aeb16c51fdf8/abas-net-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-datev/1.0.0/143e82fc32ea9544f3de90fb6a2bfeb8481898e4/abas-datev-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-paytrans/1.0.0/16d9e10fd9440d0bc7d5d3e98e8869844eb9c511/abas-paytrans-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-edifact/1.0.0/2bde12f765305bb471993093a4155dbe01e39c19/abas-edifact-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/standard-jfops/1.0.0/705c7fdfdbb170787c05b4f000b46b3da4258908/standard-jfops-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-internal-jfops/1.0.0/4997509f9687377466bbd116362a35725d00d12a/abas-internal-jfops-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-service/1.0.0/69a129d8e1ac814ec929abddcc3140b0c7ece1c7/abas-service-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-db-internal/1.0.0/6503f2f450e4e31fae8ed2618218ba61220866cc/abas-db-internal-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-db-util/1.0.0/7ff1f7e0a3ece9c50548867b5b74c5f5a66c731b/abas-db-util-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-classgen-templates/1.0.0/50236d2492b7df2292607c4d11e9ae54a498439a/abas-classgen-templates-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-classgen/1.0.0/5fc4b65b9aff4fc36ce686790c21179ab6b0f904/abas-classgen-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-classgen-enums/1.0.0/d764fcda325324baf1a795803c5d41eba05ae6f3/abas-classgen-enums-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-classgen-vartab/1.0.0/1b084ce423adf977550d10ba2350937afbe3748c/abas-classgen-vartab-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-axi/1.0.0/4c62f6bdc27dd5c8ffc4fc372982a6118463017/abas-axi-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-erpapi/1.0.0/15f42f9d1acb7907989cbd74a9d4b45c001ccca9/abas-erpapi-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-axi2/1.0.0/88bc5e94fa273eb300751cc1922b400da9be32bd/abas-axi2-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-callparam/1.0.0/cd00083c6bb949d066dad3653a8faaed439d0b97/abas-callparam-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-property-1.0.0/1.0.0/39c1da4492e114738f0e45a15b08ed0176763ccd/abas-property-1.0.0-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-xml2lay/1.0.0/880f2327865c91b835493ae748748758ee25b87a/abas-xml2lay-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-fonts/1.0.0/80fa8065bc9bdbf71976375b68a743045b4e73df/abas-fonts-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/se-base-core/1.0.0/705b60514cc9d09eaff267aaa2327bf11ba0ac85/se-base-core-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/se-log-core/1.0.0/490cdfbb1c5af9de5674a52584977d06a8b0b8fc/se-log-core-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/se-ws-core/1.0.0/9f3896cfdef643e7aa860af9a9a67c80a80d1111/se-ws-core-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/commons-logging/1.0.0/21a8205f483b4b5dca01c969567900b042ae2318/commons-logging-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/jedp/1.0.0/e6f92a8b6514a54d98a712164734fd7d8219c817/jedp-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-jfopapi/1.0.0/598cb15a292cc8f5a481b5bc23890769e8d4cb93/abas-jfopapi-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/commons-collections/1.0.0/761ea405b9b37ced573d2df0d1e3a4e0f9edc668/commons-collections-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/commons-io/1.0.0/7ffdb02f95af1c1a208544e076cea5b8e66e731a/commons-io-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-jfop-runtime-api/1.0.0/67a882289c9ca57c73dd3fab988bed0a854b9b5a/abas-jfop-runtime-api-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-db-base/1.0.0/bad7de6673c45435ab6c684f7a8e9cd30013f278/abas-db-base-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-erp-common/1.0.0/ffc3f107d7cb4f127e70ab8c73cda985a743ee02/abas-erp-common-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-enums/1.0.0/cc7fe83384f73a05f3193c073f5f8d5419391876/abas-enums-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/groovy/1.0.0/c5371aaa20bcdca1175d9477fc0811f4fd99b68a/groovy-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/commons-lang3/1.0.0/659861b4acde07a0527211e40d256119face1d15/commons-lang3-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/slf4j-api/1.0.0/5b338f206827d88acd890739f400a9b7664e5984/slf4j-api-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.clientdir/abas-db/1.0.0-SNAPSHOT/4d5569d0aa625eb7f941cb4161519f45d597a1ae/abas-db-1.0.0-SNAPSHOT.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.clientdir/abas-db-infosys/1.0.0-SNAPSHOT/d8fd612021b6181b8106c0953aca9550db17a898/abas-db-infosys-1.0.0-SNAPSHOT.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/log4j/1.0.0/5af35056b4d257e4b64b9e8069c0746e8b08629f/log4j-1.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.xmlbeans/xmlbeans/2.6.0/29e80d2dd51f9dcdef8f9ffaee0d4dc1c9bbfc87/xmlbeans-2.6.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/dom4j/dom4j/1.6.1/5d3ccc056b6f056dbf0dddfdf43894b9065a8f94/dom4j-1.6.1.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/dom4j/dom4j/1.6.1/a8e7149359255f43e0e5e3b1837948f9ed5861fb/dom4j-1.6.1-sources.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/commons-codec/commons-codec/1.5/cf993e250ff71804754ec2734a16f23c0be99f70/commons-codec-1.5.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/commons-codec/commons-codec/1.5/1100638866461d41fbed0e89d722b161c579fe23/commons-codec-1.5-sources.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.tukaani/xz/1.2/bfc66dda280a18ab341b5023248925265c00394c/xz-1.2.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.tukaani/xz/1.2/9ae2b160dc1d42ee0f0a4871573fbddffbde4815/xz-1.2-sources.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/xml-apis/xml-apis/1.0.b2/3136ca936f64c9d68529f048c2618bd356bf85c9/xml-apis-1.0.b2.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/xml-apis/xml-apis/1.0.b2/d8525661c5a0a05702fa41873d250d135031ec25/xml-apis-1.0.b2-sources.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/stax/stax-api/1.0.1/49c100caf72d658aca8e58bd74a4ba90fa2b0d70/stax-api-1.0.1.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.m2/repository/junit/junit/4.12/junit-4.12.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-all/1.3/63a21ebc981131004ad02e0434e799fd7f3a8d5a/hamcrest-all-1.3.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-all/1.3/47e033b7ab18c5dbd5fe29fc1bd5a40afe028818/hamcrest-all-1.3-sources.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/tkellermann/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="integTest,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="bin/default"/>
 </classpath>
