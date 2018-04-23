@@ -39,48 +39,48 @@ public class AbasDataProcessFactory {
 				abasDataProcessable = new AbasDataProzessingCustomerPartProperties(edpSessionHandler);
 				logger.info(Util.getMessage("info.abasDataFactory.CustomerProperties"));
 				break;
+			case 4:
+				// WarehouseGroupProperties
+				abasDataProcessable = new AbasDataProzessingWarehouseGroupProperties(edpSessionHandler);
+				logger.info(Util.getMessage("info.abasDataFactory.WarehouseGroupProperties"));
+				break;
 			default:
 				break;
 			}
 		}
-		// else {
-		// throw new
-		// ImportitException(Util.getMessage("error.checkancomplete"));
-		// }
 
 		return abasDataProcessable;
 
 	}
 
-	private int checkTypDataList(ArrayList<Data> dataList) throws ImportitException {
+	protected int checkTypDataList(ArrayList<Data> dataList) throws ImportitException {
 
 		// 1 : standard
 		// 2 : Typcommand
 		// 3 : CustomerPartProperties
-		int auswahl = 0;
+		// 4 : WarehouseGroupProperties
 
 		Data data = dataList.get(0);
 
 		if (data != null) {
+			if ((data.getDatabase() != null && data.getGroup() != null) || data.getTypeCommandString() != null) {
+				if (data.getDatabase() != null && data.getGroup() != null) {
 
-			if (data.getDatabase() != null && data.getDatabase() != null) {
-				if (data.getDatabase() == 2 && (data.getGroup() == 6 || data.getGroup() == 7)) {
-					auswahl = 3;
-				} else {
-					if (data.getTypeCommandString() != null) {
-						if (!data.getTypeCommandString().isEmpty()) {
+					if (data.getDatabase() == 2 && (data.getGroup() == 6 || data.getGroup() == 7)) {
+						return 3;
+					}
 
-							auswahl = 2;
-
-						} else {
-							auswahl = 1;
-						}
-
-					} else {
-						auswahl = 1;
+					if (data.getDatabase() == 39 && (data.getGroup() == 3 || data.getGroup() == 4)) {
+						return 4;
+					}
+				}
+				if (data.getTypeCommandString() != null) {
+					if (!data.getTypeCommandString().isEmpty()) {
+						return 2;
 					}
 
 				}
+				return 1;
 			} else {
 				throw new ImportitException(" Database ist " + data.getDatabase() + "Gruppe ist " + data.getGroup()
 						+ " sind null :" + data.getDbGroupString());
@@ -89,7 +89,7 @@ public class AbasDataProcessFactory {
 		} else {
 			throw new ImportitException(" Daten sind null");
 		}
-		return auswahl;
+
 	}
 
 }

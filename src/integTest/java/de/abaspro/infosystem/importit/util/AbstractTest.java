@@ -88,6 +88,23 @@ public class AbstractTest {
 		return objects.get(0);
 	}
 
+	public <C extends SelectableObject> C getObjectSel(Class<C> type, Iterable<ValuePair> valuePairs) throws Exception {
+		SelectionBuilder<C> selectBuilder = SelectionBuilder.create(type);
+		for (ValuePair valuePair : valuePairs) {
+			selectBuilder.add(Conditions.eq(valuePair.getField(), valuePair.getValue()));
+		}
+		String crit = selectBuilder.build().getCriteria();
+		final List<C> objects = ctx.createQuery(selectBuilder.build()).execute();
+
+		if (objects.size() > 1) {
+			throw new Exception("idno not unique");
+		}
+		if (objects.size() < 1) {
+			throw new Exception("no object found with the idno");
+		}
+		return objects.get(0);
+	}
+
 	@Before
 	public void setup() {
 		loadProperties();

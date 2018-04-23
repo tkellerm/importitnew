@@ -15,6 +15,8 @@ import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
 import de.abas.ceks.jedp.ServerActionException;
 import de.abaspro.infosystem.importit.ImportitException;
+import de.abaspro.infosystem.importit.SmlField;
+import de.abaspro.infosystem.importit.SmlTab;
 import de.abaspro.infosystem.importit.dataset.Data;
 import de.abaspro.infosystem.importit.dataset.Field;
 import de.abaspro.utils.Util;
@@ -122,6 +124,7 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 		boolean validDb = checkData(data);
 		boolean validHead = false;
 		boolean validTable = false;
+		boolean validSML = false;
 		if (validDb) {
 			List<Field> headerFields = data.getHeaderFields();
 			List<Field> tableFields = data.getTableFields();
@@ -133,17 +136,44 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 						data.getOptionCode().useEnglishVariables());
 				validTable = checkFieldList(tableFields, data.getDatabase(), data.getGroup(), true,
 						data.getOptionCode().useEnglishVariables());
+				if (data.getSmlFields() != null) {
+					validSML = checkSMLStructure(data);
+				} else {
+					validSML = true;
+				}
 
 			} catch (ImportitException e) {
 				logger.error(e);
 				data.appendError(Util.getMessage("err.structure.check", e));
 			}
 		}
-		if (validTable && validHead && validDb) {
+		if (validTable && validHead && validDb && validSML) {
 			return true;
 		} else {
 			return false;
 		}
+	}
+
+	private boolean checkSMLStructure(Data data) throws ImportitException {
+		String numberSML = data.getSmlString();
+		Boolean founderror = false;
+		SmlTab smlTab = new SmlTab(this.edpSessionHandler, numberSML);
+
+		List<Field> smlfields = data.getSmlFields();
+		for (Field field : smlfields) {
+			SmlField smlField = smlTab.checkSmlTab(field.getName().substring(2));
+			if (smlField == null) {
+				data.appendError(Util.getMessage("err.field.not.found", field.getName().substring(2)));
+				founderror = true;
+			} else {
+				field.setAbasType(smlField.getType());
+			}
+		}
+		if (founderror) {
+			return false;
+		} else
+			return true;
+
 	}
 
 	private boolean checkData(Data data) throws ImportitException {
