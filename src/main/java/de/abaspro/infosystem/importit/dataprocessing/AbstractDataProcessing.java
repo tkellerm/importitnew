@@ -530,15 +530,17 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			StandardEDPSelectionCriteria criteria = new StandardEDPSelectionCriteria(selectionString);
 			StandardEDPSelection edpCriteria = new StandardEDPSelection(tableName, criteria);
 			edpCriteria.setDatabase(database.toString());
-			if (group != null) {
+			if (group != null && group != -1) {
 				edpCriteria.setGroup(group.toString());
 			}
-
+			logger.debug(Util.getMessage("debug.getedpsession",
+					"getQueryWithSelectionString startQuery" + edpCriteria.getEDPString()));
 			query.startQuery(edpCriteria, fieldNames);
+			logger.debug(Util.getMessage("debug.getedpsession", "getQueryWithSelectionString endQuery"));
 		} catch (InvalidQueryException e) {
 			throw new ImportitException(Util.getMessage("err.edp.query.bad.selection.string", selectionString), e);
 		} catch (CantReadSettingException e1) {
-			// TODO Auto-generated catch block
+			logger.error(e1);
 			e1.printStackTrace();
 		}
 		return query;
