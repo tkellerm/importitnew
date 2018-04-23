@@ -1,14 +1,13 @@
 plugins {
     id "java"
     id "maven-publish"
-	id "com.palantir.git-version" version "0.5.3"
-    id "de.abas.esdk" version "0.9.0"
+    id "de.abas.esdk" version "0.9.6"
 }
 
 repositories {
     mavenLocal()
     jcenter()
-    maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME-SNAPSHOTS" }
+    maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME-SNAPSHOT" }
     maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME" }
 }
 
