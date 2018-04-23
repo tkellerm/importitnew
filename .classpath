@@ -1,68 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main/java"/>
-	<classpathentry kind="src" path="src/main/resources"/>
-	<classpathentry kind="src" path="src/test/java"/>
-	<classpathentry kind="src" path="src/integTest/java"/>
-	<classpathentry kind="src" path="src/integTest/resources"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.poi/poi-ooxml/3.10.1/c62b1db67f2a7cafd4dd55c41256a2fa0793191/poi-ooxml-3.10.1.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.poi/poi-ooxml/3.10.1/6fd6245c9ab6cf26366e498cdea6e783e186b005/poi-ooxml-3.10.1-sources.jar">
+	<classpathentry kind="src" output="bin/main" path="src/main/java">
 		<attributes>
-			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test,integTest"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.poi/poi-ooxml-schemas/3.10.1/7a61214b7dc2f1d25d9c265ca7f7fd12cee72fd7/poi-ooxml-schemas-3.10.1.jar">
+	<classpathentry kind="src" output="bin/main" path="src/main/resources">
 		<attributes>
-			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test,integTest"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.poi/poi/3.10.1/95174823e13aa828cb715b542e647e56096ffcb2/poi-3.10.1.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.poi/poi/3.10.1/dcbcab74270ee3f68da61ef13c6f0858fb532e52/poi-3.10.1-sources.jar">
+	<classpathentry kind="src" output="bin/test" path="src/test/java">
 		<attributes>
-			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+			<attribute name="gradle_scope" value="test"/>
+			<attribute name="gradle_used_by_scope" value="test,integTest"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.4/5fe28b9518e58819180a43a850fbc0dd24b7c050/commons-lang3-3.4.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.4/b49dafc9cfef24c356827f322e773e7c26725dd2/commons-lang3-3.4-sources.jar">
+	<classpathentry kind="src" output="bin/integTest" path="src/integTest/java">
 		<attributes>
-			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
+			<attribute name="gradle_scope" value="integTest"/>
+			<attribute name="gradle_used_by_scope" value="integTest"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-compress/1.5/d2bd2c0bd328f1dabdf33e10b6d223ebcbe93343/commons-compress-1.5.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-compress/1.5/d843cfe3f25612ba1b11f136e478317c81e47b69/commons-compress-1.5-sources.jar">
+	<classpathentry kind="src" output="bin/integTest" path="src/integTest/resources">
 		<attributes>
-			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/utilities/1.0.0/e41dbc4d2b909477293dae11e0d2088698eec476/utilities-1.0.0.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-jedp-util/1.0.0/67fa4ef1607f9a9ce1f16663388ff9abd60717b4/abas-jedp-util-1.0.0.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-jfop-base/1.0.0/861698c2e9bd53ee15cdfbfeac09e3f7eb4bad6f/abas-jfop-base-1.0.0.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-print/1.0.0/f06e97020f1ffaaf22f9f2d6a4b6205377eb278a/abas-print-1.0.0.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-print-core/1.0.0/a71b049d8acaa0bc12b1f2b9704a6de894e3550a/abas-print-core-1.0.0.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-print-channel/1.0.0/1423492336f71238a8d876c3e9cb17836587580c/abas-print-channel-1.0.0.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/de.abas.homedir/abas-print-remote/1.0.0/6c079119f9174d1840707b54e671ab2c2d6f9157/abas-print-remote-1.0.0.jar">
-		<attributes>
+<<<<<<< HEAD
+			<attribute name="gradle_scope" value="integTest"/>
+			<attribute name="gradle_used_by_scope" value="integTest"/>
+=======
 			<attribute name="gradle_used_by_scope" value="integTest,main,test"/>
 		</attributes>
 	</classpathentry>
@@ -334,7 +301,10 @@
 	<classpathentry kind="lib" path="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-core/1.3/42a25dc3219429f0e5d060061f71acb49bf010a0/hamcrest-core-1.3.jar" sourcepath="C:/Users/tkellermann/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-core/1.3/1dc37250fbc78e23a65a67fbbaf71d2e9cbc3c0b/hamcrest-core-1.3-sources.jar">
 		<attributes>
 			<attribute name="gradle_used_by_scope" value="integTest,test"/>
+>>>>>>> Lagergruppeneigenschaften
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
+	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>
