@@ -238,8 +238,8 @@ public class Data {
 
 	public void copyAbasType(Data data) {
 		List<Field> dataheaderFields = data.getHeaderFields();
-		for (int i = 0; i < dataheaderFields.size(); i++) {
 
+		for (int i = 0; i < dataheaderFields.size(); i++) {
 			if (this.headerFields.size() >= i) {
 				if (this.headerFields.get(i) != null && data.headerFields.get(i) != null) {
 					if (this.headerFields.get(i).getAbasTyp().isEmpty()) {

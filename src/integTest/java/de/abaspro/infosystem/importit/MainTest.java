@@ -290,6 +290,15 @@ public class MainTest extends AbstractTest {
 	}
 
 	@Test
+	public void integTestSMLImport_Error_in_Struktur() throws Exception {
+		setInfosysloginInfo();
+		infosys.setYdatafile("owfw7/TestPartWithSml_with_wrong_field.xlsx");
+		infosys.invokeYpruefstrukt();
+		assertThat(infosys.getYfehlerstruktur(), is(1));
+
+	}
+
+	@Test
 	public void integTestWarehousePropertiesImport() throws Exception {
 
 		setInfosysloginInfo();

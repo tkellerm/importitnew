@@ -156,20 +156,24 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 
 	private boolean checkSMLStructure(Data data) throws ImportitException {
 		String numberSML = data.getSmlString();
-
+		Boolean founderror = false;
 		SmlTab smlTab = new SmlTab(this.edpSessionHandler, numberSML);
 
 		List<Field> smlfields = data.getSmlFields();
 		for (Field field : smlfields) {
 			SmlField smlField = smlTab.checkSmlTab(field.getName().substring(2));
 			if (smlField == null) {
-				return false;
+				data.appendError(Util.getMessage("err.field.not.found", field.getName().substring(2)));
+				founderror = true;
 			} else {
 				field.setAbasType(smlField.getType());
 			}
 		}
+		if (founderror) {
+			return false;
+		} else
+			return true;
 
-		return true;
 	}
 
 	private boolean checkData(Data data) throws ImportitException {
