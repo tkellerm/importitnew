@@ -18,7 +18,7 @@ public class SmlTab {
 		EDPSession edpsession = edpSessionHandler.getEDPSession(EDPVariableLanguage.ENGLISH);
 		EDPQuery query = edpsession.createQuery();
 		int aliveFlag = EDPConstants.ALIVEFLAG_BOTH;
-		String[] fieldNames = { "varName", "varType", "width" };
+		String[] fieldNames = { "varName", "typeOfAdditionalVar", "varType", "width" };
 		String key = "";
 
 		String tableName = "12:24";
