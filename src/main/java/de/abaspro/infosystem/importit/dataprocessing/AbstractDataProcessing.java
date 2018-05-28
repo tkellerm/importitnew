@@ -381,7 +381,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 	}
 
 	private void checkReferenceField(Field field, EDPEKSArtInfo edpeksartinfo) throws ImportitException {
-		String value = field.getValue();
+		String value = field.getReferenceFieldValue();
 		int databaseNumber = edpeksartinfo.getRefDatabaseNr();
 		int groupNumber = edpeksartinfo.getRefGroupNr();
 		if (!value.isEmpty()) {
@@ -459,8 +459,8 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 		try {
 
 			edpSession = this.edpSessionHandler.getEDPSession(EDPVariableLanguage.ENGLISH);
-			String selectionString = "@noswd=" + field.getValue() + ";@englvar=true;@language=en;@database="
-					+ database.toString();
+			String selectionString = "@noswd=" + field.getReferenceFieldValue()
+					+ ";@englvar=true;@language=en;@database=" + database.toString();
 			query = getQueryWithSelectionString(database, group, edpSession, selectionString);
 			return analyzeSelectionQuery(field, query);
 		} catch (ImportitException e) {
@@ -536,7 +536,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			}
 
 			logger.debug(Util.getMessage("debug.getedpsession",
-					"getQueryWithSelectionString startQuery" + edpCriteria.getEDPString()));
+					"getQueryWithSelectionString startQuery " + edpCriteria.getEDPString()));
 			query.startQuery(edpCriteria, fieldNames);
 			logger.debug(Util.getMessage("debug.getedpsession", "getQueryWithSelectionString endQuery"));
 

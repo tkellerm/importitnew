@@ -51,7 +51,7 @@ public class Main implements ProgressListener {
 	@ScreenEventHandler(type = ScreenEventType.ENTER)
 	public void screenEnter(InfosystemImportit infosys, ScreenControl screenControl, DbContext ctx) {
 
-		infosys.setYversion("3.0.2");
+		infosys.setYversion("3.0.3");
 		fillClientFields(infosys);
 		extractHelpTar(ctx);
 		protectoptionFields(infosys, screenControl, true);
@@ -176,6 +176,7 @@ public class Main implements ProgressListener {
 	@ButtonEventHandler(field = "yimport", type = ButtonEventType.AFTER)
 	public void importData(DbContext ctx, ScreenControl screenControl, InfosystemImportit infosys) {
 		try {
+			startEdpSessionHandler(infosys);
 			logger.info(Util.getMessage("info.import.data.start"));
 			if (dataListNotEmpty()) {
 				if (isTransactionDataList()) {
@@ -217,6 +218,7 @@ public class Main implements ProgressListener {
 		} else {
 			infosys.setYstatus(Util.getMessage("info.import.data.error"));
 		}
+		edpSessionhandler.closeAllConnections();
 	}
 
 	@ButtonEventHandler(field = "yintabladen", type = ButtonEventType.AFTER)
@@ -282,32 +284,40 @@ public class Main implements ProgressListener {
 	@ButtonEventHandler(field = "ypruefdat", type = ButtonEventType.AFTER)
 	public void checkDataAfter(DbContext ctx, InfosystemImportit infosys) {
 
-		logger.debug(Util.getMessage("info.check.data.start"));
+		try {
+			startEdpSessionHandler(infosys);
+			logger.debug(Util.getMessage("info.check.data.start"));
 
-		if (dataListNotEmpty()) {
-			try {
-				if (infosys.getYfehlerstruktur() == 0) {
-					// edpProcessing.checkDataListValues(dataList);
-					abasDataProcessing.checkDataListValues(dataList);
-					infosys.setYok(getDataCount());
-					infosys.setYfehlerdatpruef(getErrorCount());
-				} else {
-					throw new ImportitException(Util.getMessage("main.err.structure.check.error"));
+			if (dataListNotEmpty()) {
+				try {
+					if (infosys.getYfehlerstruktur() == 0) {
+						// edpProcessing.checkDataListValues(dataList);
+						abasDataProcessing.checkDataListValues(dataList);
+						infosys.setYok(getDataCount());
+						infosys.setYfehlerdatpruef(getErrorCount());
+					} else {
+						throw new ImportitException(Util.getMessage("main.err.structure.check.error"));
+					}
+				} catch (ImportitException e) {
+					showErrorBox(ctx, e.getMessage());
 				}
-			} catch (ImportitException e) {
-				showErrorBox(ctx, e.getMessage());
-			}
-			if (infosys.getYfehlerdatpruef() == 0) {
-				infosys.setYstatus(Util.getMessage("main.check.data.success"));
+				if (infosys.getYfehlerdatpruef() == 0) {
+					infosys.setYstatus(Util.getMessage("main.check.data.success"));
+				} else {
+					infosys.setYstatus(Util.getMessage("main.err.check.data"));
+				}
+				new TextBox(ctx, Util.getMessage("main.structure.check.box.title"),
+						Util.getMessage("main.data.check.box.message")).show();
 			} else {
-				infosys.setYstatus(Util.getMessage("main.err.check.data"));
+				showErrorBox(ctx, Util.getMessage("error.data.check.datalist.empty"));
 			}
-			new TextBox(ctx, Util.getMessage("main.structure.check.box.title"),
-					Util.getMessage("main.data.check.box.message")).show();
-		} else {
-			showErrorBox(ctx, Util.getMessage("error.data.check.datalist.empty"));
+			logger.debug(Util.getMessage("info.check.data.end"));
+
+			this.edpSessionhandler.closeAllConnections();
+		} catch (ImportitException e1) {
+			showErrorBox(ctx, e1.getMessage());
 		}
-		logger.debug(Util.getMessage("info.check.data.end"));
+
 	}
 
 	private int getDataCount() {
@@ -335,8 +345,7 @@ public class Main implements ProgressListener {
 		infosys.setYtippkommando("");
 		try {
 
-			this.edpSessionhandler.initSession(infosys.getYserver(), infosys.getYport(), infosys.getYmandant(),
-					infosys.getYpasswort());
+			startEdpSessionHandler(infosys);
 
 			logger.info(Util.getMessage("info.structure.check.start.processing"));
 			ExcelImportProcessing excelProcessing = new ExcelImportProcessing(infosys.getYdatafile());
@@ -366,6 +375,12 @@ public class Main implements ProgressListener {
 		} catch (ImportitException e) {
 			showErrorBox(ctx, e.getMessage());
 		}
+		this.edpSessionhandler.closeAllConnections();
+	}
+
+	private void startEdpSessionHandler(InfosystemImportit infosys) throws ImportitException {
+		this.edpSessionhandler.initSession(infosys.getYserver(), infosys.getYport(), infosys.getYmandant(),
+				infosys.getYpasswort());
 	}
 
 	private void showErrorBox(DbContext ctx, String message) {

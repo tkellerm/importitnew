@@ -279,6 +279,15 @@ public class Field {
 		return value;
 	}
 
+	public String getReferenceFieldValue() {
+		if (abasTyp.startsWith("V")) {
+			return this.value.replaceFirst("^[A-Z][ ]", "");
+		} else {
+			return this.value;
+		}
+
+	}
+
 	public void setValue(String value) {
 		this.value = value;
 	}

@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import de.abas.erp.db.EditorAction;
+import de.abas.erp.db.internal.AbasObjectImpl;
 import de.abas.erp.db.schema.customer.Customer;
 import de.abas.erp.db.schema.notes.Note;
 import de.abas.erp.db.schema.part.Product;
@@ -39,10 +40,10 @@ public class MainTest extends AbstractTest {
 		assertThat(infosys.getYstatus(), is(Util.getMessage("main.status.structure.check.success")));
 
 		infosys.invokeYpruefdat();
-		assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
+		assertThat(infosys.getYstatus(), is(de.abaspro.utils.Util.getMessage("main.check.data.success")));
 
 		infosys.invokeYimport();
-		assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
+		assertThat(infosys.getYstatus(), is(de.abaspro.utils.Util.getMessage("info.import.data.success")));
 		assertThat(infosys.getYfehler(), is(0));
 
 		for (int i = 0; i < 8; i++) {
@@ -90,14 +91,14 @@ public class MainTest extends AbstractTest {
 		System.out.println("Strukturprüfung: " + (endpruef - startpruef) + " " + infosys.getYdatafile());
 
 		assertThat(infosys.getYfehlerstruktur(), is(0));
-		assertThat(infosys.getYstatus(), is(Util.getMessage("main.status.structure.check.success")));
+		assertThat(infosys.getYstatus(), is(de.abaspro.utils.Util.getMessage("main.status.structure.check.success")));
 
 		long startpruefdat = System.currentTimeMillis();
 		infosys.invokeYpruefdat();
 		long endpruefdat = System.currentTimeMillis();
 		System.out.println("Datenprüfung: " + (endpruefdat - startpruefdat));
 
-		assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
+		assertThat(infosys.getYstatus(), is(de.abaspro.utils.Util.getMessage("main.check.data.success")));
 		assertThat(infosys.getYfehlerdatpruef(), is(0));
 
 		long startimport = System.currentTimeMillis();
@@ -106,7 +107,7 @@ public class MainTest extends AbstractTest {
 		long diffimport = endimport - startimport;
 		System.out.println("Import: " + diffimport + " " + infosys.getYdatafile());
 
-		assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
+		assertThat(infosys.getYstatus(), is(de.abaspro.utils.Util.getMessage("info.import.data.success")));
 		// assertThat(infosys.getYfehler(), is(0));
 
 		assertTrue(diffimport > 0);
@@ -125,14 +126,14 @@ public class MainTest extends AbstractTest {
 		System.out.println("Strukturprüfung: " + (endpruef - startpruef) + " " + infosys.getYdatafile());
 
 		assertThat(infosys.getYfehlerstruktur(), is(0));
-		assertThat(infosys.getYstatus(), is(Util.getMessage("main.status.structure.check.success")));
+		assertThat(infosys.getYstatus(), is(de.abaspro.utils.Util.getMessage("main.status.structure.check.success")));
 
 		long startpruefdat = System.currentTimeMillis();
 		infosys.invokeYpruefdat();
 		long endpruefdat = System.currentTimeMillis();
 		System.out.println("Datenprüfung: " + (endpruefdat - startpruefdat));
 
-		assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
+		assertThat(infosys.getYstatus(), is(de.abaspro.utils.Util.getMessage("main.check.data.success")));
 		assertThat(infosys.getYfehlerdatpruef(), is(0));
 
 		long startimport = System.currentTimeMillis();
@@ -141,7 +142,7 @@ public class MainTest extends AbstractTest {
 		long diffimport = endimport - startimport;
 		System.out.println("Import: " + diffimport + " " + infosys.getYdatafile());
 
-		assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
+		assertThat(infosys.getYstatus(), is(de.abaspro.utils.Util.getMessage("info.import.data.success")));
 		// assertThat(infosys.getYfehler(), is(0));
 		assertFalse(diffimport == 0);
 	}
@@ -158,14 +159,14 @@ public class MainTest extends AbstractTest {
 		System.out.println("Strukturprüfung: " + (endpruef - startpruef) + " " + infosys.getYdatafile());
 
 		assertThat(infosys.getYfehlerstruktur(), is(0));
-		assertThat(infosys.getYstatus(), is(Util.getMessage("main.status.structure.check.success")));
+		assertThat(infosys.getYstatus(), is(de.abaspro.utils.Util.getMessage("main.status.structure.check.success")));
 
 		long startpruefdat = System.currentTimeMillis();
 		infosys.invokeYpruefdat();
 		long endpruefdat = System.currentTimeMillis();
 		System.out.println("Datenprüfung: " + (endpruefdat - startpruefdat));
 
-		assertThat(infosys.getYstatus(), is(Util.getMessage("main.check.data.success")));
+		assertThat(infosys.getYstatus(), is(de.abaspro.utils.Util.getMessage("main.check.data.success")));
 		assertThat(infosys.getYfehlerdatpruef(), is(0));
 
 		long startimport = System.currentTimeMillis();
@@ -174,7 +175,7 @@ public class MainTest extends AbstractTest {
 		long diffimport = endimport - startimport;
 		System.out.println("Import: " + diffimport + " " + infosys.getYdatafile());
 
-		assertThat(infosys.getYstatus(), is(Util.getMessage("info.import.data.success")));
+		assertThat(infosys.getYstatus(), is(de.abaspro.utils.Util.getMessage("info.import.data.success")));
 		// assertThat(infosys.getYfehler(), is(0));
 
 		assertFalse(diffimport == 0);
@@ -323,6 +324,29 @@ public class MainTest extends AbstractTest {
 		valPairs2.add(new ValuePair("warehGrp", "26"));
 		WarehouseGroupProperty wGP2 = getObjectSel(WarehouseGroupProperty.class, valPairs2);
 		assertTrue(wGP2 != null);
+
+	}
+
+	@Test
+	public void integTestProductionList() throws Exception {
+
+		setInfosysloginInfo();
+		AbasObjectImpl delegatee;
+
+		ProductEditor product = ctx.newObject(ProductEditor.class);
+
+		product.setIdno("1TEST7");
+		product.setSwd("TEST7");
+		product.commit();
+
+		infosys.setYdatafile("owfw7/Test_Fertlist.xlsx");
+		infosys.invokeYpruefstrukt();
+		assertThat(infosys.getYfehlerstruktur(), is(0));
+		infosys.invokeYpruefdat();
+		assertThat(infosys.getYfehlerdatpruef(), is(0));
+		infosys.invokeYimport();
+		assertThat(infosys.getYok(), is(1));
+		infosys.close();
 
 	}
 
