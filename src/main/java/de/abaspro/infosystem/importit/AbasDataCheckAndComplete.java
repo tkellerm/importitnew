@@ -228,12 +228,17 @@ public class AbasDataCheckAndComplete {
 		}
 	}
 
-	private Integer checkTypeCommandString(String typeCommandString) {
+	private Integer checkTypeCommandString(String typeCommandString) throws ImportitException {
 		Integer typeCommandCode = null;
 		Enumeration enumeration = fillEnumeration();
 		if (enumeration.getListOfEnumItems().size() > 0) {
 			EnumerationItem enumerationItem = enumeration.searchItem(typeCommandString);
-			typeCommandCode = enumerationItem.getNumber();
+			if (enumerationItem != null) {
+				typeCommandCode = enumerationItem.getNumber();
+			} else {
+				throw new ImportitException(
+						Util.getMessage("error.structure.check.falsetippcommand", typeCommandString));
+			}
 		}
 		return typeCommandCode;
 	}

@@ -95,6 +95,7 @@ public class EDPSessionPool implements Runnable {
 			edpSession.loggingOn(edpLogFile);
 			logger.info(Util.getMessage("info.edp.session.begin", edpSession.getSessionTag()));
 			edpSession.setVariableLanguage(variableLanguage);
+			// edpSession.setSessionOption("TESTFLAG74", "1");
 		} catch (CantBeginSessionException e) {
 			logger.error(Util.getMessage("err.edp.session.start", e));
 			throw new ImportitException(Util.getMessage("err.edp.session.start", e));
