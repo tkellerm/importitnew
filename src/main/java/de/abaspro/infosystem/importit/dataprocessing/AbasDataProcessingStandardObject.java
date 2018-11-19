@@ -42,7 +42,7 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 	private void writeDatabase(Data data) throws CantChangeSettingException, ImportitException, CantSaveException,
 			InvalidQueryException, CantReadFieldPropertyException, CantChangeFieldValException,
 			InvalidRowOperationException, ServerActionException, CantReadSettingException {
-		EDPEditor edpEditor;
+		EDPEditor edpEditor = null;
 
 		try {
 			data.setImported(false);
@@ -116,6 +116,13 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 			logger.error(e);
 		} catch (CantReadStatusError e) {
 			logger.error(e);
+		} finally {
+			if (edpEditor != null) {
+				if (edpEditor.isActive()) {
+					edpEditor.endEditCancel();
+					releaseAndFreeEDPEditor(edpEditor);
+				}
+			}
 		}
 	}
 
