@@ -91,7 +91,8 @@ public class AbasDataProzessingWarehouseGroupProperties extends AbstractDataProc
 				logger.error(e);
 				data.appendError(e);
 			} finally {
-				EDPUtils.releaseEDPEditor(edpEditor, logger);
+				releaseAndFreeEDPEditor(edpEditor);
+
 				EDPUtils.releaseQuery(edpQuery, logger);
 			}
 		}

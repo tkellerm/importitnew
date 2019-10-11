@@ -24,6 +24,7 @@ import de.abas.erp.common.type.enums.EnumDialogBox;
 import de.abas.erp.db.DbContext;
 import de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit;
 import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
+import de.abas.jfop.base.AbasColors;
 import de.abas.jfop.base.Color;
 import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.EnvBuffer;
@@ -96,7 +97,9 @@ public class Main implements ProgressListener {
 		File destfile = new File(HELPDESTTAR);
 		try {
 
-			Util.unTarFile(new File(HELPFILE), destfile);
+			if (destfile.exists()) {
+				Util.unTarFile(new File(HELPFILE), destfile);
+			}
 
 		} catch (IOException e) {
 			logger.error(e);
@@ -108,7 +111,7 @@ public class Main implements ProgressListener {
 	public void clientExit(InfosystemImportit infosys, ScreenControl screenControl) {
 		String client = infosys.getYeigmandant();
 		if (!infosys.getYmandant().equals(client)) {
-			screenControl.setColor(infosys, InfosystemImportit.META.ymandant, Color.DEFAULT, Color.RED);
+			screenControl.setColor(infosys, InfosystemImportit.META.ymandant, Color.DEFAULT, AbasColors.RED);
 		} else {
 			screenControl.setColor(infosys, InfosystemImportit.META.ymandant, Color.DEFAULT, Color.DEFAULT);
 		}
