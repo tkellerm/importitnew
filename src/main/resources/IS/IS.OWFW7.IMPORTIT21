@@ -2,7 +2,7 @@ V#21
 K#n#IMPORTIT21#Import IT 2.1#A#isrein/screen.OWFW7.IMPORTIT21#25B.1##
 K#(0)#(0)#4000077##n#n#InfosystemImportit#y
 K#n#(1)#
-K#java:de.abaspro.infosystem.importit.Main@importitApp###java:de.abaspro.infosystem.importit.Main@importitApp##
+K#java:de.abaspro.infosystem.importit.Main@gm007###java:de.abaspro.infosystem.importit.Main@gm007##
 K#######
 K#owfw7#(127)##(116)#(98)###0#0#
 K#########
@@ -69,10 +69,10 @@ Z#0#isbstart##n####(0)######y#0#n#0##n##
 Z#0#isstartzeit##n####(0)######n#0#n#0##n##
 Z#1#isydatafile#GL255#n#Import Excel File#A#A#(2)######y#1#n#0##n##
 Z#1#isyerrorfile#GL50#n#Error File#A#A#(2)######y#1#n#0##n##
-Z#1#isypruefstrukt#BU3#n#Struktur überprüfen#A#A#(1)##java:de.abaspro.infosystem.importit.Main@importitApp####y#1#n#0##n##
-Z#1#isypruefdat#BU3#n#Daten überprüfen#A#A#(1)##java:de.abaspro.infosystem.importit.Main@importitApp####y#1#n#0##n##
-Z#1#isyintabladen#BU3#n#Daten in Tabelle anzeigen#A#A#(1)##java:de.abaspro.infosystem.importit.Main@importitApp####y#1#n#0##n##
-Z#1#isyimport#BU3#n#Importieren#A#A#(1)##java:de.abaspro.infosystem.importit.Main@importitApp####y#1#n#0##n##
+Z#1#isypruefstrukt#BU3#n#Struktur überprüfen#A#A#(1)##java:de.abaspro.infosystem.importit.Main@gm007####y#1#n#0##n##
+Z#1#isypruefdat#BU3#n#Daten überprüfen#A#A#(1)##java:de.abaspro.infosystem.importit.Main@gm007####y#1#n#0##n##
+Z#1#isyintabladen#BU3#n#Daten in Tabelle anzeigen#A#A#(1)##java:de.abaspro.infosystem.importit.Main@gm007####y#1#n#0##n##
+Z#1#isyimport#BU3#n#Importieren#A#A#(1)##java:de.abaspro.infosystem.importit.Main@gm007####y#1#n#0##n##
 Z#1#isydb#GL30#n#Datenbank#A#A#(2)######y#1#n#0##n##
 Z#1#isygruppe#GL30#n#Gruppe#A#A#(2)######y#1#n#0##n##
 Z#1#isytippkommando#GL4#n#Tippkommando#A#A#(2)######y#1#n#0##n##
@@ -86,26 +86,26 @@ Z#1#isytababspalte#IP3#n#Tabelle ab Spalte#A#A#(2)######y#1#n#0##n##
 Z#1#isytabelle#B#n#Tabelle#A#A#(2)######y#1#n#0##n##
 Z#1#isyserver#GL30#n#Server#A#A#(2)######n#1#n#0##n##
 Z#1#isyport#IP4#n#Port#A#A#(2)######n#1#n#0##n##
-Z#1#isymandant#GL30#n#Mandant#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@importitApp#n#1#n#0##n##
+Z#1#isymandant#GL30#n#Mandant#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@gm007#n#1#n#0##n##
 Z#1#isypasswort#BGLP30#n#Passwort#A#A#(2)######n#1#n#0##n##
 Z#1#isydatatab#B#n#Daten für Tabelle#A#A#(2)######y#1#n#0##n##
-Z#1#isyoptdeltab#B#n#Tabelle vorher löschen#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@importitApp#y#1#n#0##n##
-Z#1#isyoptnofop#B#n#Fop aktiv#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@importitApp#y#1#n#0##n##
-Z#1#isyoptalwaysnew#B#n#Immer Neu#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@importitApp#n#1#n#0##n##
-Z#1#isyopttransaction#B#n#Transaktion#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@importitApp#y#1#n#0##n##
-Z#1#isydoku#BU3#n#Dokumentation#A#A#(1)##java:de.abaspro.infosystem.importit.Main@importitApp####y#1#n#0##n##
+Z#1#isyoptdeltab#B#n#Tabelle vorher löschen#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@gm007#y#1#n#0##n##
+Z#1#isyoptnofop#B#n#Fop aktiv#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@gm007#y#1#n#0##n##
+Z#1#isyoptalwaysnew#B#n#Immer Neu#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@gm007#n#1#n#0##n##
+Z#1#isyopttransaction#B#n#Transaktion#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@gm007#y#1#n#0##n##
+Z#1#isydoku#BU3#n#Dokumentation#A#A#(1)##java:de.abaspro.infosystem.importit.Main@gm007####y#1#n#0##n##
 Z#1#isyversion#GL6#n#Version#A#A#(2)######y#1#n#0##n##
-Z#1#isyoptmodifiable#B#n#Modifiable#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@importitApp#y#1#n#0##n##
-Z#1#isyoptuseenglvars#B#n#Benutze Englische Variablennamen#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@importitApp#y#1#n#0##n##
-Z#1#isyoptdontchangeifeq#B#n#Ändere nicht, wenn gleicher Inhalt#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@importitApp#y#1#n#0##n##
+Z#1#isyoptmodifiable#B#n#Modifiable#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@gm007#y#1#n#0##n##
+Z#1#isyoptuseenglvars#B#n#Benutze Englische Variablennamen#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@gm007#y#1#n#0##n##
+Z#1#isyoptdontchangeifeq#B#n#Ändere nicht, wenn gleicher Inhalt#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@gm007#y#1#n#0##n##
 Z#1#isyoption#IP3#n#Optionscode#A#A#(2)######y#1#n#0##n##
 Z#1#isyshowalldata#B#n#Zeige alle Datensätze in der Zeile#A#A#(2)######y#1#n#0##n##
 Z#1#isyshowonlyerrorline#B#n#Zeige nur fehlerhafte Datensätze in der Zeile#A#A#(2)######y#1#n#0##n##
 Z#1#isyeigmandant#GL50#n#eigener Mandant#A#A#(2)######n#1#n#0##n##
 Z#1#isystatus#GL30#n#Status#A#A#(2)######y#1#n#0##n##
-Z#1#isymitdmsexport#B#n#mit DMS-Export#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@importitApp#y#1#n#0##n##
-Z#1#isyupdate#BU3#n#Update Infosystem#A#A#(1)##java:de.abaspro.infosystem.importit.Main@importitApp####y#1#n#0##n##
-Z#1#isyversionverf#GL6#n#Verf�?ügbare Version#A#A#(0)######y#1#n#0##n##
+Z#1#isymitdmsexport#B#n#mit DMS-Export#A#A#(2)#####java:de.abaspro.infosystem.importit.Main@gm007#y#1#n#0##n##
+Z#1#isyupdate#BU3#n#Update Infosystem#A#A#(1)##java:de.abaspro.infosystem.importit.Main@gm007####y#1#n#0##n##
+Z#1#isyversionverf#GL6#n#Verf�?ügbare Version#A#A#(0)######y#1#n#0##n##
 Z#1#isymitsml#B#n#Mit SML#A#A#(0)######y#1#n#0##n##
 Z#1#isysml#P12:24#n#SML#A#A#(0)######y#1#n#0##n##
 Z#0#ittabnr##y####(0)######n#0#n#0##n##
@@ -134,6 +134,6 @@ Z#2#isytfehlerstruktur#T70#y#Fehlermeldung Strukturprüfung#A#A#(0)######y#1#y#0
 Z#2#isytfehlerdatpruef#T70#y#Fehlermeldung Datenprüfung#A#A#(0)######y#1#y#0##y##
 Z#2#isyimportiert#B#y#importiert#A#A#(0)######y#1#y#0##y##
 Z#2#isyfehlerda#B#y#Fehler vorhanden#A#A#(0)######y#1#y#0##y##
-Z#2#isyicon#DV1#y##A#A#(0)######y#1#y#0##y##
-Z#2#isyiconz#DVZ1#y##A#A#(0)######n#3#n#0##n##
+Z#2#isyicon#DV1#y#icon#A#A#(0)######y#1#y#0##y##
+Z#2#isyiconz#DVZ1#y#icon#A#A#(0)######n#3#n#0##n##
 Z#2#isykomtext#TN2#y#Fehlerreport#A#A#(0)######y#1#y#0##y##

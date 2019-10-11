@@ -6,12 +6,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -313,7 +315,7 @@ public class ExcelImportProcessing {
 			return true;
 		} else {
 
-			if (importSheet.getRow(y).getCell(x).getCellType() == Cell.CELL_TYPE_BLANK) {
+			if (importSheet.getRow(y).getCell(x).getCellType() == CellType.BLANK) {
 				return true;
 			} else {
 				if (getCellContents(x, y).equals("")) {
@@ -437,14 +439,17 @@ public class ExcelImportProcessing {
 		}
 		if (cell != null) {
 			switch (cell.getCellType()) {
-			case Cell.CELL_TYPE_STRING:
+			case STRING:
 				return cell.getStringCellValue();
-			case Cell.CELL_TYPE_NUMERIC:
+			case NUMERIC:
 				if (DateUtil.isCellDateFormatted(cell)) {
 					Date date = cell.getDateCellValue();
-					int hour = date.getHours();
-					int min = date.getMinutes();
-					int year = date.getYear();
+					Calendar calendar = Calendar.getInstance();
+					calendar.setTime(date);
+
+					int hour = calendar.get(Calendar.HOUR_OF_DAY);
+					int min = calendar.get(Calendar.MINUTE);
+					int year = calendar.get(Calendar.YEAR);
 
 					if (year == 1899 || year == -1) {
 						String time = hour + ":" + min;
@@ -462,14 +467,14 @@ public class ExcelImportProcessing {
 						return new DecimalFormat("#.#########").format(numericValue);
 					}
 				}
-			case Cell.CELL_TYPE_BOOLEAN:
+			case BOOLEAN:
 				return (cell.getBooleanCellValue() ? Util.getMessage("excel.bool.yes")
 						: Util.getMessage("excel.bool.no"));
-			case Cell.CELL_TYPE_FORMULA:
+			case FORMULA:
 				return handleFormula(cell, line + 1, column + 1);
-			case Cell.CELL_TYPE_BLANK:
+			case BLANK:
 				return "";
-			case Cell.CELL_TYPE_ERROR:
+			case ERROR:
 				throw new ImportitException(Util.getMessage("excel.get.cell.contents.err.type", line + 1, column + 1));
 			default:
 				return null;
@@ -481,13 +486,13 @@ public class ExcelImportProcessing {
 
 	private String handleFormula(Cell cell, int errorLine, int errorColumn) throws ImportitException {
 		switch (cell.getCachedFormulaResultType()) {
-		case Cell.CELL_TYPE_STRING:
+		case STRING:
 			return cell.getStringCellValue();
-		case Cell.CELL_TYPE_NUMERIC:
+		case NUMERIC:
 			return ((Double) cell.getNumericCellValue()).toString();
-		case Cell.CELL_TYPE_BOOLEAN:
+		case BOOLEAN:
 			return (cell.getBooleanCellValue() ? Util.getMessage("excel.bool.yes") : Util.getMessage("excel.bool.no"));
-		case Cell.CELL_TYPE_BLANK:
+		case BLANK:
 			return "";
 		default:
 			throw new ImportitException(Util.getMessage("excel.get.cell.contents.err.type", errorLine, errorColumn));

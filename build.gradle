@@ -1,7 +1,7 @@
 plugins {
     id "java"
     id "maven-publish"
-    id "de.abas.esdk" version "0.10.14"
+    id "de.abas.esdk" version "0.12.17"
 }
 
 repositories {
@@ -23,13 +23,13 @@ esdk {
         name="importitApp"
         vendorId="abasGmbH"
         appId="gm007"
-        shared=true
+        shared=false
         infosystems = ["IS.OWFW7.IMPORTIT21"]
         tables = []
         data = []
         keys = []
         enums = []
-        essentialsVersions = ["2016r1n01-2016r4n15", "2017r1n00-2017r4n17" , "2018r1n00-2018r4n17"]
+        essentialsVersions = ["2016r1n01-2016r4n15", "2017r1n00-2017r4n17" , "2018r1n00-2018r4n17" , "2019r1n00-2019r4n17",  "2020r1n00-2020r4n17"]
         languages = "DE"
         workdirs = ["owfw7"]
     }
@@ -107,40 +107,48 @@ publishing {
 }
 
 dependencies {
-    provided 'de.abas.homedir:log4j:1.0.0'
-    //provided 'de.abas.homedir:abas-axi2:1.0.0'
-    //provided 'de.abas.homedir:abas-axi:1.0.0'
-    //provided 'de.abas.homedir:abas-jedp-util:1.0.0'
-    //provided 'de.abas.homedir:utilities:1.0.0'
-    //provided 'de.abas.homedir:abas-jfop-base:1.0.0'
-    //provided 'de.abas.homedir:abas-barcode:1.0.0'
-    //provided 'de.abas.homedir:abas-jfop-runtime:1.0.0'
+    provided "de.abas.homedir:abas-db-base:1.0.0"
+    provided "de.abas.homedir:jedp:1.0.0"
+    provided "de.abas.homedir:abas-jfop-runtime-api:1.0.0"
+    provided "de.abas.homedir:abas-erp-common:1.0.0"
+    provided "de.abas.homedir:abas-enums:1.0.0"
+    provided "de.abas.homedir:abas-jfopapi:1.0.0"
+    provided "de.abas.homedir:log4j:1.0.0"
+    implementation "de.abas.homedir:abas-erpapi:1.0.0"
+    provided "de.abas.homedir:abas-db-util:1.0.0"
+    implementation "de.abas.homedir:abas-jfop-base:1.0.0"
     
-    compile 'xmlbeans:xmlbeans:2.3.0'
-    
-    compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.10.1'
-    compile group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '3.10.1'
-    compile group: 'org.apache.poi', name: 'poi', version: '3.10.1'
+    implementation "de.abas.homedir:commons-io:1.0.0"
 
-    //compile 'org.apache.poi:poi:3.15'
-    //compile 'org.apache.poi:poi-ooxml:3.15'
-    //compile 'org.apache.poi:poi-ooxml-schemas:3.15'
+    implementation "de.abas.homedir:abas-axi2:1.0.0"
+    implementation "de.abas.homedir:abas-axi:1.0.0"
+    implementation "de.abas.homedir:abas-db-internal:1.0.0"
+    implementation "de.abas.clientdir:abas-db:1.0.0-SNAPSHOT"
+    implementation "de.abas.clientdir:abas-db-infosys:1.0.0-SNAPSHOT"
 
-    //compile group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '2.6.0'
+    
+    runtime "de.abas.homedir:abas-jfop-base:1.0.0"
+    runtime "de.abas.homedir:commons-collections:1.0.0"
+    runtime "de.abas.homedir:jcl-over-slf4j:1.0.0"
+    runtime "de.abas.homedir:slf4j-api:1.0.0"
+   
+       
+    provided 'de.abas.homedir:jedp:1.0.0'
+    provided 'de.abas.homedir:abas-jedp-util:1.0.0'
+    
+    implementation "de.abas.clientdir:abas-db:1.0.0-SNAPSHOT"
+    implementation "de.abas.clientdir:abas-db-infosys:1.0.0-SNAPSHOT"
+    implementation "de.abas.clientdir:abas-db-index:1.0.0-SNAPSHOT"
+        
+    
+    implementation "org.apache.poi:poi:4.1.0"
+    implementation "org.apache.poi:poi-ooxml:4.1.0"
+    implementation "org.apache.poi:poi-ooxml-schemas:4.1.0"
 
-    //compile group: 'org.apache.poi', name: 'poi', version: '3.17'
-    //compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.17'
-	//compile group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '3.17'
-	
-	
-    //compile 'org.jgrapht:jgrapht-core:0.9.1'
-    //compile 'com.github.monkeysintown:jgraphx:3.3.1.1'
-    //compile 'org.jgrapht:jgrapht-ext:0.9.1'
+    implementation "org.apache.xmlbeans:xmlbeans:2.6.0"
     
-    compile 'org.apache.commons:commons-lang3:3.4'
-    //compile 'org.scala-lang:scala-library-all:2.11.7'
-    
-    compile group: 'org.apache.commons', name: 'commons-compress', version: '1.5'
+    implementation "org.apache.commons:commons-lang3:3.4" 
+    implementation "org.apache.commons:commons-compress:1.19"
     
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
