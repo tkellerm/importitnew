@@ -98,7 +98,7 @@ public class AbasDataProcessingStandardObject extends AbstractDataProcessing {
 					logger.info(Util.getMessage("info.save.editor.new", data.getDatabase().toString(),
 							data.getGroup().toString()));
 					data.setAbasId(abasId);
-					edpEditor.endEditSave();
+					edpEditor.endEditCancel();
 					data.setImported(true);
 					if (edpEditor.isActive()) {
 						edpEditor.endEditCancel();

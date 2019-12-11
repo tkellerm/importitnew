@@ -228,7 +228,7 @@ public class MainTest extends AbstractTest {
 
 		infosys.invokeYdoku();
 
-		assertFalse(getMessage().contains(Util.getMessage("main.docu.error")));
+		assertFalse(getMessage().contains(de.abaspro.utils.Util.getMessage("main.docu.error")));
 	}
 
 	@Test
@@ -301,7 +301,7 @@ public class MainTest extends AbstractTest {
 
 	@Test
 	public void integTestWarehousePropertiesImport() throws Exception {
-
+		// @Todo Lagergruppen vorher anlegen.
 		setInfosysloginInfo();
 		infosys.setYdatafile("owfw7/Test2_WarehouseGroupProperties.xlsx");
 		infosys.invokeYpruefstrukt();
