@@ -51,6 +51,11 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 	protected EDPSessionHandler edpSessionHandler;
 	protected Logger logger = Logger.getLogger(AbstractDataProcessing.class);
 
+	private final String MESSAGE_PROPERTY_CHECKDATA = "progress.message.datacheck";
+
+	private final String MESSAGE_PROPERTY_IMPORT = "progress.message.import";
+	private final String MESSAGE_PROPERTY_CHECKSTRUCTUR = "progress.message.structurecheck";
+
 	protected abstract void writeData(Data data) throws ImportitException;
 
 	protected abstract boolean checkDataStructure(Data data) throws ImportitException;
@@ -72,16 +77,16 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 	@Override
 	public void checkDataListStructure(ArrayList<Data> dataList) throws ImportitException {
+
 		if (dataList != null) {
 			if (!dataList.isEmpty()) {
+				ProgressManager progress = new ProgressManager(MESSAGE_PROPERTY_CHECKSTRUCTUR, dataList.size(),
+						this.progressListener);
 				Data data = dataList.get(0);
 				if (data != null) {
 					if (checkDataStructure(data)) {
-						Integer zaehler = 0;
 						for (Data dataset : dataList) {
-							zaehler = zaehler + 1;
-							sendProgress(Util.getMessage("progress.message.structurecheck", zaehler.toString(),
-									dataList.size()));
+							progress.sendProgress();
 							dataset.copyDatabase(data);
 							dataset.copyAbasType(data);
 						}
@@ -98,10 +103,9 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 	@Override
 	public void importDataList(ArrayList<Data> dataList) throws ImportitException {
-		Integer zaehler = 0;
+		ProgressManager progress = new ProgressManager(MESSAGE_PROPERTY_IMPORT, dataList.size(), this.progressListener);
 		for (Data data : dataList) {
-			zaehler = zaehler + 1;
-			sendProgress(Util.getMessage("progress.message.import", zaehler.toString(), dataList.size()));
+			progress.sendProgress();
 			writeData(data);
 		}
 
@@ -127,41 +131,70 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 	@Override
 	public void checkDataListValues(ArrayList<Data> dataList) throws ImportitException {
-		Integer zaehler = 0;
-		for (Data data : dataList) {
-			zaehler = zaehler + 1;
-			sendProgress(Util.getMessage("progress.message.datacheck", zaehler.toString(), dataList.size()));
+
+		ProgressManager progress = new ProgressManager(MESSAGE_PROPERTY_CHECKDATA, dataList.size(),
+				this.progressListener);
+
+		dataList.stream().forEach(s -> {
+			try {
+				checkDataValues(s, progress);
+			} catch (ImportitException e) {
+				logger.error(e);
+			}
+		});
+	}
+
+	private void checkDataValues(Data data, ProgressManager progress) throws ImportitException {
+		{
+
+			boolean includeError = false;
+
 			List<Field> headerFields = data.getHeaderFields();
+
 			writeAbasIDinData(data);
-			Boolean includeError = false;
-			for (Field field : headerFields) {
-				if (!checkDataField(field)) {
-					includeError = true;
-				}
+
+			if (checkFieldListData(headerFields)) {
+				includeError = true;
 			}
 
+			logger.debug("start check sml");
 			List<Field> smlfields = data.getSmlFields();
 
-			for (Field field : smlfields) {
-
-				if (!checkDataField(field)) {
-					includeError = true;
-				}
+			if (checkFieldListData(smlfields)) {
+				includeError = true;
 			}
-
+			logger.debug("start check tableRows");
 			List<DataTable> tableRows = data.getTableRows();
 			for (DataTable dataTable : tableRows) {
 				ArrayList<Field> tableFields = dataTable.getTableFields();
-				for (Field field : tableFields) {
-					if (!checkDataField(field)) {
-						includeError = true;
-					}
+				if (checkFieldListData(tableFields)) {
+					includeError = true;
 				}
 			}
+
 			if (includeError) {
 				data.createErrorReport();
 			}
+
+			progress.sendProgress();
 		}
+	}
+
+	private boolean checkFieldListData(List<Field> fields) {
+		fields.parallelStream().forEach(s -> {
+			try {
+				checkDataField(s);
+				logger.debug(s.getName());
+			} catch (ImportitException e) {
+				logger.error(e);
+			}
+		});
+		for (Field field : fields) {
+			if (field.getError().isEmpty()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -276,8 +309,10 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 						if (dataType == EDPTools.EDP_REFERENCE || dataType == EDPTools.EDP_ROWREFERENCE) {
 							String edpErpArt = edpEksArtInfo.getERPArt();
 							if (edpErpArt.startsWith("V")) {
+								logger.debug("start check MultiReference");
 								checkMultiReferenceFields(field, value, edpEksArtInfo);
 							} else {
+								logger.debug("start check Reference");
 								checkReferenceField(field, edpEksArtInfo);
 							}
 						} else if (dataType == EDPTools.EDP_STRING) {
@@ -925,11 +960,6 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 	public void addListener(ProgressListener toAdd) {
 		this.progressListener.add(toAdd);
-	}
-
-	private void sendProgress(String message) {
-		for (ProgressListener pl : this.progressListener)
-			pl.edpProgress(message);
 	}
 
 }
