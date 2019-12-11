@@ -5,7 +5,7 @@ services:
     # Accessing container via ssh: docker exec -u erp -it erp bash
     #
     erp:
-      image: partner.registry.abas.sh/abas/test:2018r4n10
+      image:  sdp.registry.abas.sh/abas/test:2018r4n10
       container_name: "erp"
 
       ports:
@@ -30,3 +30,7 @@ services:
       container_name: "nexus"
       ports:
       - "8081:8081"
+    sonaqube:
+        image: sonarqube
+        ports:
+        - "19000:9000"
