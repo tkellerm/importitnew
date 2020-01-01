@@ -44,6 +44,8 @@ public class Main implements ProgressListener {
 	static private String HELPDEST = "win/tmp/owimportitDocumentation";
 	static private String HELPDESTTAR = "win/tmp/";
 
+	private boolean showprogress;
+
 	private ArrayList<Data> dataList;
 	private AbasDataProcessable abasDataProcessing;
 	private EDPSessionHandler edpSessionhandler = EDPSessionHandler.getInstance();
@@ -52,10 +54,11 @@ public class Main implements ProgressListener {
 	@ScreenEventHandler(type = ScreenEventType.ENTER)
 	public void screenEnter(InfosystemImportit infosys, ScreenControl screenControl, DbContext ctx) {
 
-		infosys.setYversion("3.0.4");
+		infosys.setYversion("3.0.5");
 		fillClientFields(infosys);
 		extractHelpTar(ctx);
 		protectoptionFields(infosys, screenControl, true);
+		this.showprogress = infosys.getYwithProgress();
 		this.screenControl = screenControl;
 
 	}
@@ -180,6 +183,7 @@ public class Main implements ProgressListener {
 	public void importData(DbContext ctx, ScreenControl screenControl, InfosystemImportit infosys) {
 		try {
 			startEdpSessionHandler(infosys);
+			this.showprogress = infosys.getYwithProgress();
 			logger.info(Util.getMessage("info.import.data.start"));
 			if (dataListNotEmpty()) {
 				if (isTransactionDataList()) {
@@ -289,6 +293,7 @@ public class Main implements ProgressListener {
 
 		try {
 			startEdpSessionHandler(infosys);
+			this.showprogress = infosys.getYwithProgress();
 			logger.debug(Util.getMessage("info.check.data.start"));
 
 			if (dataListNotEmpty()) {
@@ -346,6 +351,7 @@ public class Main implements ProgressListener {
 		infosys.setYdb("");
 		infosys.setYgruppe("");
 		infosys.setYtippkommando("");
+		this.showprogress = infosys.getYwithProgress();
 		try {
 
 			startEdpSessionHandler(infosys);
@@ -462,10 +468,12 @@ public class Main implements ProgressListener {
 
 	@Override
 	public void edpProgress(String message) {
-		if (message == null) {
-			message = "null";
+		if (showprogress) {
+			if (message == null) {
+				message = "null";
+			}
+			this.screenControl.setNote(message, true, false);
 		}
-		this.screenControl.setNote(message, true, false);
 
 	}
 

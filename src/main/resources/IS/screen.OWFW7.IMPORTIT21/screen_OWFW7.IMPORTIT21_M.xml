@@ -191,8 +191,12 @@
         <cell gridX="3" gridY="11">
          <erpfield access="readOnly" s3Name="0:ystatus" />
         </cell>
-        <cell gridX="4" gridY="11" />
-        <cell gridX="5" gridY="11" />
+        <cell gridX="4" gridY="11">
+         <label msgId="importit21_owfw7_fhead_isywithprogress" />
+        </cell>
+        <cell gridX="5" gridY="11">
+         <erpfield s3Name="0:ywithProgress" />
+        </cell>
         <cell gridX="6" gridY="11" />
         <cell gridX="7" gridY="11">
          <label msgId="52e5304c8c7dfe795117f86497f74b8d" />
@@ -230,13 +234,13 @@
     </pane.split>
     <pane.split>
      <table>
-      <erpfield access="readOnly" msgId="95e369da44e19d0cd7c169c5f57136c2" s3Name="1:ysel" />
-      <erpfield access="readOnly" msgId="d76286d9dc80bc762fcb66a58c0a1954" s3Name="1:ydatensatz" />
-      <erpfield access="readOnly" msgId="2b772a3b-fa82-48ed-88e2-e031e7a12197" s3Name="1:yfehlerda" />
-      <erpfield access="readOnly" msgId="90a47606-1dde-4da4-b57f-efadbbaee543" s3Name="1:yimportiert" />
-      <erpfield access="readOnly" msgId="ec53a8c4f07baed5d8825072c89799be" s3Name="1:yiconz" />
-      <erpfield access="readOnly" msgId="52e5304c8c7dfe795117f86497f74b8d.1" s3Name="1:ytfehler" />
-      <erpfield msgId="31045a275b7698e5c48cf484ba762b25" s3Name="1:ykomtext" />
+      <erpfield access="readOnly" dimX="0" msgId="95e369da44e19d0cd7c169c5f57136c2" s3Name="1:ysel" />
+      <erpfield access="readOnly" dimX="0" msgId="d76286d9dc80bc762fcb66a58c0a1954" s3Name="1:ydatensatz" />
+      <erpfield access="readOnly" dimX="0" msgId="2b772a3b-fa82-48ed-88e2-e031e7a12197" s3Name="1:yfehlerda" />
+      <erpfield access="readOnly" dimX="0" msgId="90a47606-1dde-4da4-b57f-efadbbaee543" s3Name="1:yimportiert" />
+      <erpfield access="readOnly" dimX="0" msgId="ec53a8c4f07baed5d8825072c89799be" s3Name="1:yiconz" />
+      <erpfield access="readOnly" dimX="0" msgId="52e5304c8c7dfe795117f86497f74b8d.1" s3Name="1:ytfehler" />
+      <erpfield dimX="0" msgId="31045a275b7698e5c48cf484ba762b25" s3Name="1:ykomtext" />
      </table>
     </pane.split>
    </layout.split>
