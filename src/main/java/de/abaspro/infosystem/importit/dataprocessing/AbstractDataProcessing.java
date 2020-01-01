@@ -1,14 +1,9 @@
 package de.abaspro.infosystem.importit.dataprocessing;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
+import java.lang.Thread.State;
 import java.text.MessageFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.management.BadAttributeValueExpException;
 
 import org.apache.log4j.Logger;
 
@@ -20,20 +15,17 @@ import de.abas.ceks.jedp.CantReadSettingException;
 import de.abas.ceks.jedp.CantReadStatusError;
 import de.abas.ceks.jedp.ConnectionLostException;
 import de.abas.ceks.jedp.EDPConstants;
-import de.abas.ceks.jedp.EDPEKSArtInfo;
 import de.abas.ceks.jedp.EDPEditor;
 import de.abas.ceks.jedp.EDPQuery;
 import de.abas.ceks.jedp.EDPSession;
-import de.abas.ceks.jedp.EDPTools;
 import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abas.ceks.jedp.InvalidQueryException;
 import de.abas.ceks.jedp.InvalidRowOperationException;
 import de.abas.ceks.jedp.InvalidSettingValueException;
 import de.abas.ceks.jedp.StandardEDPSelection;
 import de.abas.ceks.jedp.StandardEDPSelectionCriteria;
-import de.abas.eks.jfop.remote.FOe;
-import de.abas.jfop.base.buffer.BufferFactory;
-import de.abas.jfop.base.buffer.UserTextBuffer;
+import de.abas.ceks.jedp.query.EDPQueryResult;
+import de.abas.ceks.jedp.query.TestFieldValueQuery;
 import de.abaspro.infosystem.importit.ImportitException;
 import de.abaspro.infosystem.importit.OptionCode;
 import de.abaspro.infosystem.importit.ProgressListener;
@@ -46,7 +38,7 @@ import de.abaspro.utils.Util;
 
 public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
-	private List<ProgressListener> progressListener = new ArrayList<ProgressListener>();
+	private List<ProgressListener> progressListener = new ArrayList<>();
 
 	protected EDPSessionHandler edpSessionHandler;
 	protected Logger logger = Logger.getLogger(AbstractDataProcessing.class);
@@ -82,6 +74,10 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			if (!dataList.isEmpty()) {
 				ProgressManager progress = new ProgressManager(MESSAGE_PROPERTY_CHECKSTRUCTUR, dataList.size(),
 						this.progressListener);
+
+				Thread progressManagerThread = new Thread(progress);
+				progressManagerThread.start();
+
 				Data data = dataList.get(0);
 				if (data != null) {
 					if (checkDataStructure(data)) {
@@ -91,6 +87,10 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 							dataset.copyAbasType(data);
 						}
 					}
+				}
+				progress.stop();
+				while (progressManagerThread.getState() != State.TERMINATED) {
+					logger.debug(Util.getMessage("debug.ProgressManager.waitEndThread"));
 				}
 
 			} else {
@@ -104,9 +104,17 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 	@Override
 	public void importDataList(ArrayList<Data> dataList) throws ImportitException {
 		ProgressManager progress = new ProgressManager(MESSAGE_PROPERTY_IMPORT, dataList.size(), this.progressListener);
+		Thread progressManagerThread = new Thread(progress);
+		progressManagerThread.start();
+
 		for (Data data : dataList) {
 			progress.sendProgress();
 			writeData(data);
+		}
+
+		progress.stop();
+		while (progressManagerThread.getState() != State.TERMINATED) {
+			logger.debug(Util.getMessage("debug.ProgressManager.waitEndThread"));
 		}
 
 	}
@@ -134,6 +142,8 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 		ProgressManager progress = new ProgressManager(MESSAGE_PROPERTY_CHECKDATA, dataList.size(),
 				this.progressListener);
+		Thread progressManagerThread = new Thread(progress);
+		progressManagerThread.start();
 
 		dataList.stream().forEach(s -> {
 			try {
@@ -141,6 +151,12 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			} catch (ImportitException e) {
 				logger.error(e);
 			}
+
+			progress.stop();
+			while (progressManagerThread.getState() != State.TERMINATED) {
+				logger.debug(Util.getMessage("debug.ProgressManager.waitEndThread"));
+			}
+
 		});
 	}
 
@@ -149,10 +165,10 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 			boolean includeError = false;
 
-			List<Field> headerFields = data.getHeaderFields();
-
+			List<Field> headerFields = data.getActiveHeaderFields();
+			logger.debug("start writeAbasIDinData");
 			writeAbasIDinData(data);
-
+			logger.debug("start Check Headerfields");
 			if (checkFieldListData(headerFields)) {
 				includeError = true;
 			}
@@ -166,7 +182,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			logger.debug("start check tableRows");
 			List<DataTable> tableRows = data.getTableRows();
 			for (DataTable dataTable : tableRows) {
-				ArrayList<Field> tableFields = dataTable.getTableFields();
+				List<Field> tableFields = dataTable.getActiveTableFields();
 				if (checkFieldListData(tableFields)) {
 					includeError = true;
 				}
@@ -175,26 +191,10 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			if (includeError) {
 				data.createErrorReport();
 			}
-
+			logger.debug("sendprogress");
 			progress.sendProgress();
+			logger.debug("end sendprogress");
 		}
-	}
-
-	private boolean checkFieldListData(List<Field> fields) {
-		fields.parallelStream().forEach(s -> {
-			try {
-				checkDataField(s);
-				logger.debug(s.getName());
-			} catch (ImportitException e) {
-				logger.error(e);
-			}
-		});
-		for (Field field : fields) {
-			if (field.getError().isEmpty()) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@Override
@@ -294,141 +294,196 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 		return true;
 	}
 
-	private Boolean checkDataField(Field field) throws ImportitException {
-		String value = field.getValue();
-		if (!field.getOptionSkip()) {
+	protected boolean checkFieldListData(List<Field> fields) {
 
-			logger.debug(Util.getMessage("info.check.data", field.getName(), field.getColNumber(), field.getAbasTyp(),
-					value));
-
-			if (!field.getAbasTyp().isEmpty()) {
-				EDPEKSArtInfo edpEksArtInfo = new EDPEKSArtInfo(field.getAbasTyp());
-				int dataType = edpEksArtInfo.getDataType();
-				if (value != null) {
-					if (!(field.getOptionNotEmpty() && value.isEmpty())) {
-						if (dataType == EDPTools.EDP_REFERENCE || dataType == EDPTools.EDP_ROWREFERENCE) {
-							String edpErpArt = edpEksArtInfo.getERPArt();
-							if (edpErpArt.startsWith("V")) {
-								logger.debug("start check MultiReference");
-								checkMultiReferenceFields(field, value, edpEksArtInfo);
-							} else {
-								logger.debug("start check Reference");
-								checkReferenceField(field, edpEksArtInfo);
-							}
-						} else if (dataType == EDPTools.EDP_STRING) {
-
-							checkStringField(field, value, edpEksArtInfo);
-
-						} else if (dataType == EDPTools.EDP_INTEGER) {
-
-							checkIntegerField(field, value, edpEksArtInfo);
-
-						} else if (dataType == EDPTools.EDP_DOUBLE) {
-
-							checkDoubleField(field, value, edpEksArtInfo);
-
-						} else if (dataType == EDPTools.EDP_DATE) {
-
-							if (!checkDataDate(field)) {
-								field.setError(Util.getMessage("err.check.data.conversion.date", value));
-							}
-						} else if (dataType == EDPTools.EDP_DATETIME || dataType == EDPTools.EDP_TIME
-								|| dataType == EDPTools.EDP_WEEK) {
-							if (!checkDataDate(field)) {
-								field.setError(Util.getMessage("err.check.data.conversion.time", value));
-							}
-						}
-					}
-				} else {
-					field.setError(Util.getMessage("err.check.data.null.value"));
-				}
-			}
-		}
-		if (field.getError().isEmpty()) {
-			return true;
-		} else {
+		if (fields == null || fields.isEmpty()) {
 			return false;
 		}
-	}
 
-	private void checkDoubleField(Field field, String value, EDPEKSArtInfo edpEksArtInfo) throws ImportitException {
-		int fractionDigits = edpEksArtInfo.getFractionDigits();
-		int integerDigits = edpEksArtInfo.getIntegerDigits();
-		if (value.length() > 0 && !value.equals("0")) {
-			try {
-				value = value.replaceAll(" ", "");
-				BigDecimal bigDecimalValue = new BigDecimal(value);
-				BigDecimal roundBigDValue = bigDecimalValue.setScale(fractionDigits, RoundingMode.HALF_UP);
-				String roundBigDValueStr = roundBigDValue.toString();
-				String compValue = fillValueWithFractionDigits(value, fractionDigits);
-				if (!roundBigDValueStr.equals(compValue)) {
-					field.setError(Util.getMessage("err.check.data.rounding", value, compValue, roundBigDValueStr));
-				}
-			} catch (NumberFormatException e) {
-				field.setError(Util.getMessage("err.check.data.conversion.big.decimal", value));
-			} catch (BadAttributeValueExpException e) {
-				throw new ImportitException(Util.getMessage("err.check.data.bad.attribute"), e);
-			}
-			if (value.split("[\\.,]")[0].length() > integerDigits) {
-				field.setError(
-						Util.getMessage("err.check.data.too.many.digits", value, field.getAbasTyp(), field.getName()));
-			}
-		}
-	}
+		TestFieldValueQuery testFieldValue = new TestFieldValueQuery();
 
-	private void checkIntegerField(Field field, String value, EDPEKSArtInfo edpEksArtInfo) {
+		fields.stream().forEach(s -> testFieldValue.addValue(s.getAbasTyp(), s.getValue()));
+		EDPSession edpSession = null;
+		EDPQueryResult result = null;
 		try {
-			int integerDigits = edpEksArtInfo.getIntegerDigits();
-			if (value.length() > 0 && !value.equals("0")) {
+			edpSession = this.edpSessionHandler.getEDPSession(EDPVariableLanguage.ENGLISH);
+			edpSession.setVerwMode(EDPSession.VERWMODE_REF);
+			result = edpSession.createQueryExecutor().execute(testFieldValue);
 
-				Integer intValue = new Integer(value);
-				Integer valueLength = intValue.toString().length();
-				if (integerDigits < valueLength) {
-					field.setError(Util.getMessage("err.check.data.too.big", value));
-				}
+			return writeResultToFieldList(fields, result);
+
+		} catch (InvalidQueryException | ImportitException | InvalidSettingValueException e) {
+			logger.error(e);
+			return true;
+		} finally {
+			result.breakQuery();
+			if (edpSession != null) {
+				this.edpSessionHandler.freeEDPSession(edpSession);
 			}
-		} catch (NumberFormatException e) {
-			field.setError(Util.getMessage("err.check.data.conversion.integer", value));
 		}
+
 	}
 
-	private void checkStringField(Field field, String value, EDPEKSArtInfo edpEksArtInfo) {
-		Long fieldLength = edpEksArtInfo.getMaxLen();
-		Long valueLength = (long) value.length();
-		if (fieldLength < valueLength) {
-			field.setError(Util.getMessage("err.check.data.field.length", value, valueLength, field.getName(),
-					fieldLength.toString()));
-		}
-	}
+	private boolean writeResultToFieldList(List<Field> fields, EDPQueryResult result) throws ImportitException {
 
-	private void checkMultiReferenceFields(Field field, String value, EDPEKSArtInfo edpEksArtInfo)
-			throws ImportitException {
-		String edpErpArt = edpEksArtInfo.getERPArt();
-		if (edpErpArt.equals("VPK1") || edpErpArt.equals("VPKS1") || edpErpArt.equals("VPKT1")) {
-			if (value.startsWith("A ")) {
-				checkReferenceField(field, new EDPEKSArtInfo("P7:0"));
-			} else {
-				checkReferenceField(field, new EDPEKSArtInfo("P2:1.2.5"));
+//		if (result.getRecordNumber() != fields.size()) {
+//			logger.error("resultgröße : " + result.getRecordNumber() + "Anzahl Fields" + fields.size());
+//			throw new ImportitException(Util.getMessage("error.checkdata.sizefromResultnotEqualtoFieldlist"));
+//		}
+		boolean hasError = false;
+		int index = 0;
+		while (result.getNextRecord()) {
+			Field field = fields.get(index);
+			if (!result.getField(EDPConstants.FLDTEST_ERRNR).isEmpty()
+					&& !result.getField(EDPConstants.FLDTEST_ERRNR).equals("0")) {
+//				 "In dem Feld {0} mit dem Typ {1} hat mit dem Wert {2} folgende Fehlermeldung ergeben : {3}"
+				field.setError(Util.getMessage("error.fieldcheck.errorinFiled", field.getName(), field.getAbasTyp(),
+						field.getValue(), result.getField(EDPConstants.FLDTEST_ERRMSG)));
+				hasError = true;
 			}
-		} else if (edpErpArt.equals("VPK5") || edpErpArt.equals("VPK5") || edpErpArt.equals("VPKT5")) {
-			// TODO Implement more MultiReferenceFields
-		}
-	}
-
-	private void checkReferenceField(Field field, EDPEKSArtInfo edpeksartinfo) throws ImportitException {
-		String value = field.getReferenceFieldValue();
-		int databaseNumber = edpeksartinfo.getRefDatabaseNr();
-		int groupNumber = edpeksartinfo.getRefGroupNr();
-		if (!value.isEmpty()) {
-
-			if (field.getFieldSelectionString().isEmpty()) {
-				field.setAbasID(getEDPQueryReference(field, databaseNumber, groupNumber));
-			} else {
-				field.setAbasID(searchAbasIDforField(field, databaseNumber, groupNumber));
+			if (field.isReferenceField()) {
+				field.setAbasID(result.getField(EDPConstants.FLDTEST_VALUE));
 			}
-
+			index++;
 		}
+		return hasError;
 	}
+
+//	private Boolean checkDataField(Field field) throws ImportitException {
+//		String value = field.getValue();
+//		if (!field.getOptionSkip()) {
+//
+//			logger.debug(Util.getMessage("info.check.data", field.getName(), field.getColNumber(), field.getAbasTyp(),
+//					value));
+//
+//			if (!field.getAbasTyp().isEmpty()) {
+//				EDPEKSArtInfo edpEksArtInfo = new EDPEKSArtInfo(field.getAbasTyp());
+//				int dataType = edpEksArtInfo.getDataType();
+//				if (value != null) {
+//					if (!(field.getOptionNotEmpty() && value.isEmpty())) {
+//						if (dataType == EDPTools.EDP_REFERENCE || dataType == EDPTools.EDP_ROWREFERENCE) {
+//							String edpErpArt = edpEksArtInfo.getERPArt();
+//							if (edpErpArt.startsWith("V")) {
+//								logger.debug("start check MultiReference");
+//								checkMultiReferenceFields(field, value, edpEksArtInfo);
+//							} else {
+//								logger.debug("start check Reference");
+//								checkReferenceField(field, edpEksArtInfo);
+//							}
+//						} else if (dataType == EDPTools.EDP_STRING) {
+//
+//							checkStringField(field, value, edpEksArtInfo);
+//
+//						} else if (dataType == EDPTools.EDP_INTEGER) {
+//
+//							checkIntegerField(field, value, edpEksArtInfo);
+//
+//						} else if (dataType == EDPTools.EDP_DOUBLE) {
+//
+//							checkDoubleField(field, value, edpEksArtInfo);
+//
+//						} else if (dataType == EDPTools.EDP_DATE) {
+//
+//							if (!checkDataDate(field)) {
+//								field.setError(Util.getMessage("err.check.data.conversion.date", value));
+//							}
+//						} else if (dataType == EDPTools.EDP_DATETIME || dataType == EDPTools.EDP_TIME
+//								|| dataType == EDPTools.EDP_WEEK) {
+//							if (!checkDataDate(field)) {
+//								field.setError(Util.getMessage("err.check.data.conversion.time", value));
+//							}
+//						}
+//					}
+//				} else {
+//					field.setError(Util.getMessage("err.check.data.null.value"));
+//				}
+//			}
+//		}
+//		if (field.getError().isEmpty()) {
+//			return true;
+//		} else {
+//			return false;
+//		}
+//	}
+
+//	private void checkDoubleField(Field field, String value, EDPEKSArtInfo edpEksArtInfo) throws ImportitException {
+//		int fractionDigits = edpEksArtInfo.getFractionDigits();
+//		int integerDigits = edpEksArtInfo.getIntegerDigits();
+//		if (value.length() > 0 && !value.equals("0")) {
+//			try {
+//				value = value.replaceAll(" ", "");
+//				BigDecimal bigDecimalValue = new BigDecimal(value);
+//				BigDecimal roundBigDValue = bigDecimalValue.setScale(fractionDigits, RoundingMode.HALF_UP);
+//				String roundBigDValueStr = roundBigDValue.toString();
+//				String compValue = fillValueWithFractionDigits(value, fractionDigits);
+//				if (!roundBigDValueStr.equals(compValue)) {
+//					field.setError(Util.getMessage("err.check.data.rounding", value, compValue, roundBigDValueStr));
+//				}
+//			} catch (NumberFormatException e) {
+//				field.setError(Util.getMessage("err.check.data.conversion.big.decimal", value));
+//			} catch (BadAttributeValueExpException e) {
+//				throw new ImportitException(Util.getMessage("err.check.data.bad.attribute"), e);
+//			}
+//			if (value.split("[\\.,]")[0].length() > integerDigits) {
+//				field.setError(
+//						Util.getMessage("err.check.data.too.many.digits", value, field.getAbasTyp(), field.getName()));
+//			}
+//		}
+//	}
+//
+//	private void checkIntegerField(Field field, String value, EDPEKSArtInfo edpEksArtInfo) {
+//		try {
+//			int integerDigits = edpEksArtInfo.getIntegerDigits();
+//			if (value.length() > 0 && !value.equals("0")) {
+//
+//				Integer intValue = new Integer(value);
+//				Integer valueLength = intValue.toString().length();
+//				if (integerDigits < valueLength) {
+//					field.setError(Util.getMessage("err.check.data.too.big", value));
+//				}
+//			}
+//		} catch (NumberFormatException e) {
+//			field.setError(Util.getMessage("err.check.data.conversion.integer", value));
+//		}
+//	}
+//
+//	private void checkStringField(Field field, String value, EDPEKSArtInfo edpEksArtInfo) {
+//		Long fieldLength = edpEksArtInfo.getMaxLen();
+//		Long valueLength = (long) value.length();
+//		if (fieldLength < valueLength) {
+//			field.setError(Util.getMessage("err.check.data.field.length", value, valueLength, field.getName(),
+//					fieldLength.toString()));
+//		}
+//	}
+//
+//	private void checkMultiReferenceFields(Field field, String value, EDPEKSArtInfo edpEksArtInfo)
+//			throws ImportitException {
+//		String edpErpArt = edpEksArtInfo.getERPArt();
+//		if (edpErpArt.equals("VPK1") || edpErpArt.equals("VPKS1") || edpErpArt.equals("VPKT1")) {
+//			if (value.startsWith("A ")) {
+//				checkReferenceField(field, new EDPEKSArtInfo("P7:0"));
+//			} else {
+//				checkReferenceField(field, new EDPEKSArtInfo("P2:1.2.5"));
+//			}
+//		} else if (edpErpArt.equals("VPK5") || edpErpArt.equals("VPK5") || edpErpArt.equals("VPKT5")) {
+//			// TODO Implement more MultiReferenceFields
+//		}
+//	}
+
+//	private void checkReferenceField(Field field, EDPEKSArtInfo edpeksartinfo) throws ImportitException {
+//		String value = field.getReferenceFieldValue();
+//		int databaseNumber = edpeksartinfo.getRefDatabaseNr();
+//		int groupNumber = edpeksartinfo.getRefGroupNr();
+//		if (!value.isEmpty()) {
+//
+//			if (field.getFieldSelectionString().isEmpty()) {
+//				field.setAbasID(getEDPQueryReference(field, databaseNumber, groupNumber));
+//			} else {
+//				field.setAbasID(searchAbasIDforField(field, databaseNumber, groupNumber));
+//			}
+//
+//		}
+//	}
 
 	private void endQuery(EDPQuery query) {
 		if (query != null) {
@@ -442,71 +497,71 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 	}
 
-	private String fillValueWithFractionDigits(String value, int fractionDigits) throws BadAttributeValueExpException {
-		Double doubleValue = new Double(value);
-		NumberFormat numberFormat = new DecimalFormat("#.#########");
-		String stringDoubleValue = numberFormat.format(doubleValue);
-		String[] valueList = stringDoubleValue.split("\\.");
-		String zeros = fillString("0", fractionDigits);
-		if (valueList.length > 1) {
-			valueList[1] = (valueList[1] + zeros).substring(0, fractionDigits);
-			return valueList[0] + "." + valueList[1];
-		} else {
-			return valueList[0] + "." + zeros;
-		}
-	}
+//	private String fillValueWithFractionDigits(String value, int fractionDigits) throws BadAttributeValueExpException {
+//		Double doubleValue = new Double(value);
+//		NumberFormat numberFormat = new DecimalFormat("#.#########");
+//		String stringDoubleValue = numberFormat.format(doubleValue);
+//		String[] valueList = stringDoubleValue.split("\\.");
+//		String zeros = fillString("0", fractionDigits);
+//		if (valueList.length > 1) {
+//			valueList[1] = (valueList[1] + zeros).substring(0, fractionDigits);
+//			return valueList[0] + "." + valueList[1];
+//		} else {
+//			return valueList[0] + "." + zeros;
+//		}
+//	}
 
-	private Boolean checkDataDate(Field field) {
-		String abastyp = field.getAbasTyp();
-		String value = field.getValue();
-		Boolean result = false;
-		BufferFactory bufferFactory = BufferFactory.newInstance(true);
-		UserTextBuffer userTextBuffer = bufferFactory.getUserTextBuffer();
-		String varnameResult = "xtergebnis";
-		if (!userTextBuffer.isVarDefined(varnameResult)) {
-			userTextBuffer.defineVar("Bool", varnameResult);
-		}
-		userTextBuffer.setValue(varnameResult, "0");
-		String formulaString = "U|" + varnameResult + " = F|isvalue( \"" + value + "\" , \"" + abastyp + "\")";
-		FOe.formula(formulaString);
-		result = userTextBuffer.getBooleanValue(varnameResult);
-		return result;
-	}
+//	private Boolean checkDataDate(Field field) {
+//		String abastyp = field.getAbasTyp();
+//		String value = field.getValue();
+//		Boolean result = false;
+//		BufferFactory bufferFactory = BufferFactory.newInstance(true);
+//		UserTextBuffer userTextBuffer = bufferFactory.getUserTextBuffer();
+//		String varnameResult = "xtergebnis";
+//		if (!userTextBuffer.isVarDefined(varnameResult)) {
+//			userTextBuffer.defineVar("Bool", varnameResult);
+//		}
+//		userTextBuffer.setValue(varnameResult, "0");
+//		String formulaString = "U|" + varnameResult + " = F|isvalue( \"" + value + "\" , \"" + abastyp + "\")";
+//		FOe.formula(formulaString);
+//		result = userTextBuffer.getBooleanValue(varnameResult);
+//		return result;
+//	}
 
-	private String fillString(String value, int stringLength) throws BadAttributeValueExpException {
-		if (value.length() == 1) {
-			String multipleString = "";
-			for (int i = 0; i < stringLength; i++) {
-				multipleString = multipleString + value;
-			}
-			return multipleString;
-		} else {
-			throw new BadAttributeValueExpException(Util.getMessage("err.fill.string.bad.attribute"));
-		}
+//	private String fillString(String value, int stringLength) throws BadAttributeValueExpException {
+//		if (value.length() == 1) {
+//			String multipleString = "";
+//			for (int i = 0; i < stringLength; i++) {
+//				multipleString = multipleString + value;
+//			}
+//			return multipleString;
+//		} else {
+//			throw new BadAttributeValueExpException(Util.getMessage("err.fill.string.bad.attribute"));
+//		}
+//
+//	}
 
-	}
-
-	private String getEDPQueryReference(Field field, Integer database, Integer group) throws ImportitException {
-
-		logger.debug(Util.getMessage("debug.getedpsession", "getEDPQueryReference"));
-		EDPSession edpSession = null;
-		EDPQuery query = null;
-		try {
-
-			edpSession = this.edpSessionHandler.getEDPSession(EDPVariableLanguage.ENGLISH);
-			String selectionString = "@noswd=" + field.getReferenceFieldValue()
-					+ ";@englvar=true;@language=en;@database=" + database.toString();
-			query = getQueryWithSelectionString(database, group, edpSession, selectionString);
-			return analyzeSelectionQuery(field, query);
-		} catch (ImportitException e) {
-			field.setError(Util.getMessage("err.check.reference", field.getAbasTyp(), field.getValue()));
-		} finally {
-			logger.debug(Util.getMessage("debug.getedpsession", "getEDPQueryReference"));
-			endQuery(query);
-		}
-		return "";
-
-	}
+//	private String getEDPQueryReference(Field field, Integer database, Integer group) throws ImportitException {
+//
+//		logger.debug(Util.getMessage("debug.getedpsession", "getEDPQueryReference"));
+//		EDPSession edpSession = null;
+//		EDPQuery query = null;
+//		try {
+//
+//			edpSession = this.edpSessionHandler.getEDPSession(EDPVariableLanguage.ENGLISH);
+//			String selectionString = "@noswd=" + field.getReferenceFieldValue()
+//					+ ";@englvar=true;@language=en;@database=" + database.toString();
+//			query = getQueryWithSelectionString(database, group, edpSession, selectionString);
+//			return analyzeSelectionQuery(field, query);
+//		} catch (ImportitException e) {
+//			field.setError(Util.getMessage("err.check.reference", field.getAbasTyp(), field.getValue()));
+//		} finally {
+//			logger.debug(Util.getMessage("debug.getedpsession", "getEDPQueryReference"));
+//			endQuery(query);
+//		}
+//		return "";
+//
+//	}
 
 	protected String searchAbasIDforField(Field field, Integer database, Integer group) {
 
@@ -648,7 +703,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 				for (DataTable dataTable : tableRows) {
 					Integer rowCount = edpEditor.getRowCount();
 					Integer rowNumber = insertRow(data, edpEditor, rowCount);
-					ArrayList<Field> tableFields = dataTable.getTableFields();
+					List<Field> tableFields = dataTable.getTableFields();
 					for (Field field : tableFields) {
 						writeField(data, field, edpEditor, rowNumber);
 					}

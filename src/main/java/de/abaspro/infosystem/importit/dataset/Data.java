@@ -2,6 +2,7 @@ package de.abaspro.infosystem.importit.dataset;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import de.abas.ceks.jedp.EDPVariableLanguage;
 import de.abaspro.infosystem.importit.ImportitException;
@@ -10,9 +11,9 @@ import de.abaspro.utils.Util;
 
 public class Data {
 
-	private List<Field> headerFields = new ArrayList<Field>();
-	private List<DataTable> tableFields = new ArrayList<DataTable>();
-	private List<Field> smlFields = new ArrayList<Field>();
+	private List<Field> headerFields = new ArrayList<>();
+	private List<DataTable> tableFields = new ArrayList<>();
+	private List<Field> smlFields = new ArrayList<>();
 	private Integer database;
 	private String dbString;
 	private Integer group;
@@ -40,6 +41,10 @@ public class Data {
 
 	public List<Field> getSmlFields() {
 		return smlFields;
+	}
+
+	public List<Field> getActiveSmlFields() {
+		return smlFields.stream().filter(field -> !field.getOptionSkip()).collect(Collectors.toList());
 	}
 
 	public Integer getTableStartsAtField() {
@@ -111,6 +116,11 @@ public class Data {
 
 	public List<Field> getHeaderFields() {
 		return headerFields;
+	}
+
+	public List<Field> getActiveHeaderFields() {
+
+		return headerFields.stream().filter(field -> !field.getOptionSkip()).collect(Collectors.toList());
 	}
 
 	public void setHeaderFields(List<Field> headerFields) throws ImportitException {
@@ -305,7 +315,7 @@ public class Data {
 		for (DataTable row : tableFields) {
 			int rowIndex = tableFields.indexOf(row);
 			String rowText = Util.getMessage("data.err.row.text", rowIndex);
-			ArrayList<Field> tableFields = row.getTableFields();
+			List<Field> tableFields = row.getTableFields();
 			for (Field field : tableFields) {
 				if (field.getError() != null) {
 					if (!field.getError().isEmpty()) {
