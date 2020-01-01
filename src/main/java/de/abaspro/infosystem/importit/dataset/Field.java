@@ -22,15 +22,15 @@ public class Field {
 	private String value;
 	private String keySelectionString;
 	private String key;
-	private Boolean optionNotEmpty;
-	private Boolean optionModifiable;
-	private Boolean optionGlobalModifiable;
-	private Boolean optionSkip;
-	private Boolean optionDontChangeIfEqual;
-	private Boolean optionKeySelection;
+	private boolean optionNotEmpty;
+	private boolean optionModifiable;
+	private boolean optionGlobalModifiable;
+	private boolean optionSkip;
+	private boolean optionDontChangeIfEqual;
+	private boolean optionKeySelection;
 	private String error;
 	private String completeContent;
-	private Boolean fieldToCopy;
+	private boolean fieldToCopy;
 	private Integer colNumber;
 	private String abasTyp;
 	private String abasID;
@@ -373,7 +373,7 @@ public class Field {
 
 	}
 
-	public Boolean isReferenceField() {
+	public boolean isReferenceField() {
 		if (!this.abasTyp.isEmpty()) {
 			int datatyp = new EDPEKSArtInfo(this.abasTyp).getDataType();
 			if (datatyp == EDPTools.EDP_REFERENCE) {
@@ -387,7 +387,7 @@ public class Field {
 
 	}
 
-	public Boolean iswithKeySelection() {
+	public boolean iswithKeySelection() {
 		if (this.optionKeySelection) {
 			return true;
 		}
