@@ -2,24 +2,25 @@ package de.abaspro.infosystem.importit.dataset;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import de.abaspro.infosystem.importit.ImportitException;
 import de.abaspro.utils.Util;
 
 public class DataTable {
 
-	ArrayList<Field> tableFields;
+	List<Field> tableFields;
 	// AbasID wegen den Kundenartikeleigenschaften
 	String abasID;
 
 	public DataTable() {
 		super();
-		this.tableFields = new ArrayList<Field>();
+		this.tableFields = new ArrayList<>();
 		this.abasID = "";
 	}
 
 	public DataTable(DataTable dataTable) throws ImportitException {
-		this.tableFields = new ArrayList<Field>();
+		this.tableFields = new ArrayList<>();
 		for (Field field : dataTable.getTableFields()) {
 			Field field2 = new Field(field.getCompleteContent(), field);
 			tableFields.add(field2);
@@ -35,8 +36,12 @@ public class DataTable {
 		throw new ImportitException(Util.getMessage("data.table.err.field.not.found"));
 	}
 
-	public ArrayList<Field> getTableFields() {
+	public List<Field> getTableFields() {
 		return tableFields;
+	}
+
+	public List<Field> getActiveTableFields() {
+		return tableFields.stream().filter(field -> !field.getOptionSkip()).collect(Collectors.toList());
 	}
 
 	public void copyAbasType(List<Field> tabellenfeldertoCopy) {

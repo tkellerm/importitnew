@@ -1,6 +1,5 @@
 package de.abaspro.infosystem.importit.dataprocessing;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import de.abas.ceks.jedp.CantBeginEditException;
@@ -147,7 +146,7 @@ public class AbasDataProzessingWarehouseGroupProperties extends AbstractDataProc
 				if (dataTable != null && edpEditor.hasTablePart()) {
 					Integer rowCount = edpEditor.getRowCount();
 					Integer rowNumber = insertRow(data, edpEditor, rowCount);
-					ArrayList<Field> tableFields = dataTable.getTableFields();
+					List<Field> tableFields = dataTable.getTableFields();
 					for (Field field : tableFields) {
 						writeField(data, field, edpEditor, rowNumber);
 					}
@@ -161,7 +160,7 @@ public class AbasDataProzessingWarehouseGroupProperties extends AbstractDataProc
 				}
 				if (dataTable != null && edpEditor.hasTablePart()) {
 					Integer rowNumber = edpEditor.getCurrentRow();
-					ArrayList<Field> tableFields = dataTable.getTableFields();
+					List<Field> tableFields = dataTable.getTableFields();
 					for (Field field : tableFields) {
 						if (dontIgnoreField(field, ignoreFields)) {
 							writeField(data, field, edpEditor, rowNumber);

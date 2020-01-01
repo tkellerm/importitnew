@@ -118,7 +118,7 @@ public class ExcelImportProcessing {
 		if (tableFields != null) {
 			List<DataTable> rows = data.getTableRows();
 			DataTable dataTable = new DataTable(tableFields);
-			ArrayList<Field> fields = dataTable.getTableFields();
+			List<Field> fields = dataTable.getTableFields();
 			for (Field field : fields) {
 				field.setValue(getCellContents(field.getColNumber(), row));
 			}
