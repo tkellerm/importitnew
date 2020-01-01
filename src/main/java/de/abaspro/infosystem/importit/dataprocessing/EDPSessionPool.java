@@ -57,7 +57,7 @@ public class EDPSessionPool implements Runnable {
 
 	}
 
-	public EDPSession getEDPSession() {
+	public synchronized EDPSession getEDPSession() {
 		EDPSession edpSession = null;
 
 		while (this.fifo.size() == 0) {
@@ -76,7 +76,7 @@ public class EDPSessionPool implements Runnable {
 
 	}
 
-	public void addEDPsession(EDPSession edpSession) {
+	public synchronized void addEDPsession(EDPSession edpSession) {
 		if (edpSession.isConnected()) {
 			this.fifo.add(edpSession);
 			logger.info(
@@ -145,7 +145,7 @@ public class EDPSessionPool implements Runnable {
 		}
 	}
 
-	public void closeSessions() {
+	public synchronized void closeSessions() {
 		this.activePool = false;
 
 	}
