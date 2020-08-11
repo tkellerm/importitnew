@@ -27,3 +27,4 @@ gradle.properties
 /gradle.properties.vm-git-gmbh
 /gradle.properties.*
 .settings/*
+/.metadata/
