@@ -7,6 +7,8 @@ services:
     erp:
       image:  partner.registry.abas.sh/abas/demo:2019r4n13
       container_name: "erp_importit2019"
+#      image:  sdp.registry.abas.sh/abas/test:2018r4n10
+#      container_name: "erp"
 
       ports:
       - "${SSH_TEST_PORT:-2205}:22"
