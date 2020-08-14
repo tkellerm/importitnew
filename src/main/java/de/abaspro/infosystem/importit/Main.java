@@ -205,7 +205,9 @@ public class Main implements ProgressListener {
 					}
 				} else {
 					logger.info(Util.getMessage("info.no.transaction.import"));
-					// edpProcessing.importDataList(dataList);
+					if (this.showprogress) {
+						abasDataProcessing.addListener(this);
+					}
 					abasDataProcessing.importDataList(dataList);
 				}
 				new TextBox(ctx, Util.getMessage("main.structure.check.box.title"),
@@ -299,8 +301,12 @@ public class Main implements ProgressListener {
 			if (dataListNotEmpty()) {
 				try {
 					if (infosys.getYfehlerstruktur() == 0) {
-						// edpProcessing.checkDataListValues(dataList);
-						abasDataProcessing.checkDataListValues(dataList);
+						if (abasDataProcessing != null) {
+							if (this.showprogress) {
+								abasDataProcessing.addListener(this);
+							}
+							abasDataProcessing.checkDataListValues(dataList);
+						}
 						infosys.setYok(getDataCount());
 						infosys.setYfehlerdatpruef(getErrorCount());
 					} else {
@@ -364,7 +370,9 @@ public class Main implements ProgressListener {
 
 			abasDataProcessing = new AbasDataProcessFactory().createAbasDataProcess(this.edpSessionhandler, dataList);
 			if (abasDataProcessing != null) {
-				abasDataProcessing.addListener(this);
+				if (this.showprogress) {
+					abasDataProcessing.addListener(this);	
+				}
 				abasDataProcessing.checkDataListStructure(dataList);
 			}
 			logger.info(Util.getMessage("info.structure.check.end.data"));
@@ -386,6 +394,7 @@ public class Main implements ProgressListener {
 		}
 		this.edpSessionhandler.closeAllConnections();
 	}
+
 
 	private void startEdpSessionHandler(InfosystemImportit infosys) throws ImportitException {
 		this.edpSessionhandler.initSession(infosys.getYserver(), infosys.getYport(), infosys.getYmandant(),
