@@ -58,7 +58,7 @@ public class Main implements ProgressListener {
 		fillClientFields(infosys);
 		extractHelpTar(ctx);
 		protectoptionFields(infosys, screenControl, true);
-		this.showprogress = infosys.getYwithProgress();
+		this.showprogress = infosys.getYwithprogress();
 		this.screenControl = screenControl;
 
 	}
@@ -183,7 +183,7 @@ public class Main implements ProgressListener {
 	public void importData(DbContext ctx, ScreenControl screenControl, InfosystemImportit infosys) {
 		try {
 			startEdpSessionHandler(infosys);
-			this.showprogress = infosys.getYwithProgress();
+			this.showprogress = infosys.getYwithprogress();
 			logger.info(Util.getMessage("info.import.data.start"));
 			if (dataListNotEmpty()) {
 				if (isTransactionDataList()) {
@@ -295,7 +295,7 @@ public class Main implements ProgressListener {
 
 		try {
 			startEdpSessionHandler(infosys);
-			this.showprogress = infosys.getYwithProgress();
+			this.showprogress = infosys.getYwithprogress();
 			logger.debug(Util.getMessage("info.check.data.start"));
 
 			if (dataListNotEmpty()) {
@@ -357,7 +357,7 @@ public class Main implements ProgressListener {
 		infosys.setYdb("");
 		infosys.setYgruppe("");
 		infosys.setYtippkommando("");
-		this.showprogress = infosys.getYwithProgress();
+		this.showprogress = infosys.getYwithprogress();
 		try {
 
 			startEdpSessionHandler(infosys);
