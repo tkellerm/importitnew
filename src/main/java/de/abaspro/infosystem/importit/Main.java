@@ -54,7 +54,7 @@ public class Main implements ProgressListener {
 	@ScreenEventHandler(type = ScreenEventType.ENTER)
 	public void screenEnter(InfosystemImportit infosys, ScreenControl screenControl, DbContext ctx) {
 
-		infosys.setYversion("3.0.5");
+		infosys.setYversion("3.0.7");
 		fillClientFields(infosys);
 		extractHelpTar(ctx);
 		protectoptionFields(infosys, screenControl, true);
