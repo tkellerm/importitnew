@@ -1,12 +1,14 @@
-version: '3'
+version: '3.7'
 services:
     # The ERP Container
     # -----------------
     # Accessing container via ssh: docker exec -u erp -it erp bash
     #
     erp:
-      image:  partner.registry.abas.sh/abas/demo:2019r4n13
-      container_name: "erp_importit2019"
+      build:
+        context: .
+        dockerfile: Dockerfile-erp-overrides
+      #container_name: "erp_importit2019"
 #      image:  sdp.registry.abas.sh/abas/test:2018r4n10
 #      container_name: "erp"
 

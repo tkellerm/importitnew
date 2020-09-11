@@ -1,0 +1,6 @@
+FROM partner.registry.abas.sh/abas/demo:2019r4n15
+
+USER root
+
+# Disable DNS lookup in sshd.
+RUN echo 'UseDNS no' >> /etc/ssh/sshd_config
