@@ -167,7 +167,10 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 			List<Field> headerFields = data.getActiveHeaderFields();
 			logger.debug("start writeAbasIDinData");
-			writeAbasIDinData(data);
+			if (!data.getOptionCode().getAlwaysNew()) {
+				writeAbasIDinData(data);
+			}
+
 			logger.debug("start Check Headerfields");
 			if (checkFieldListData(headerFields)) {
 				includeError = true;
