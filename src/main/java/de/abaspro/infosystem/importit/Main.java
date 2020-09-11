@@ -182,6 +182,7 @@ public class Main implements ProgressListener {
 	@ButtonEventHandler(field = "yimport", type = ButtonEventType.AFTER)
 	public void importData(DbContext ctx, ScreenControl screenControl, InfosystemImportit infosys) {
 		try {
+			infosys.table().clear();
 			startEdpSessionHandler(infosys);
 			this.showprogress = infosys.getYwithProgress();
 			logger.info(Util.getMessage("info.import.data.start"));
@@ -290,7 +291,7 @@ public class Main implements ProgressListener {
 
 	@ButtonEventHandler(field = "ypruefdat", type = ButtonEventType.AFTER)
 	public void checkDataAfter(DbContext ctx, InfosystemImportit infosys) {
-
+		infosys.table().clear();
 		try {
 			startEdpSessionHandler(infosys);
 			this.showprogress = infosys.getYwithProgress();
