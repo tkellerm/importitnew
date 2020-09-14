@@ -109,7 +109,7 @@ Z#1#isyupdate#BU3#0#Update Infosystem#(65)#(65)#(1)##java:de.abaspro.infosystem.
 Z#1#isyversionverf#GL6#0#Verf�?ügbare Version#(65)#(65)#(0)######1#1#0#0##0##
 Z#1#isymitsml#B#0#Mit SML#(65)#(65)#(0)######1#1#0#0##0##
 Z#1#isysml#P12:24#0#SML#(65)#(65)#(0)######1#1#0#0##0##
-Z#1#isywithProgress#B#0#With Progress#(65)#(65)#(2)######1#1#1#0#ywithProgress#1##
+Z#1#isywithprogress#B#0#With Progress#(65)#(65)#(2)######1#1#1#0#ywithprogress#1##
 Z#0#ittabnr##1####(0)######0#0#0#0##0##
 Z#0#itzid##1####(0)######0#0#0#0##0##
 Z#0#itzn##1####(0)######0#0#0#0##0##

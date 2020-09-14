@@ -4,14 +4,17 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+
 import org.apache.log4j.Logger;
 
 import de.abaspro.infosystem.importit.ProgressListener;
 import de.abaspro.utils.Util;
 
-public class ProgressManager implements Runnable {
+public class ProgressManager implements Runnable  {
 
 	protected Logger logger = Logger.getLogger(ProgressManager.class);
+	
 
 	private int zaehler;
 	private String text;
@@ -45,19 +48,22 @@ public class ProgressManager implements Runnable {
 	}
 
 	public void stop() {
+		logger.info("ProgressMananger send stop");
 		this.active = false;
 	}
 
 	@Override
 	public void run() {
-		while (active) {
+		while (active ) {
 			if (!messageQueue.isEmpty()) {
 				while (!messageQueue.isEmpty()) {
 					sendProgress(messageQueue.poll());
 					if (!active) {
-						while (messageQueue.isEmpty()) {
+						logger.debug("send last messages " + messageQueue.size());
+						while (!messageQueue.isEmpty()) {
 							messageQueue.poll();
 							if (messageQueue.size() == 1) {
+								logger.debug("send last message");
 								sendProgress(messageQueue.poll());
 							}
 						}
@@ -66,7 +72,7 @@ public class ProgressManager implements Runnable {
 
 			}
 		}
-
+		logger.info("ProgressMananger run -process end");
 	}
 
 }

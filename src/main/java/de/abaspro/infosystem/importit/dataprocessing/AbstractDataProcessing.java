@@ -61,10 +61,26 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 
 	@Override
 	public void importDataListTransaction(ArrayList<Data> dataList) throws ImportitException {
+		ProgressManager progress = new ProgressManager(MESSAGE_PROPERTY_IMPORT, dataList.size(), this.progressListener);
+		Thread progressManagerThread = new Thread(progress);
+		progressManagerThread.setPriority(Thread.MIN_PRIORITY);
+		progressManagerThread.start();
+
 		for (Data data : dataList) {
 			writeData(data);
 			logger.info(data.toString());
 		}
+		progressManagerThread.setPriority(Thread.MAX_PRIORITY);
+		progress.stop();
+		while (progressManagerThread.getState() != State.TERMINATED) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				logger.error(e);
+			}
+			logger.debug(Util.getMessage("debug.ProgressManager.waitEndThread"));
+		}
+
 	}
 
 	@Override
@@ -76,6 +92,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 						this.progressListener);
 
 				Thread progressManagerThread = new Thread(progress);
+				progressManagerThread.setPriority(Thread.MIN_PRIORITY);
 				progressManagerThread.start();
 
 				Data data = dataList.get(0);
@@ -88,8 +105,14 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 						}
 					}
 				}
+				progressManagerThread.setPriority(Thread.MAX_PRIORITY);
 				progress.stop();
 				while (progressManagerThread.getState() != State.TERMINATED) {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						logger.error(e);
+					}
 					logger.debug(Util.getMessage("debug.ProgressManager.waitEndThread"));
 				}
 
@@ -105,6 +128,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 	public void importDataList(ArrayList<Data> dataList) throws ImportitException {
 		ProgressManager progress = new ProgressManager(MESSAGE_PROPERTY_IMPORT, dataList.size(), this.progressListener);
 		Thread progressManagerThread = new Thread(progress);
+		progressManagerThread.setPriority(Thread.MIN_PRIORITY);
 		progressManagerThread.start();
 
 		for (Data data : dataList) {
@@ -112,8 +136,14 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			writeData(data);
 		}
 
+		progressManagerThread.setPriority(Thread.MAX_PRIORITY);
 		progress.stop();
 		while (progressManagerThread.getState() != State.TERMINATED) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				logger.error(e);
+			}
 			logger.debug(Util.getMessage("debug.ProgressManager.waitEndThread"));
 		}
 
@@ -143,6 +173,7 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 		ProgressManager progress = new ProgressManager(MESSAGE_PROPERTY_CHECKDATA, dataList.size(),
 				this.progressListener);
 		Thread progressManagerThread = new Thread(progress);
+		progressManagerThread.setPriority(Thread.MIN_PRIORITY);
 		progressManagerThread.start();
 
 		dataList.stream().forEach(s -> {
@@ -151,13 +182,18 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 			} catch (ImportitException e) {
 				logger.error(e);
 			}
-
-			progress.stop();
-			while (progressManagerThread.getState() != State.TERMINATED) {
-				logger.debug(Util.getMessage("debug.ProgressManager.waitEndThread"));
-			}
-
 		});
+		
+		progressManagerThread.setPriority(Thread.MAX_PRIORITY);
+		progress.stop();
+		while (progressManagerThread.getState() != State.TERMINATED) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				logger.error(e);
+			}
+			logger.debug(Util.getMessage("debug.ProgressManager.waitEndThread"));
+		}
 	}
 
 	private void checkDataValues(Data data, ProgressManager progress) throws ImportitException {
@@ -1017,7 +1053,9 @@ public abstract class AbstractDataProcessing implements AbasDataProcessable {
 	}
 
 	public void addListener(ProgressListener toAdd) {
-		this.progressListener.add(toAdd);
+		if (!this.progressListener.contains(toAdd)) {
+			this.progressListener.add(toAdd);
+		}
 	}
 
 }
