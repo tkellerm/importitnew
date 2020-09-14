@@ -372,7 +372,7 @@ public class Main implements ProgressListener {
 			abasDataProcessing = new AbasDataProcessFactory().createAbasDataProcess(this.edpSessionhandler, dataList);
 			if (abasDataProcessing != null) {
 				if (this.showprogress) {
-					abasDataProcessing.addListener(this);	
+					abasDataProcessing.addListener(this);
 				}
 				abasDataProcessing.checkDataListStructure(dataList);
 			}
@@ -395,7 +395,6 @@ public class Main implements ProgressListener {
 		}
 		this.edpSessionhandler.closeAllConnections();
 	}
-
 
 	private void startEdpSessionHandler(InfosystemImportit infosys) throws ImportitException {
 		this.edpSessionhandler.initSession(infosys.getYserver(), infosys.getYport(), infosys.getYmandant(),
