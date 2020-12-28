@@ -1,14 +1,16 @@
 package de.abaspro.infosystem.importit.dataprocessing;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 
 import java.util.ArrayList;
 
-import org.junit.Test;
+
 
 import de.abaspro.infosystem.importit.ImportitException;
 import de.abaspro.infosystem.importit.dataset.Data;
+import org.junit.jupiter.api.Test;
 
 public class AbasDataProcessFactoryTest {
 

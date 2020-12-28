@@ -1,11 +1,11 @@
 package de.abaspro.infosystem.importit.dataset;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
 
 import de.abaspro.infosystem.importit.ImportitException;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DataTableTest {
 
@@ -27,9 +27,6 @@ public class DataTableTest {
 		// fail("Not yet implemented"); // TODO
 	}
 
-	@Test
-	public void testIsEmpty() {
-		fail("Not yet implemented"); // TODO
-	}
+
 
 }

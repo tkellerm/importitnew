@@ -7,22 +7,29 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
-import de.abas.eks.jfop.remote.EKS;
+import org.apache.log4j.Logger;
+
+import static de.abas.eks.jfop.remote.EKS.getFOPSessionContext;
 
 public class Util {
 
-	private final static String MESSAGE_BASE = "de.abaspro.infosystem.importit.messages";
+	private static final  String MESSAGE_BASE = "de.abaspro.infosystem.importit.messages";
 
-	private static Locale locale = Locale.GERMAN;
+	private static final Locale locale = Locale.GERMAN;
+
+	private static final Logger logger = Logger.getLogger(Util.class);
+
+	private Util() {
+		throw new IllegalStateException("Utility class");
+	}
 
 	public static Locale getLocale() {
 		try {
-			return EKS.getFOPSessionContext().getOperatingLangLocale();
+			return getFOPSessionContext().getOperatingLangLocale();
 		} catch (final NullPointerException e) {
 			return locale;
 		}
@@ -40,38 +47,41 @@ public class Util {
 
 	/**
 	 * 
-	 * @param tarFile
-	 * @param destFile
-	 * @throws IOException
+	 * @param tarFile tar file
+	 * @param destFile destination directory
+	 * @throws IOException Error if File not available
 	 */
 	public static void unTarFile(File tarFile, File destFile) throws IOException {
-		FileInputStream fis = new FileInputStream(tarFile);
-		boolean exists = tarFile.exists();
-		TarArchiveInputStream tis = new TarArchiveInputStream(fis);
-		TarArchiveEntry tarEntry = null;
 
-		// tarIn is a TarArchiveInputStream
-		while ((tarEntry = tis.getNextTarEntry()) != null) {
-			File outputFile = new File(destFile + File.separator + tarEntry.getName());
+		try (FileInputStream fis = new FileInputStream(tarFile)) {
+			if(tarFile.exists()) {
+				try (TarArchiveInputStream tis = new TarArchiveInputStream(fis)) {
+					TarArchiveEntry tarEntry;
 
-			if (tarEntry.isDirectory()) {
+					// tarIn is a TarArchiveInputStream
+					while ((tarEntry = tis.getNextTarEntry()) != null) {
+						File outputFile = new File(destFile + File.separator + tarEntry.getName());
 
-				System.out.println("outputFile Directory ---- " + outputFile.getAbsolutePath());
-				if (!outputFile.exists()) {
-					outputFile.mkdirs();
+						if (tarEntry.isDirectory()) {
+
+							logger.info("outputFile Directory ---- " + outputFile.getAbsolutePath());
+							if (!outputFile.exists()) {
+								outputFile.mkdirs();
+							}
+						} else {
+
+							logger.info("outputFile File ---- " + outputFile.getAbsolutePath());
+							outputFile.getParentFile().mkdirs();
+							FileOutputStream fos = new FileOutputStream(outputFile);
+							IOUtils.copy(tis, fos);
+							fos.close();
+						}
+					}
 				}
-			} else {
-				// File outputFile = new File(destFile + File.separator +
-				// tarEntry.getName());
-				System.out.println("outputFile File ---- " + outputFile.getAbsolutePath());
-				outputFile.getParentFile().mkdirs();
-				// outputFile.createNewFile();
-				FileOutputStream fos = new FileOutputStream(outputFile);
-				IOUtils.copy(tis, fos);
-				fos.close();
 			}
 		}
-		tis.close();
+
+
 	}
 
 }

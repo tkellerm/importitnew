@@ -1,6 +1,7 @@
 package de.abaspro.infosystem.importit.dataprocessing;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 public class AbstractDataProcessingTest {
 

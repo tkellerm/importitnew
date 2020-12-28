@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
 
 import de.abas.erp.db.DbContext;
 import de.abas.erp.db.DbMessage;
@@ -19,11 +17,13 @@ import de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit;
 import de.abas.erp.db.selection.Conditions;
 import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.erp.db.util.ContextHelper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 public class AbstractTest {
 
-	public DbContext ctx;
-	public de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit infosys;
+	protected DbContext ctx;
+	protected de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit infosys;
 
 	String hostname;
 
@@ -48,8 +48,8 @@ public class AbstractTest {
 		return password;
 	}
 
-	@After
-	public void cleanup() {
+	@AfterAll
+	protected void cleanup() {
 		if (infosys.active()) {
 			infosys.abort();
 		}
@@ -105,7 +105,7 @@ public class AbstractTest {
 		return objects.get(0);
 	}
 
-	@Before
+	@BeforeAll
 	public void setup() {
 		loadProperties();
 		ctx = ContextHelper.createClientContext(hostname, port, client, password, "Test");

@@ -1,11 +1,12 @@
 package de.abaspro.infosystem.importit.dataset;
 
-import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
 
 import de.abaspro.infosystem.importit.ImportOptions;
 import de.abaspro.infosystem.importit.OptionCode;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FieldTest {
 
