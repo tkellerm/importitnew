@@ -1,7 +1,8 @@
 plugins {
     id "java"
-    id "maven-publish"
-    id "de.abas.esdk" version "0.12.17"
+    id "de.abas.esdk" version "0.14.4"
+    id 'jacoco'
+    id "org.sonarqube" version "3.0"
 }
 
 repositories {
@@ -9,6 +10,7 @@ repositories {
     jcenter()
     maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME-SNAPSHOT" }
     maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME" }
+    maven { url "https://registry.abas.sh/artifactory/abas.maven-public/" }
 }
 
 //createApp.doLast {
@@ -17,6 +19,15 @@ repositories {
 //        into "${createApp.outputDir}/groovy"
 //    }
 //}
+
+compileJava {
+    targetCompatibility = '1.8'
+}
+
+test {
+    useJUnitPlatform()
+}
+
 
 esdk {
     app {
@@ -74,37 +85,7 @@ configurations { compile.extendsFrom provided }
 group='importitnew'
 
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId 'importitnew'
-            artifactId 'info'
-            artifact "build/libs/${project.name}-standalone-app.jar"
-        }
-    }
-    repositories {
-        if(project.hasProperty("nexusSnapshotURL") && project.hasProperty("nexusReleaseURL")
-                && project.hasProperty("nexusUser") && project.hasProperty("nexusPassword")){
-            if(project.version.endsWith('-SNAPSHOT')) {
-                maven {
-                    url nexusSnapshotURL
-                    credentials {
-                        username nexusUser
-                        password nexusPassword
-                    }
-                }
-            } else {
-                maven {
-                    url nexusReleaseURL
-                    credentials {
-                        username nexusUser
-                        password nexusPassword
-                    }
-                }
-            }
-        }
-    }
-}
+
 
 dependencies {
     provided "de.abas.homedir:abas-db-base:1.0.0"
