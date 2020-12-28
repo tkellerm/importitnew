@@ -1,24 +1,17 @@
 plugins {
-    id "java"
     id "de.abas.esdk" version "0.14.4"
     id 'jacoco'
     id "org.sonarqube" version "3.0"
 }
 
 repositories {
-    mavenLocal()
-    jcenter()
     maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME-SNAPSHOT" }
     maven { url "http://$NEXUS_HOST:$NEXUS_PORT/nexus/content/repositories/$NEXUS_NAME" }
     maven { url "https://registry.abas.sh/artifactory/abas.maven-public/" }
 }
 
-//createApp.doLast {
-//    copy {
-//        from "src/main/groovy-scripts"
-//        into "${createApp.outputDir}/groovy"
-//    }
-//}
+apply plugin: "java"
+
 
 compileJava {
     targetCompatibility = '1.8'
