@@ -1,0 +1,216 @@
+image: openjdk:11
+clone:
+  depth: full
+options:
+  docker: true
+
+definitions:
+  caches:
+    sonar: ~/.sonar/cache  # Caching SonarCloud artifacts will speed up your build
+  services:
+    docker:
+      memory: 3072
+  # git rev-list --count HEAD
+  steps:
+    - step: &build-test
+        name: Build & Test 2019
+        caches:
+          - docker
+          - gradle
+          - sonar
+        script:
+          - export TESTCONTAINERS_RYUK_DISABLED=true
+          - chmod a+x initGradleProperties.sh
+          - echo $BITBUCKET_BRANCH
+          - DOCKER_ENV_HOST=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}') ./initGradleProperties.sh
+          - cat Dockerfile-erp-overrides
+          - cat gradle.properties
+          - docker login sdp.registry.abas.sh -u $REGISTRY_USER -p $REGISTRY_PASSWORD
+          - curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          - chmod +x /usr/local/bin/docker-compose
+          - docker-compose up -d
+          - chmod +x ./gradlew
+          - ./gradlew checkPreconditions createEsdkApp
+          - ./gradlew instrumentJfopServer
+          - ./gradlew verify jacocoTestReport sonarqube
+          - ./gradlew esdkAppDocumentation
+        artifacts:
+          - build/**
+    - step: &esdk-Install-Test
+        name: ESDK App Installer Test
+        caches:
+          - docker
+        script:
+          - chmod a+x initGradleProperties.sh
+          - DOCKER_ENV_HOST=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}') ./initGradleProperties.sh
+          - echo mavenUser=$MAVEN_USERNAME >> gradle.properties
+          - echo mavenPassword=$MAVEN_PASSWORD >> gradle.properties
+          - docker login sdp.registry.abas.sh -u $REGISTRY_USER -p $REGISTRY_PASSWORD
+          - curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          - chmod +x /usr/local/bin/docker-compose
+          - docker-compose up -d
+          - chmod +x ./gradlew
+          - ./gradlew installEsdkApp
+        artifacts:
+          - build/**
+    - step: &documentation-to-Teststage
+        name: Deploy Documentation to test
+        image: anigeo/awscli
+        deployment: test
+        script:
+          # Use global environment variables to share across projects
+          - export AWS_DEFAULT_REGION="us-east-1"
+          #- export AWS_ACCESS_KEY_ID=$AWS_DEPLOYMENT_ACCESS_KEY_ID
+          #- export AWS_SECRET_ACCESS_KEY=$AWS_DEPLOYMENT_SECRET_ACCESS_KEY
+          # Change role
+          - temp_role=$(aws sts assume-role --role-arn "arn:aws:iam::374056703733:role/ci/documentation/UpdateAbasPDMDocumentsDocumentation" --role-session-name "bitbucket-pieplines" --output text | tail -n 1)
+          - export AWS_ACCESS_KEY_ID=$(echo $temp_role | awk '{print $2;}')
+          - export AWS_SECRET_ACCESS_KEY=$(echo $temp_role | awk '{print $4;}')
+          - export AWS_SESSION_TOKEN=$(echo $temp_role | awk '{print $5;}')
+          - aws s3 sync build/asciidoc/html5 s3://abas-documentation-test-us-east-1/de/pdmdocuments
+          - pipe: JfrogDev/artifactory-generic-upload:0.3.2
+            variables:
+              ARTIFACTORY_URL: 'https://artifactory.abas.sh/artifactory'
+              ARTIFACTORY_USER: "$REGISTRY_USER"
+              ARTIFACTORY_PASSWORD: "$REGISTRY_PASSWORD"
+              FILE_SPEC: 'false'
+              SOURCE_PATH: 'build/libs/pdmDocuments-*-standalone-app.jar'
+              TARGET_PATH: 'abas.snapshots/de/abas/pdmdocuments/2019/'
+              # BUILD_NAME: '<string>' # Optional.
+              # JFROG_CLI_TEMP_DIR: '<string>' # Optional.
+              # JFROG_CLI_HOME_DIR: '<string>' # Optional.
+              # COLLECT_ENV: '<boolean>' # Optional.
+              # COLLECT_GIT_INFO: '<boolean>' # Optional.
+              # COLLECT_BUILD_INFO: '<boolean>' # Optional.
+              # FILE_SPEC_PATH: '<string>' # Optional.
+              # FOLDER: '<string>' # Optional.
+              # EXTRA_ARGS: '<string>' # Optional.
+              # EXTRA_BAG_ARGS: '<string>' # Optional.
+              # DEBUG: '<boolean>' # Optional.
+        artifacts:
+          - build/**
+    - step: &documentation-to-Prod
+        name: Deploy Documentation to Production
+        image: anigeo/awscli
+        deployment: test
+        script:
+          # Use global environment variables to share across projects
+          - export AWS_DEFAULT_REGION="us-east-1"
+          #- export AWS_ACCESS_KEY_ID=$AWS_DEPLOYMENT_ACCESS_KEY_ID
+          #- export AWS_SECRET_ACCESS_KEY=$AWS_DEPLOYMENT_SECRET_ACCESS_KEY
+          # Change role
+          - temp_role=$(aws sts assume-role --role-arn "arn:aws:iam::754342080068:role/ci/documentation/UpdateAbasPDMDocumentsDocumentation" --role-session-name "bitbucket-pieplines" --output text | tail -n 1)
+          - export AWS_ACCESS_KEY_ID=$(echo $temp_role | awk '{print $2;}')
+          - export AWS_SECRET_ACCESS_KEY=$(echo $temp_role | awk '{print $4;}')
+          - export AWS_SESSION_TOKEN=$(echo $temp_role | awk '{print $5;}')
+          - aws s3 sync build/asciidoc/html5 s3://abas-documentation-prod-us-east-1/de/pdmdocuments
+        artifacts:
+          - build/**
+    - step: &upload-jar-to-release-artifactory
+        name: upload release jar to artifactory
+        script:
+          - export ABAS_VERSION=$(echo $BITBUCKET_BRANCH|cut -d'/' -f 2)
+          - pipe: JfrogDev/artifactory-generic-upload:0.3.2
+            variables:
+              ARTIFACTORY_URL: 'https://artifactory.abas.sh/artifactory'
+              ARTIFACTORY_USER: "$REGISTRY_USER"
+              ARTIFACTORY_PASSWORD: "$REGISTRY_PASSWORD"
+              FILE_SPEC: 'false'
+              SOURCE_PATH: 'build/libs/pdmDocuments-*-standalone-app.jar'
+              TARGET_PATH: 'abas.releases/de/abas/pdmdocuments/$ABAS_VERSION/'
+              # BUILD_NAME: '<string>' # Optional.
+              # JFROG_CLI_TEMP_DIR: '<string>' # Optional.
+              # JFROG_CLI_HOME_DIR: '<string>' # Optional.
+              # COLLECT_ENV: '<boolean>' # Optional.
+              # COLLECT_GIT_INFO: '<boolean>' # Optional.
+              # COLLECT_BUILD_INFO: '<boolean>' # Optional.
+              # FILE_SPEC_PATH: '<string>' # Optional.
+              # FOLDER: '<string>' # Optional.
+              # EXTRA_ARGS: '<string>' # Optional.
+              # EXTRA_BAG_ARGS: '<string>' # Optional.
+              # DEBUG: '<boolean>' # Optional.
+        artifacts:
+          - build/**
+    - step: &upload-jar-to-snapshot-artifactory
+        name: upload snapshot to artifactory
+        script:
+          - export ABAS_VERSION=$(echo $BITBUCKET_BRANCH|cut -d'/' -f 2)
+          - pipe: JfrogDev/artifactory-generic-upload:0.3.2
+            variables:
+              ARTIFACTORY_URL: 'https://artifactory.abas.sh/artifactory'
+              ARTIFACTORY_USER: "$REGISTRY_USER"
+              ARTIFACTORY_PASSWORD: "$REGISTRY_PASSWORD"
+              FILE_SPEC: 'false'
+              SOURCE_PATH: 'build/libs/pdmDocuments-*-standalone-app.jar'
+              TARGET_PATH: 'abas.snapshots/de/abas/pdmdocuments/${ABAS_VERSION}/'
+              # BUILD_NAME: '<string>' # Optional.
+              # JFROG_CLI_TEMP_DIR: '<string>' # Optional.
+              # JFROG_CLI_HOME_DIR: '<string>' # Optional.
+              # COLLECT_ENV: '<boolean>' # Optional.
+              # COLLECT_GIT_INFO: '<boolean>' # Optional.
+              # COLLECT_BUILD_INFO: '<boolean>' # Optional.
+              # FILE_SPEC_PATH: '<string>' # Optional.
+              # FOLDER: '<string>' # Optional.
+              # EXTRA_ARGS: '<string>' # Optional.
+              # EXTRA_BAG_ARGS: '<string>' # Optional.
+              # DEBUG: '<boolean>' # Optional.
+      artifacts:
+        - build/**
+    - step: &send-test-report-to-artifactory
+        name: Send test result to artifactory
+        caches:
+          - docker
+        images: atlassian/default-image:2
+        script:
+          - export ABAS_VERSION=$(echo $BITBUCKET_BRANCH|cut -d'/' -f 2)
+          - apt-get update && apt-get --yes install zip
+          - export FILENAME='test-report.'$(cat version)'.'${ABAS_VERSION}'.'${BITBUCKET_BUILD_NUMBER}'.zip'
+          - zip -r ./${FILENAME} ./build/test-results/
+          - pipe: JfrogDev/artifactory-generic-upload:0.3.2
+            variables:
+                ARTIFACTORY_URL: 'https://artifactory.abas.sh/artifactory'
+                ARTIFACTORY_USER: "$REGISTRY_USER"
+                ARTIFACTORY_PASSWORD: "$REGISTRY_PASSWORD"
+                FILE_SPEC: 'false'
+                SOURCE_PATH: 'test-report*.zip'
+                TARGET_PATH: 'test-archive/pdmdocuments/${ABAS_VERSION}/'
+                BUILD_NAME: 'pdmdocuments-${BITBUCKET_BRANCH}.${BITBUCKET_BUILD_NUMBER}' # Optional.
+                # JFROG_CLI_TEMP_DIR: '<string>' # Optional.
+                # JFROG_CLI_HOME_DIR: '<string>' # Optional.
+                # COLLECT_ENV: '<boolean>' # Optional.
+                # COLLECT_GIT_INFO: '<boolean>' # Optional.
+                # COLLECT_BUILD_INFO: '<boolean>' # Optional.
+                # FILE_SPEC_PATH: '<string>' # Optional.
+                # FOLDER: '<string>' # Optional.
+                # EXTRA_ARGS: '<string>' # Optional.
+                # EXTRA_BAG_ARGS: '<string>' # Optional.
+                # DEBUG: '<boolean>' # Optional.
+        artifacts:
+          - build/**
+          - ./test*
+
+pipelines:
+  default:
+    - step: *build-test
+    - step: *esdk-Install-Test
+  branches:
+    abasV2019:
+      - step: *build-test
+      - step: *esdk-Install-Test
+      #- step: *documentation-to-Prod
+      #- step: *upload-jar-to-release-artifactory
+      #- step: *send-test-report-to-artifactory
+    'feature/2019**':
+      - step: *build-test
+      - step: *esdk-Install-Test
+      #- step: *documentation-to-Teststage
+      #- step: *upload-jar-to-snapshot-artifactory
+    'feature/2018**':
+      - step: *build-test
+      - step: *esdk-Install-Test
+      - step: *upload-jar-to-snapshot-artifactory
+    'feature/2017**':
+      - step: *build-test
+      - step: *esdk-Install-Test
+      - step: *upload-jar-to-snapshot-artifactory
+
