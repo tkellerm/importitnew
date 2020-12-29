@@ -63,30 +63,12 @@ definitions:
           #- export AWS_ACCESS_KEY_ID=$AWS_DEPLOYMENT_ACCESS_KEY_ID
           #- export AWS_SECRET_ACCESS_KEY=$AWS_DEPLOYMENT_SECRET_ACCESS_KEY
           # Change role
-          - temp_role=$(aws sts assume-role --role-arn "arn:aws:iam::374056703733:role/ci/documentation/UpdateAbasPDMDocumentsDocumentation" --role-session-name "bitbucket-pieplines" --output text | tail -n 1)
+          - temp_role=$(aws sts assume-role --role-arn "arn:aws:iam::374056703733:role/ci/documentation/UpdateAbasImportitDocumentation" --role-session-name "bitbucket-pipelines" --output text | tail -n 1)
           - export AWS_ACCESS_KEY_ID=$(echo $temp_role | awk '{print $2;}')
           - export AWS_SECRET_ACCESS_KEY=$(echo $temp_role | awk '{print $4;}')
           - export AWS_SESSION_TOKEN=$(echo $temp_role | awk '{print $5;}')
-          - aws s3 sync build/asciidoc/html5 s3://abas-documentation-test-us-east-1/de/pdmdocuments
-          - pipe: JfrogDev/artifactory-generic-upload:0.3.2
-            variables:
-              ARTIFACTORY_URL: 'https://artifactory.abas.sh/artifactory'
-              ARTIFACTORY_USER: "$REGISTRY_USER"
-              ARTIFACTORY_PASSWORD: "$REGISTRY_PASSWORD"
-              FILE_SPEC: 'false'
-              SOURCE_PATH: 'build/libs/pdmDocuments-*-standalone-app.jar'
-              TARGET_PATH: 'abas.snapshots/de/abas/pdmdocuments/2019/'
-              # BUILD_NAME: '<string>' # Optional.
-              # JFROG_CLI_TEMP_DIR: '<string>' # Optional.
-              # JFROG_CLI_HOME_DIR: '<string>' # Optional.
-              # COLLECT_ENV: '<boolean>' # Optional.
-              # COLLECT_GIT_INFO: '<boolean>' # Optional.
-              # COLLECT_BUILD_INFO: '<boolean>' # Optional.
-              # FILE_SPEC_PATH: '<string>' # Optional.
-              # FOLDER: '<string>' # Optional.
-              # EXTRA_ARGS: '<string>' # Optional.
-              # EXTRA_BAG_ARGS: '<string>' # Optional.
-              # DEBUG: '<boolean>' # Optional.
+          - aws s3 sync build/asciidoc/html5 s3://abas-documentation-test-us-east-1/de/importit
+
         artifacts:
           - build/**
     - step: &documentation-to-Prod
@@ -99,11 +81,11 @@ definitions:
           #- export AWS_ACCESS_KEY_ID=$AWS_DEPLOYMENT_ACCESS_KEY_ID
           #- export AWS_SECRET_ACCESS_KEY=$AWS_DEPLOYMENT_SECRET_ACCESS_KEY
           # Change role
-          - temp_role=$(aws sts assume-role --role-arn "arn:aws:iam::754342080068:role/ci/documentation/UpdateAbasPDMDocumentsDocumentation" --role-session-name "bitbucket-pieplines" --output text | tail -n 1)
+          - temp_role=$(aws sts assume-role --role-arn "arn:aws:iam::754342080068:role/ci/documentation/UpdateAbasImportitDocumentation" --role-session-name "bitbucket-pipelines" --output text | tail -n 1)
           - export AWS_ACCESS_KEY_ID=$(echo $temp_role | awk '{print $2;}')
           - export AWS_SECRET_ACCESS_KEY=$(echo $temp_role | awk '{print $4;}')
           - export AWS_SESSION_TOKEN=$(echo $temp_role | awk '{print $5;}')
-          - aws s3 sync build/asciidoc/html5 s3://abas-documentation-prod-us-east-1/de/pdmdocuments
+          - aws s3 sync build/asciidoc/html5 s3://abas-documentation-prod-us-east-1/de/importit
         artifacts:
           - build/**
     - step: &upload-jar-to-release-artifactory
@@ -117,7 +99,7 @@ definitions:
               ARTIFACTORY_PASSWORD: "$REGISTRY_PASSWORD"
               FILE_SPEC: 'false'
               SOURCE_PATH: 'build/libs/pdmDocuments-*-standalone-app.jar'
-              TARGET_PATH: 'abas.releases/de/abas/pdmdocuments/$ABAS_VERSION/'
+              TARGET_PATH: 'abas.releases/de/abas/importit/$ABAS_VERSION/'
               # BUILD_NAME: '<string>' # Optional.
               # JFROG_CLI_TEMP_DIR: '<string>' # Optional.
               # JFROG_CLI_HOME_DIR: '<string>' # Optional.
@@ -142,7 +124,7 @@ definitions:
               ARTIFACTORY_PASSWORD: "$REGISTRY_PASSWORD"
               FILE_SPEC: 'false'
               SOURCE_PATH: 'build/libs/pdmDocuments-*-standalone-app.jar'
-              TARGET_PATH: 'abas.snapshots/de/abas/pdmdocuments/${ABAS_VERSION}/'
+              TARGET_PATH: 'abas.snapshots/de/abas/importit/${ABAS_VERSION}/'
               # BUILD_NAME: '<string>' # Optional.
               # JFROG_CLI_TEMP_DIR: '<string>' # Optional.
               # JFROG_CLI_HOME_DIR: '<string>' # Optional.
@@ -173,7 +155,7 @@ definitions:
                 ARTIFACTORY_PASSWORD: "$REGISTRY_PASSWORD"
                 FILE_SPEC: 'false'
                 SOURCE_PATH: 'test-report*.zip'
-                TARGET_PATH: 'test-archive/pdmdocuments/${ABAS_VERSION}/'
+                TARGET_PATH: 'test-archive/importit/${ABAS_VERSION}/'
                 BUILD_NAME: 'pdmdocuments-${BITBUCKET_BRANCH}.${BITBUCKET_BUILD_NUMBER}' # Optional.
                 # JFROG_CLI_TEMP_DIR: '<string>' # Optional.
                 # JFROG_CLI_HOME_DIR: '<string>' # Optional.
