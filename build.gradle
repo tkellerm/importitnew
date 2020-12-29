@@ -24,11 +24,11 @@ test {
 
 esdk {
     app {
-        name="importitApp"
-        vendorId="abasGmbH"
-        appId="gm007"
+        name="importit"
+        vendorId="abas"
+        appId="ag007"
         shared=false
-        infosystems = ["IS.OWFW7.IMPORTIT21"]
+        infosystems = ["IS.OWFW7.IMPORTIT3"]
         tables = []
         data = []
         keys = []
@@ -75,7 +75,7 @@ compileJava {
 
 configurations { compile.extendsFrom provided }
 
-group='importitnew'
+group='de.abas.infosystem.importit'
 
 
 
