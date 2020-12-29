@@ -1,0 +1,31 @@
+== Ablauf des Imports
+
+. Datei in einer vom Mandant erreichbaren Samba-Freigabe ablegen.
++
+
+NOTE: z.B.: win/tmp/
+
+. Passwort für den Mandanten eingeben
+neues Bild für Passwort
+
+. Datei eintragen +
+Im Infosystem nun den Pfad und Dateinamen der Excel-Datei im Feld "Import Excel File" eintragen.
+neues Bild für Passwort
++
+
+NOTE: z.B.: win/tmp/part.xlsx
+
+. Struktur prüfen
+In dem Schritt "Struktur prüfen" werden die Daten aus der Excel-Datei gelesen und die folgenden Prüfungen durchgeführt:
+* Angabe zu Datenbank bzw. Tippkommando plausibel
+* Variablen in der angegebenen Datenbank bzw. Tippkommando vorhanden
+
+. Daten prüfen
+Es werden die einzelnen Daten aus der Excel-Tabelle auf die folgenden Punkte geprüft:
+* Bei Verweisfeldern wird geprüft, ob die übergebenen Werte in der entsprechenden Datenbank vorhanden ist.
+* Bei den Multiverweisfeldern wird das gleiche wie den Verweisfeldern geprüft. Allerdings ist es derzeit nur für den Typ VPK1 umgesetzt.
+* Bei den Textfeldern wird geprüft, ob der übergabewert mit seiner Lünge in das entsprechende Feld passt.
+* Integer-Felder werden auf die richtige Anzahl Vorkommastellen geprüft.
+* Real-Felder werden auf die richtige Anzahl von Vor- und Nachkommastellen geprüft.
+* Datum-Felder werden geprüft, ob der Wert in ein Abas-Datum gewandelt werden kann.
+* Zeitraum-Felder werden geprüft, ob der Wert in eine Abas-Zeitraum gewandelt werden kann.

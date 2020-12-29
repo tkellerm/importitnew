@@ -1,0 +1,17 @@
+:docinfo:
+= Importit
+Documentation
+:nofooter:
+
+Das Infosystem IMPORTIT dient zum Import von Daten die als Excel-Datei im Format .xls oder .xlsx vorliegen.
+
+include::installation.adoc[]
+
+include::Ablauf_Import.adoc[]
+
+== About
+
+importit +
+(C) abas Software GmbH
+
+https://www.abas-erp.com/

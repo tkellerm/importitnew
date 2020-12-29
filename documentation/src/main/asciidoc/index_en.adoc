@@ -1,0 +1,21 @@
+:docinfo:
+= Importit
+
+<<index_en.adoc#, English Version>>
+
+Documentation
+
+:nofooter:
+
+This document describes the Importit app.
+
+include::subpage.adoc[]
+
+include::Ablauf_Import.adoc[]
+
+== About
+
+importit +
+(C) abas Software GmbH
+
+https://www.abas-erp.com/
