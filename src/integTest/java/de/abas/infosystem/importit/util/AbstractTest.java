@@ -13,7 +13,7 @@ import de.abas.erp.db.DbMessage;
 import de.abas.erp.db.Deletable;
 import de.abas.erp.db.MessageListener;
 import de.abas.erp.db.SelectableObject;
-import de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit;
+import de.abas.erp.db.infosystem.custom.owimportit.InfosystemImportit;
 import de.abas.erp.db.selection.Conditions;
 import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.erp.db.util.ContextHelper;
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeAll;
 public class AbstractTest {
 
 	protected DbContext ctx;
-	protected de.abas.erp.db.infosystem.custom.owfw7.InfosystemImportit infosys;
+	protected de.abas.erp.db.infosystem.custom.owimportit.InfosystemImportit infosys;
 
 	String hostname;
 
