@@ -28,14 +28,14 @@ esdk {
         vendorId="abas"
         appId="ag007"
         shared=false
-        infosystems = ["IS.OWFW7.IMPORTIT3"]
+        infosystems = ["IS.OWIMPORTIT.screen.OWIMPORTIT.IMPORTIT3"]
         tables = []
         data = []
         keys = []
         enums = []
         essentialsVersions = ["2016r1n01-2016r4n15", "2017r1n00-2017r4n17" , "2018r1n00-2018r4n17" , "2019r1n00-2019r4n20",  "2020r1n00-2020r4n17"]
         languages = "DE"
-        workdirs = ["owfw7"]
+        workdirs = ["owimportit"]
     }
 
     abas {
