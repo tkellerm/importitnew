@@ -1,5 +1,5 @@
-#FROM partner.registry.abas.sh/abas/demo:2019r4n20p04
-FROM partner.registry.abas.sh/abas/demo:2018r4n14p45
+FROM partner.registry.abas.sh/abas/demo:2019r4n20p01
+
 
 USER root
 

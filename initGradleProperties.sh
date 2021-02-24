@@ -14,12 +14,12 @@ echo 2: DOCKER_ENV_HOST: $DOCKER_ENV_HOST
 #abas Version prüfen und Docker-Version festlegen.
 if [[ $CODEBUILD_WEBHOOK_HEAD_REF == *"2019"* ]]; then
   export ABAS_VERSION=2019
-  export USE_ERP_VERSION="2019r4n20p01"
+  export USE_ERP_VERSION="2019r4n20p04"
 fi
 
 if [[ $CODEBUILD_WEBHOOK_HEAD_REF == *"2018"* ]]; then
   export ABAS_VERSION=2018
-  export USE_ERP_VERSION="2018r4n14p42"
+  export USE_ERP_VERSION="2018r4n14p46"
 fi
 
 if [[ $CODEBUILD_WEBHOOK_HEAD_REF == *"2017"* ]]; then
@@ -27,7 +27,7 @@ if [[ $CODEBUILD_WEBHOOK_HEAD_REF == *"2017"* ]]; then
   export USE_ERP_VERSION="2017r4n16p39"
 fi
 
-sed "s+2019r4n18p01+$USE_ERP_VERSION+g" -i "./Dockerfile-erp-overrides"
+sed "s+2019r4n20p01+$USE_ERP_VERSION+g" -i "./Dockerfile-erp-overrides"
 
 echo ABAS_VERSION ${ABAS_VERSION}
 echo USE_ERP_VERSION ${USE_ERP_VERSION}
