@@ -1,0 +1,31 @@
+:docinfo:
+= abas Data Import Toolkit
+
+<<index_en.adoc#, English Version>> +
+<<changeHistory/index.adoc#, Änderungshistorie>>
+
+== Documentation
+:nofooter:
+
+Das Infosystem IMPORTIT dient zum Import von Daten die als Excel-Datei im Format `.xls` oder `.xlsx` vorliegen.
+
+include::./de/installation.adoc[]
+
+include::./de/Ablauf_Import.adoc[]
+
+include::./de/Aufbau_Excel.adoc[]
+
+include::./de/Import_Options.adoc[]
+
+include::./de/sonstige_Felder.adoc[]
+
+include::de/Fehlerhandling.adoc[]
+
+include::de/versioning.adoc[]
+
+== About
+
+abas Importit Toolkit +
+(C) abas Software GmbH
+
+https://www.abas-erp.com/

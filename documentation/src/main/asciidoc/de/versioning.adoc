@@ -1,0 +1,17 @@
+== Versionierungsschema
+Mit der Version 4.0 hat sich das Versionierungsschema geändert.
+
+Es hat den folgenden Aufbau:
+
+ Hauptversion.Unterversion.abasVersion-Build-Nummer
+
+Die Hauptversion wird bei großen Änderungen erhöht.
+
+Die Unterversion wird bei Änderungen am Code geändert.
+
+Die abas Version ist die Version, für welche die Installationsdatei gebaut wurde.
+
+Die Build-Nummer wird bei jedem neuen Bau des Projekts hochgezählt.
+Dies geschieht auch, wenn die Dokumentation angepasst wird.
+
+Die Version wird auch im Infosystem angezeigt.

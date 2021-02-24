@@ -1,0 +1,7 @@
+- überarbeite Warnings from IDE and SONAR
+
+- EDPSEssionHandler kein Singleton mehr. -> Problem bei paralellen Aufruf von importit. Singleton darf im JfopServer nicht verwendet werden.
+
+- Sessionpool ersetzen durch Common-Pool - https://abascloud.atlassian.net/browse/IN-708
+
+- Kopieren der Feldeigenschaften durch bessere Lösung ersetzen

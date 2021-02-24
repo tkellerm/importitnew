@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE frame SYSTEM "urn:x-abas.de:abasscreens-1.00.dtd">
+
+<frame frameType="M" msgId="b0a2f5fcf767f779fcde16254d9c0a65">
+ <layout.grid>
+  <metainfo axis="column" grid="0" stretch="zoom" />
+  <metainfo axis="row" grid="0" stretch="zoom" />
+  <cell alignX="fill" alignY="fill" gridX="0" gridY="0">
+   <layout.split axis="row">
+    <pane.split>
+     <layout.notebook>
+      <pane.notebook msgId="704183817f9cbe5f6f95d58a4b647e7e">
+       <layout.grid msgId="9354a136f8293bb454e4f3e96413393a">
+        <cell gridX="0" gridY="0">
+         <label msgId="9aa1b03934893d7134a660af4204f2a9" />
+        </cell>
+        <cell gridX="1" gridY="0">
+         <erpfield s3Name="0:yserver" />
+        </cell>
+        <cell gridX="2" gridY="0">
+         <label msgId="60aaf44d4b562252c04db7f98497e9aa" />
+        </cell>
+        <cell gridX="3" gridY="0">
+         <erpfield s3Name="0:yport" />
+        </cell>
+        <cell gridX="4" gridY="0">
+         <erpfield msgId="43c592501e0d37c63bc038fa182b2ddf.1" s3Name="0:ydoku" />
+        </cell>
+        <cell gridX="5" gridY="0" />
+        <cell gridX="6" gridY="0" />
+        <cell gridX="7" gridY="0" />
+        <cell gridX="8" gridY="0" />
+        <cell gridX="0" gridY="1">
+         <label msgId="112a4ca76459ed1ee29d3a823f945b78" />
+        </cell>
+        <cell gridX="1" gridY="1">
+         <erpfield s3Name="0:ymandant" />
+        </cell>
+        <cell gridX="2" gridY="1">
+         <label msgId="3e45af4ca27ea2b03fc6183af40ea112" />
+        </cell>
+        <cell gridX="3" gridY="1">
+         <erpfield s3Name="0:ypasswort" />
+        </cell>
+        <cell gridX="4" gridY="1">
+         <label msgId="34b6cd75171affba6957e308dcbd92be" />
+         <erpfield access="readOnly" s3Name="0:yversion" />
+        </cell>
+        <cell gridX="5" gridY="1" />
+        <cell gridX="6" gridY="1" />
+        <cell gridX="7" gridY="1" />
+        <cell gridX="8" gridY="1" />
+        <cell gridX="0" gridY="2" sizeX="4">
+         <groupline msgId="c1d81af5835844b4e9d936910ded8fdc" />
+        </cell>
+        <cell gridX="4" gridY="2" sizeX="5">
+         <groupline msgId="92b972e5-29eb-4b1d-bab7-30d0f20e9409" />
+        </cell>
+        <cell gridX="0" gridY="3">
+         <label msgId="772dd62458c50ef2cfddff39f88bcf19" />
+        </cell>
+        <cell gridX="1" gridY="3" sizeX="2">
+         <erpfield dimX="39" s3Name="0:ydatafile" />
+        </cell>
+        <cell gridX="3" gridY="3" />
+        <cell gridX="4" gridY="3">
+         <label msgId="34ae96f6e3e2bd244bc9509bdb66f323" />
+        </cell>
+        <cell gridX="5" gridY="3" sizeX="4">
+         <erpfield access="readOnly" s3Name="0:ydb" />
+        </cell>
+        <cell gridX="0" gridY="4">
+         <label msgId="f11f8ec038588e54815f7936578e4066" scope="ERROR" />
+        </cell>
+        <cell gridX="1" gridY="4" sizeX="2">
+         <erpfield access="readOnly" dimX="39" s3Name="0:yerrorfile" scope="ERROR" />
+        </cell>
+        <cell gridX="3" gridY="4" />
+        <cell gridX="4" gridY="4">
+         <label msgId="3b77a53bb0cbab20a1d684f05c5cf8d6" />
+        </cell>
+        <cell gridX="5" gridY="4" sizeX="4">
+         <erpfield access="readOnly" s3Name="0:ygruppe" />
+        </cell>
+        <cell gridX="0" gridY="5">
+         <label msgId="18b374c2f1ba5c9eb361b32da6cff9bc" />
+        </cell>
+        <cell gridX="1" gridY="5">
+         <erpfield access="readOnly" s3Name="0:yoption" />
+        </cell>
+        <cell gridX="2" gridY="5">
+         <label msgId="52a72ec67344be5e5672ed4c84d52e2a" />
+        </cell>
+        <cell gridX="3" gridY="5">
+         <erpfield access="readOnly" s3Name="0:ytababspalte" />
+        </cell>
+        <cell gridX="4" gridY="5">
+         <label msgId="c6d1c47508ad9a2f2977e57b1e3e7ff2" />
+        </cell>
+        <cell gridX="5" gridY="5">
+         <erpfield access="readOnly" s3Name="0:ytippkommando" />
+        </cell>
+        <cell gridX="6" gridY="5" />
+        <cell gridX="7" gridY="5" />
+        <cell gridX="8" gridY="5" />
+        <cell gridX="0" gridY="6" sizeX="9">
+         <groupline msgId="65d3b2ab5a15dd274fd31b24dcab112e" />
+        </cell>
+        <cell gridX="0" gridY="7">
+         <label msgId="e0f7e7ced8f7b5bc7fd988a79b87fc08" />
+        </cell>
+        <cell gridX="1" gridY="7">
+         <erpfield s3Name="0:yoptalwaysnew" />
+        </cell>
+        <cell gridX="2" gridY="7">
+         <label msgId="c4056891d2d5a44edb5732c28cca6440" />
+        </cell>
+        <cell gridX="3" gridY="7">
+         <erpfield s3Name="0:yoptnofop" />
+        </cell>
+        <cell gridX="4" gridY="7">
+         <label msgId="f45d2419-b6a7-45db-b544-f91ce5c6eeba" />
+        </cell>
+        <cell gridX="5" gridY="7">
+         <erpfield s3Name="0:yoptdontchangeifeq" />
+        </cell>
+        <cell gridX="6" gridY="7" />
+        <cell gridX="7" gridY="7" />
+        <cell gridX="8" gridY="7" />
+        <cell gridX="0" gridY="8">
+         <label msgId="bb47a12d4743c603571531af364b29f3" />
+        </cell>
+        <cell gridX="1" gridY="8">
+         <erpfield s3Name="0:yoptdeltab" />
+        </cell>
+        <cell gridX="2" gridY="8">
+         <label msgId="6e51721b33988438428a5e4d558c23e3" />
+        </cell>
+        <cell gridX="3" gridY="8">
+         <erpfield s3Name="0:yoptmodifiable" />
+        </cell>
+        <cell gridX="4" gridY="8">
+         <label msgId="83e053f8-272e-413f-a91b-b816b68bcf46" />
+        </cell>
+        <cell gridX="5" gridY="8">
+         <erpfield s3Name="0:yoptuseenglvars" />
+        </cell>
+        <cell gridX="6" gridY="8" />
+        <cell gridX="7" gridY="8" />
+        <cell gridX="8" gridY="8" />
+        <cell gridX="0" gridY="9" sizeX="9">
+         <groupline msgId="99ee12eacf65225cf63c61d59c04cd95" />
+        </cell>
+        <cell gridX="0" gridY="10">
+         <erpfield msgId="1cdab65fb8b29b3069fa1fe95191424d" s3Name="0:ypruefstrukt" />
+        </cell>
+        <cell gridX="1" gridY="10">
+         <label msgId="b6f2c8e9-0bfb-4f99-a50d-f25fe4091c7b" />
+        </cell>
+        <cell gridX="2" gridY="10">
+         <erpfield access="readOnly" s3Name="0:yfehlerstruktur" />
+        </cell>
+        <cell gridX="3" gridY="10">
+         <erpfield msgId="b84c2d3cc2cfdb8a4796d14c15d3a14b" s3Name="0:ypruefdat" />
+        </cell>
+        <cell gridX="4" gridY="10">
+         <label msgId="6122fba8-d9c9-4588-a534-533e342e4199" />
+        </cell>
+        <cell gridX="5" gridY="10">
+         <erpfield access="readOnly" s3Name="0:yfehlerdatpruef" />
+        </cell>
+        <cell gridX="6" gridY="10">
+         <erpfield msgId="0c537fff032458ebdbcfe04b3ec9086b" s3Name="0:yimport" />
+        </cell>
+        <cell gridX="7" gridY="10">
+         <label msgId="e9e1f91c60bc2fdf80063ac6dfadf9a9" />
+        </cell>
+        <cell gridX="8" gridY="10">
+         <erpfield access="readOnly" s3Name="0:yok" />
+        </cell>
+        <cell gridX="0" gridY="11">
+         <erpfield msgId="c92bf0d416aac092af19126a6551c7b1" s3Name="0:yintabladen" />
+        </cell>
+        <cell gridX="1" gridY="11">
+         <erpfield s3Name="0:yshowonlyerrorline" />
+         <label msgId="2f600431b575e8624ffc11473b5ee649" />
+        </cell>
+        <cell gridX="2" gridY="11">
+         <label msgId="c0069456-52f5-45c7-b46d-2ae499b992cb" />
+        </cell>
+        <cell gridX="3" gridY="11">
+         <erpfield access="readOnly" s3Name="0:ystatus" />
+        </cell>
+        <cell gridX="4" gridY="11">
+         <label msgId="importit21_owfw7_fhead_isywithprogress" />
+        </cell>
+        <cell gridX="5" gridY="11">
+         <erpfield s3Name="0:ywithProgress" />
+        </cell>
+        <cell gridX="6" gridY="11" />
+        <cell gridX="7" gridY="11">
+         <label msgId="52e5304c8c7dfe795117f86497f74b8d" />
+        </cell>
+        <cell gridX="8" gridY="11">
+         <erpfield access="readOnly" s3Name="0:yfehler" />
+        </cell>
+       </layout.grid>
+      </pane.notebook>
+      <pane.notebook msgId="df5b585d-b2cb-4c37-a73d-88abd3f8ee72" scope="ABAS">
+       <layout.grid>
+        <cell gridX="0" gridY="0">
+         <label msgId="8b36ce63-6ae4-4c2a-a36c-b18c7af2f690" />
+        </cell>
+        <cell gridX="1" gridY="0">
+         <erpfield s3Name="0:yopttransaction" />
+        </cell>
+        <cell gridX="2" gridY="0" />
+        <cell gridX="3" gridY="0" />
+        <cell gridX="0" gridY="1" />
+        <cell gridX="1" gridY="1" />
+        <cell gridX="2" gridY="1" />
+        <cell gridX="3" gridY="1" />
+        <cell gridX="0" gridY="2" />
+        <cell gridX="1" gridY="2" />
+        <cell gridX="2" gridY="2" />
+        <cell gridX="3" gridY="2" />
+        <cell gridX="0" gridY="3" />
+        <cell gridX="1" gridY="3" />
+        <cell gridX="2" gridY="3" />
+        <cell gridX="3" gridY="3" />
+       </layout.grid>
+      </pane.notebook>
+     </layout.notebook>
+    </pane.split>
+    <pane.split>
+     <table>
+      <erpfield access="readOnly" msgId="95e369da44e19d0cd7c169c5f57136c2" s3Name="1:ysel" />
+      <erpfield access="readOnly" msgId="d76286d9dc80bc762fcb66a58c0a1954" s3Name="1:ydatensatz" />
+      <erpfield access="readOnly" msgId="2b772a3b-fa82-48ed-88e2-e031e7a12197" s3Name="1:yfehlerda" />
+      <erpfield access="readOnly" msgId="90a47606-1dde-4da4-b57f-efadbbaee543" s3Name="1:yimportiert" />
+      <erpfield access="readOnly" msgId="ec53a8c4f07baed5d8825072c89799be" s3Name="1:yiconz" />
+      <erpfield access="readOnly" msgId="52e5304c8c7dfe795117f86497f74b8d.1" s3Name="1:ytfehler" />
+      <erpfield msgId="31045a275b7698e5c48cf484ba762b25" s3Name="1:ykomtext" />
+     </table>
+    </pane.split>
+   </layout.split>
+  </cell>
+ </layout.grid>
+</frame>
+

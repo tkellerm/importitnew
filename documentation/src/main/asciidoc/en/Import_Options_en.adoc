@@ -1,0 +1,22 @@
+== Importoptionen
+The import process is controlled using the import options. These options apply for all fields and all data records. An option code (Option code field) will be determined the various selected options. This can then be entered in the Excel table. This is performed by the person responsible for administering this infosystem.
+
+The following options are available: +
+
+. Create new data records: +
+With this option no selection is performed prior to the import. Each data record will be created new.
+
+. Deactivate FOP: +
+EFOPs are deactivated in the target screen during the import.
+
+. Delete table: +
+This flag will delete the table of the affect data records before the data import begins.
+
+. Check field modifiability: +
+A check is performed to determine whether the field can be edited prior to writing. If not, the field will be ignored.
+
+. English variables: +
+If this option is activated, the English variable names will be evaluated.
+. Do not change if same content: +
+The @dontChangeIfEqual option simulates the behavior of STORE MODE for all fields.
+If the field to be described has the same content as the value to be written, the field won't be re-written.

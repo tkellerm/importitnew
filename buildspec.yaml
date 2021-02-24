@@ -1,0 +1,85 @@
+version: '0.2'
+
+#
+# Our CodeBuild documentation can be found here:
+#   https://abascloud.atlassian.net/l/c/XNsKhdF9
+#
+
+env:
+  shell: bash
+  parameter-store:
+    # Note: This pipeline has read access to /code-build/global/* and /code-build/importit/*
+    DOCKER_REGISTRY_USERNAME: /code-build/global/artifactory-abas-docker-registry-username
+    DOCKER_REGISTRY_PASSWORD: /code-build/global/artifactory-abas-docker-registry-password
+    DOCKER_REGISTRY_APIKEY: /code-build/global/artifactory-abas-docker-registry-apiKey
+    DOCKER_REGISTRY_URL: /code-build/global/artifactory-abas-docker-registry-url
+    DOCKER_HUB_DOCKER_ID: /code-build/importit/docker-hub-docker-id
+    DOCKER_HUB_ACCESS_TOKEN: /code-build/importit/docker-hub-access-token
+    SONAR_TOKEN: /code-build/importit/sonar-token
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto11 # Our CodeBuild project uses LinuxBuildImage.STANDARD_4_0, which has coretto not openjdk
+    commands:
+      - docker --version
+      - mkdir -p bin
+      - curl -s -L "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m)" > bin/docker-compose
+      - chmod +x bin/docker-compose
+      - curl -s -L "https://stedolan.github.io/jq/download/linux64/jq" > bin/jq
+      - chmod +x bin/jq
+      - curl -fL https://getcli.jfrog.io | sh
+      - apt-get update && apt-get --yes install zip
+
+  pre_build:
+    commands:
+      - chmod a+x initGradleProperties.sh
+      - chmod a+x publishOverCodeBuild.sh
+      - env
+      - export DOCKER_ENV_HOST=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+      - echo $DOCKER_ENV_HOST
+      - echo hostname $(hostname -i)
+      - ./initGradleProperties.sh
+      - cat Dockerfile-erp-overrides
+      - cat gradle.properties
+      # Login to docker hub with our technical user access token
+      - echo $DOCKER_HUB_ACCESS_TOKEN | docker login --username $DOCKER_HUB_DOCKER_ID --password-stdin
+      # Print rate limit for docker hub (https://docs.docker.com/docker-hub/download-rate-limit/)
+      - export TOKEN=$(curl -s --user "$DOCKER_HUB_DOCKER_ID:$DOCKER_HUB_ACCESS_TOKEN" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+      - curl --head -s -H "Authorization:Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest
+      # Login to our docker registry
+      - echo $DOCKER_REGISTRY_PASSWORD | docker login -u $DOCKER_REGISTRY_USERNAME --password-stdin sdp.registry.abas.sh
+      - docker-compose up -d
+      - docker ps
+      - sleep 20s
+      - curl -X GET http://localhost:8081/nexus/service/local/status
+      - chmod +x ./gradlew
+
+
+  build:
+    commands:
+      - ./gradlew checkPreconditions createEsdkApp
+      - ./gradlew addJacocoToAppClasspath  instrumentJfopServer
+      - ./gradlew verify integtest createCodeCoverageReport sonarqube
+      - ./gradlew esdkAppDocumentation
+      - ./gradlew installEsdkApp
+
+  post_build:
+    commands:
+      # Later we put her the installation to documentation.abas.cloud and the upload to  artifactory
+      - ./publishOverCodeBuild.sh
+
+artifacts:
+  files:
+    - build/logs/**/*
+    - build/asciidoc/**/*
+    - build/jacoco/**/*
+    - build/reports/**/*
+reports:
+  junit-reports:
+    files:
+      - build/test-results/**/*.xml
+  jacoco-report:
+    file-format: JACOCOXML
+    files:
+      - build/reports/jacoco/**/*.xml

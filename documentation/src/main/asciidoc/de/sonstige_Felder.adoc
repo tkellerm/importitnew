@@ -1,0 +1,14 @@
+== Sonstige Felder
+
+image::../resources/images/felder.jpg[alt="Felder"]
+. Datenbank: +
+Im Feld Datenbank wird die aus der Excel-Datei gelesene Datenbank angezeigt
+. Gruppe: +
+In diesem Feld wird die aus der Exceldatei gelesene Datenbankgruppe
+(zur Kontrolle) dargestellt.
+. Tippkommando: +
+In diesem Feld wird das aus der Exceltabelle gelesene Tippkommando dargestellt.
+. Tabellendaten ab Spalte: +
+In diesem Feld wird angezeigt, ab welcher Spalte die Tabellenfelder beginnen.
+. Optionscode: +
+In diesem Feld wird der durch die Auswahl der Optionen errechnete Optionscode angezeigt.

@@ -1,0 +1,26 @@
+== Importoptionen
+Über die Importoptionen wird der Importprozess gesteuert.
+Diese Optionen gelten für alle Felder und alle Datensätze.
+Für die verschiedenen ausgewählten Optionen wird ein Optionscode (Feld Optionscode) ermittelt.
+Dieser kann dann in die Excel-Tabelle eingetragen werden. Dies erfolgt über die zuständige Person, welche dieses Infosystem administriert.
+
+Folgende Optionen stehen zur Verfügung: +
+
+. Datensätze neu anlegen: +
+Mit dieser Option wird keine Datenselektion vor dem
+Import durchgeführt. Jeder Datensatz wird neu angelegt.
+
+. FOP deaktivieren: +
+Beim Import werden EFOPS in den Zielmasken ausgeschaltet.
+. Tabelle löschen: +
+Dieser Kenner bewirkt ein Löschen der Tabelle der betroffenen
+Datensätze, bevor der Datenimport beginnt.
+. Feld Modifizierbarkeit prüfen: +
+Vor dem Beschreiben der Felder wird geprüft, ob das Feld änderbar ist.
+Falls nicht, wird das Feld ignoriert.
+. Englische Variablen: +
+Wenn diese Option markiert ist, werden die englischen Variablennamen ausgewertet.
+. Ändere nicht, wenn gleicher Inhalt: +
+Mit der Option `@dontChangeIfEqual` wird für alle Felder das Verhalten des STORE-MODUS simuliert. +
+Wenn das zu beschreibende Feld den gleichen Inhalt hat wie der zu schreibende Wert,
+wird das Feld nicht neu beschrieben.

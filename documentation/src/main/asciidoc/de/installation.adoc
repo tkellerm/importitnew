@@ -1,0 +1,15 @@
+== Installation
+
+Das Importit Toolkit wird mit dem abas ESDK-Installer installiert.
+Laden Sie die Installer-jar-Files von der Artifactory herunter.
+
+Die aktuelle Anleitung zum Installieren einer App finden Sie link:https://documentation.abas.cloud/en/esdk/#esdk-app-installer[hier].
+
+Für die folgenden abas Versionen gibt es ein Installer-File unter link:http://registry.abas.sh[registry.abas.sh]. +
+Wählen Sie das mit der höchsten Version aus.
+
+abas ERP 20::
+link:https://registry.abas.sh/artifactory/webapp/#/artifacts/browse/tree/General/abas.releases/de/abas/importit/2019[abas.releases/de/abas/importit/2019]
+
+abas ERP Version 2018::
+link:https://registry.abas.sh/artifactory/webapp/#/artifacts/browse/tree/General/abas.releases/de/abas/importit/2018[abas.releases/de/abas/importit/2018]

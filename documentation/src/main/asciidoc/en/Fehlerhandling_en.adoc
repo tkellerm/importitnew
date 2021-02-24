@@ -1,0 +1,10 @@
+== Error handling
+If errors occur in the individual steps, the errors will each be displayed in the corresponding Error in ... field.+
+
+image::../resources/images/fehler1.jpg[alt="Error display in the table"]
+
+You can use the `Load data in table` button and activate the `Only display erroneous data records` field to display data records in the table in which an error occur during processing.
+
+image::../resources/images/fehler2.jpg[alt="Error log"]
+
+In the error log, a separate error is displayed for each data record.

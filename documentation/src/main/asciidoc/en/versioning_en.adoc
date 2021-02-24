@@ -1,0 +1,17 @@
+== Version-Schema
+The versioning schema has changed as of Version 4.0.
+
+It has the following structure:
+
+ MainVersion.SubVersion.abasVersion-BuildNumber
+
+
+The main version will be increased for large changes.
+
+The sub-version will be updated for changes to the code.
+
+The abas version is the version, for which the installation file was compiled.
+
+The build number will be increased with each new build of the project. This also happens when the documentation is updated.
+
+The version will also be displayed in the infosystem.

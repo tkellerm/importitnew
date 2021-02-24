@@ -1,0 +1,39 @@
+== Import procedure
+
+. Save the file in one of the Samba releases accessible by the client.
++
+
+NOTE: For example: win/tmp/
+
+. Enter the password for the client. +
+//neues Bild für Passwort
+
+. Enter the file: +
+In the Data Import Toolkit infosystem (IMPORTIT), enter the path and the name of the Excel file in the "Import Excel File" field. +
+//neues Bild für Passwort
++
+
+[NOTE]
+====
+For example: win/tmp/part.xlsx
+====
+
+. Check structure: +
+The data from the Excel file will be read and the following checks will be performed:
+* Specification of database and/or type command plausible.
+* Variables exist in the specified database and/or type command.
+
+. Check data: +
+The individual data from the Excel table will be checked for the following points:
+
+* Reference fields: Do the transferred values exist in the corresponding database?
+* Multi-reference fields: See reference fields. However, this is currently only implemented for the type VPK1.
+* Text fields: Does the transfer value's length fit in the corresponding field?
+* Integer fields: Correct number of pre-decimal places?
+* Real fields: Correct number on pre-decimal and decimal places?
+* Date fields: Can the value be converted to an abas date (see Online Help for syntax)?
+* Period fields: Can the value be converted to an abas period?
+
+
+. Import data: +
+When importing the data, the individual data records will be written in the database using the EDP mode NEW or UPDATE.

@@ -1,0 +1,10 @@
+== Fehlerhandling
+Wenn bei der Verarbeitung der einzelnen Schritte Fehler auftreten, dann werden die Fehler jeweils im Feld `Fehler in ...` angezeigt. +
+
+image::../resources/images/fehler1.jpg[alt="Fehleranzeige in Tabelle"]
+
+Über den Button `Daten in Tabelle laden` und dem markierten Feld `nur fehlerhafte Datensätze anzeigen` werden die Datensätze in der Tabelle angezeigt, in denen bei der Verarbeitung ein Fehler aufgetreten ist.
+
+image::../resources/images/fehler2.jpg[alt="Fehlerprotokoll"]
+
+Im Fehlerprotokoll werden für jeden Datensatz die einzelnen Fehler angezeigt.

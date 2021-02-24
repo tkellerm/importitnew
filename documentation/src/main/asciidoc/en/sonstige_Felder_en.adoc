@@ -1,0 +1,13 @@
+== Other fields
+
+//image::../resources/images/felder.jpg[alt="Felder"]
+. Database: +
+The field read from the Excel file is output in the Database field.
+. Group: +
+The database group read from the Excel file is displayed in this field (for review).
+. Type command: +
+The type command read from the Excel table is displayed in this field.
+. Table data as of column: +
+This field displays the column where the table fields start.
+. Option code: +
+The option code generate based on the selected options is displayed in this field.

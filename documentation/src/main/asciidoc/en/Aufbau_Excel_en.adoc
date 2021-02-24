@@ -1,0 +1,105 @@
+== Structure of the import file
+The data will be provided in an Excel file. +
+Correct structure is important for the correct processing of the file.
+
+IMPORTANT: Only the first table of the Excel table is evaluated.
+
+IMPORTANT: The first field in a row must be filled, otherwise it will be interpreted as an empty row.
+
+
+=== Structure of the Excel file
+|===
+|Row number|Column  A |Column  B |Column  C |Column  D
+
+|1
+|Database:Group
+|Table as of column
+|Option code
+|Characteristics bar number
+
+|2
+|Field name
+|Field_name@Field_option
+|Field name
+| S. field name from characteristics bar
+
+|3 (data record 1)
+|Value 1
+|Value 2
+|Value 3
+|Value Characteristics bar value
+
+|4 (data record 2)
+|Value 1
+|Value 2
+|Value 3
+|Value Characteristics bar value
+
+| ..
+| ..
+| ..
+| ..
+| ..
+|===
+
+=== Field descriptions
+
+. Database:Group (field 1:A) +
+    Specification of the database with the corresponding group. Example: `Part:Product` or `2:1`.
+    Alternatively, the type command can be specified as a number.
+    This field must be formatted as a text field in Excel.
++
+
+[CAUTION]
+====
+Attention for type commands:
+Use the entire description of the type command: Lbuchung (not lbuch).
+If necessary, check the syntax using the KOMLIST FOP.
+====
+
+. Table as of column +
+Specification as of which column table data are present. +
+Counting starts at 1. If the "E" column does not contain the first value for a table field, this cell will be written with 5. +
+If there are no table fields to be imported, the field must have the value 0. +
+. Option code +
+You can specify an option code in row 1/column C. This presets the import options of this infosystem. The various options are described under Point 6 Field_name@field_option.
+
+. CHB characteristics bar +
+    In case data are to be imported for a characteristics bar, enter the number of the characteristics bar here.
+
+. Field names +
+    In row 2, starting with columnB, the field names of the abas fields of the subsequent data will be declared. This is performed by the person responsible for administering this infosystem. this means this row is the encryption of the data for abas fields and simultaneously sets the sequence of the data import.
+
+. Field_name@field_option +
+    A field option can be appended to the field name. These options change the behavior when writing this field. The following field options are available:
+* @notempty: +
+    This option can be used to first check whether the value to be written is empty. If this is the case, no value will be written in this field. This can help avoid the inadvertent deletion of fields.
+
+* @modifiable: +
+    This option can be used to check whether the field is editable prior to writing the field. If this is not the case, errors will occur when writing the data records without this option.
+
+* @skip: +
+    If this option is specified, the entire column will be ignored.
+
+* @Schlüssel: +
+    (Key) The field name defined here will be used to search the database for an existing data record. You can use "@" provide a key for the data selection.
+
+* @dontChangeIfEqual: +
+    This option simulates the behavior of the STORE MODE for the selected fields. If the field to be described has the same content as the value to be written, the field won't be re-written.
+
+* @selection: +
+    You can use this option to specify a selection for a reference field to be written. Syntax: @selection='' For the selection expression, you can use {0} to replace a value with the value from the field. +
+    Example: staat field for customer: staat@selection='$,,iso3={0}'. The field contains DEU, which results in the selection $,,iso3=DEU. The language of the variables is controlled using the variable language control in the infosystem. +
+    This means that when English is set as the variable language, then the expression above must be stateOfTaxOffice@selection='$,,ctryCode3Char={0}'.
+
+* @keyselection: +
+    With this option, a self-defined selection is used for the selection of the data record.
+    Syntax: @keyselection='<SelektionsString>'
+    Example: @keyselection='$,,alteIdent={0}'
+
+. Value 1 - Data: +
+    The data will be entered starting with the 3rd row. +
+    The data must be abas conform. +
+    For example, a "." in a date field has the effect of entering the current date in the abas ERP data record. +
+    If a date is displayed with a 4-digit year, but the date field is defined in abas as 2 digits, the import will fail.
+    Multi-line texts will be handled abas conform, i.e. a line feed is achieved using a ";" in the text.

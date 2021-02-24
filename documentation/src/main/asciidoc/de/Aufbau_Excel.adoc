@@ -1,0 +1,123 @@
+== Aufbau der Import-Datei
+Die Daten werden in einer Excel-Datei bereitgestellt. +
+Für das korrekte Verarbeiten der Datei ist der richtige Aufbau wichtig. Der Aufbau der Excel ist <<Aufbau der Excel-Datei, hier>> beschrieben
+
+IMPORTANT: Es wird nur die erste Tabelle der Excel-Tabelle ausgewertet.
+
+IMPORTANT: Das erste Feld in einer Zeile muss gefüllt sein, ansonsten wird es als leere Zeile interpretiert.
+
+
+=== Aufbau der Excel-Datei
+|===
+|Zeilennummer|Spalte A |Spalte B |Spalte C |Spalte D
+
+|1
+|Datenbank:Gruppe
+|Tabelle ab Spalte
+|Optionscode
+|Nummer Sachmerkmalsleiste
+
+|2
+|Feldname
+|Feldname@Feldoption
+|Feldname
+|S.Feldname aus Sachmerkmalsleiste
+
+|3 (Datensatz 1)
+|Wert 1
+|Wert 2
+|Wert 3
+|Wert Sachmerkmalsleiste
+
+|4 (Datensatz 2)
+|Wert 1
+|Wert 2
+|Wert 3
+|Wert Sachmerkmalsleiste
+
+| ..
+| ..
+| ..
+| ..
+| ..
+|===
+
+=== Feldbeschreibungen
+
+. Datenbank:Gruppe (Feld 1:A) +
+
+    Angabe der Datenbank mit der entsprechenden Gruppe.
+    Beispiel: `Teil:Artikel` oder `2:1`. Alternativ kann auch das Tipp-Kommando als Nummer angegeben werden.
+    Dieses Feld müssen Sie in Excel als Textfeld formatieren.
++
+
+[CAUTION]
+====
+Achtung bei Tippkommandos: +
+Verwenden Sie die komplette Bezeichnung des Tippkommandos: `Lbuchung` (nicht `lbuch`). +
+Prüfen Sie ggf. die Schreibweise mit dem FOP KOMLIST.
+====
+. Tabelle ab Spalte +
+    Angabe, ab welcher Spalte Tabellendaten vorhanden sind. +
+    Die Zählung beginnt ab 1. Ist in der Spalte "E" der erste Wert für
+    ein Tabellenfeld vorhanden, so wird diese Zelle mit 5 beschrieben. +
+    Sind keine Tabellenfelder zu importieren, so muss das Feld mit 0 beschrieben werden.
+
+. Optionscode +
+    In Zeile1/Spalte C können sie einen Optionscode angeben. Dieser belegt die
+    Importoptionen dieses Infosystems vor. Die verschiedenen Optionen werden unter Punkt 6. Feldname@feldoption beschrieben.
+
+. SML-Sachmerkmalsleiste +
+    Für den Fall, dass Daten für eine Sachmerkmalsleiste eingelesen werden sollen, geben Sie hier die Nummer der Sachmerkmalsleiste ein.
+
+. Feldnamen +
+    In Zeile2 ab SpalteB werden die Feldnamen der abas Felder der darunter folgenden
+    Daten deklariert. Dies erfolgt über über die zuständige Person, welche dieses Infosystem administriert. Das heißt, diese Zeile ist die Schlüsselung der
+    Daten zu abas Feldern und stellt zugleich die Reihenfolge des Datenimports
+    dar.
+
+. Feldname@feldoption +
+    An den Feldnamen kann eine Feldoption angefügt werden.
+    Diese Optionen verändern das Verhalten beim Schreiben dieses Feldes.
+    Folgende Feldoptionen sind verfügbar:
+* @notempty: +
+        Mit dieser Option wird zuerst geprüft, ob der zu schreibende Wert leer ist.
+        Ist dies der Fall, wird kein Wert in dieses Feld geschrieben.
+        Damit kann das unbeabsichtigte Löschen von Feldern verhindert werden.
+
+* @modifiable: +
+        Mit dieser Option wird vor dem Beschreiben des Feldes geprüft, ob dieses editierbar ist.
+        Ist dies nicht der Fall, kommt es ohne diese Option zum Fehler beim Schreiben des Datensatzes.
+
+* @skip: +
+        Ist diese Option angegeben, wird die komplette Spalte ignoriert.
+
+* @Schlüssel: +
+        Über den hier definierten Feldnamen wird in der Datenbank
+        nach einem schon existierenden Datensatz gesucht. Mit "@" kann für diese
+        Datenselektion ein Schlüssel mitgegeben werden.
+
+* @dontChangeIfEqual: +
+        Mit dieser Option wird für die markierten Felder das Verhalten des STORE-MODUS simuliert.
+        Wenn das zu beschreibende Feld den gleichen Inhalt hat wie der zu schreibende Wert, wird das Feld nicht neu beschrieben.
+
+* @selection: +
+        Mit dieser Option kann für ein zu beschreibendes Verweisfeld eine Selektion angegeben werden.
+        Syntax: @selection=''
+        Bei dem Selektionsausdruck können Sie einen Wert durch den Ausdruck `{0}` mit dem Wert aus dem Feld ersetzen. +
+        Beispiel: Feld staat bei Kunde: `staat@selection='$,,iso3={0}'`. Im Feld steht `DEU`,
+        daraus ergibt sich eine Selektion `$,,iso3=DEU`. Die  Sprache der Variablen wird über die Steuerung der Variablensprache im Infosystem gesteuert.
+        Das heißt, wenn englische Variablensprache eingestellt ist, dann muss der Ausdruck oben `stateOfTaxOffice@selection='$,,ctryCode3Char={0}'` heißen.
+
+* @keyselection: +
+        Mit dieser Option wird für die Selektion des Datensatzes eine selbstdefinierte Selektion verwendet. +
+        Syntax: @keyselection='<SelektionsString>' +
+        Beispiel: @keyselection='$,,alteIdent={0}'
+
+. Wert1 - Daten: +
+    Ab der 3. Zeile werden die Daten eingetragen. +
+    Die Daten müssen abas konform vorhanden sein. +
+    Ein "." in einem Datumsfeld bewirkt also den Eintrag des Tagesdatums im Datensatz in abas ERP. +
+    Wird ein Datum mit 4 stelliger Jahreszahl dargestellt, das Datenfeld aber in abas mit 2-stelliger Jahreszahl definiert,
+    so scheitert der Import. +
+    Mehrzeilige Texte werden abas konform behandelt, das heißt ein Zeilenvorschub wird mit ";" im Text erreicht.

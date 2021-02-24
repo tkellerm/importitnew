@@ -1,0 +1,107 @@
+:docinfo:
+= abas Importit Toolkit
+
+<<../index.adoc#, Dokumentation>>
+
+
+== Änderungshistorie
+
+
+* Version 1.0: Erste veröffentlichte Version
+
+* Version 1.1:
+
+. Bugfix: Wenn Option "Datensätze anzeigen" gewählt wurde, so wurde bei einem erfolgreichen Import die Fehlerinfo in der Zeile nicht gelöscht.
+Somit war ein Fehler eines Imports zuvor immer noch sichtbar
+. @skip in feldnamen eingeführt -> übergehen der Spalte
+. Versionsfeld eingeführt - Ruhe mit "Welche Version kann was?"
+. erste version für subeditor.-> klappt aber noch nicht
+
+* Version 1.2:
+
+. Bugfix - > Importzähler korrigiert
+. Es wird nicht mehr nach Import jeder Tabellenzeile gespeichert. Erst beim nächsten Datensatz wird gespeichert! +
+=> Fibu Buchungen sind möglich zu importieren
+
+* Version 1.3
+
+. Bugfix -> "Datensätze immer neu Anlegen" funktionierte nicht - korrigiert!
+
+* Version 1.4
+
+. Option Modifiable eingeführt - Alle Felder werden optional auf "änderbar" geprüft
+. Optionen in Excel vorbelegbar über Zelle C1
+Binürcode wird angegeben und wird auch in IS angezeigt in neuem Feld!
+. Bugfix -> Auch ohne die Option "Datensätze anzeigen" wird im Fehlerfall die Zeileninfo bez. Selektion
+und Datensatzverweis korrekt dargestellt.
+. Bugfix -> Durch die ünderung des Speicherverhaltens in Version 1.2 wurde bei jedem Importfehler eine Java
+Exception ausgelüst. Dadurch wurden ab dieser Excelzeile keine weiteren Daten mehr importiert.
+. TABABSPALTE wird nun mit 0 vorbelegt, wenn in Excel File als Leere Zelle vorhanden
+. @modifiable als Spalten Option
+. Fehleranalyse mittels Maskenaufruf integriert.
+. @notempty als Spalten Option
+
+* Version 2.0
+
+. Umstieg auf das Framework POI
+. Der Import des neuen Excel-Format ist nun möglich
+
+* Version 2.1.0:
+
+. neuer Infosystemsuchwort Importit21
+. komplette Neuprogrammierung
+. neue Vorgehensweise: +
+Strukturprüfung
+** Prüfung, ob alle Variablen in der Excel-Tabelle auch in der Variablentabelle vorhanden sind.
+Daten prüfen
+** Es werden die Textfelder, Zahlen, Datums auf richtige Angaben geprüft.
+** Es werden bei normalen Verweis-Feldern geprüft, ob die entsprechenden Datensütze vorhanden sind
+** Multiverweisfelder: +
+Typ VPK1 wird auch geprüft, die anderen werden gerade nicht geprüft,
+. neue Feldoption: +
+@dontChangeIfEqual : Beschreibung siehe in der Dokumentation
+. Option zum Verarbeiten von den englischen Variablennamen
+
+* Version 3.0.1:
+
+. Schnelleres Handling der EDPSessions
+. neue Option @keyselection
+. neue Option @selection
+
+* Version 3.0.2:
+
+. SML-Verarbeitung
+. Fortschrittsanzeige
+
+* Version 3.0.3:
+
+** Verarbeitung von Lagergruppeneigenschaften
+
+* Version 3.0.4:
+
+** Fehler bei cantSaveException behoben.
+
+* Version 3.0.5:
+
+** Parallelisierung von der Datenprüfung
+
+* Version 4.0
+
+** Auslieferung als abas Importit Toolkit über registry.abas.sh
+** Dokumentation in documentation.abas.cloud
+** Version aus dem Suchwort des Infosystems entfernt.
+** Aufruf der Dokumentation in documentation.abas.cloud über den Button in der Maske und nicht mehr aus dem Verzeichnis `win/tmp`
+** Anzeige der wirklich gebauten Version in der Maske
+** Umstellung der Version auf die Semantik MainVersion.MinorVersion.abasVersion
+** Umzug des Repositories nach Bitbucket.
+
+
+:nofooter:
+
+
+== About
+
+abas Importit Toolkit +
+(C) abas Software GmbH
+
+https://www.abas-erp.com/

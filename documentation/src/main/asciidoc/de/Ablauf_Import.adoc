@@ -1,0 +1,38 @@
+== Ablauf des Imports
+
+. Legen Sie die Datei in einer vom Mandanten erreichbaren Samba-Freigabe ab.
++
+
+NOTE: z.B.: win/tmp/
+
+. Geben Sie das Passwort für den Mandanten ein. +
+neues Bild für Passwort.
+
+. Datei eintragen: +
+Tragen Sie nun im Infosystem Data Import Toolkit (IMPORTIT) den Pfad und den Namen der Excel-Datei im Feld "Import Excel File" ein. +
+neues Bild für Passwort
++
+
+[NOTE]
+====
+z.B.: win/tmp/part.xlsx
+====
+
+. Struktur prüfen: +
+Die Daten aus der Excel-Datei werden gelesen und die folgenden Prüfungen durchgeführt:
+* Angabe zu Datenbank bzw. Tippkommando plausibel.
+* Variablen in der angegebenen Datenbank bzw. Tippkommando vorhanden.
+
+. Daten prüfen: +
+In der Excel-Tabelle werden die einzelnen Daten auf die folgenden Punkte geprüft:
+
+* Verweisfelder: Sind die übergebenen Werte in der entsprechenden Datenbank vorhanden?
+* Multiverweisfelder: Siehe Verweisfelder. Allerdings ist dies derzeit nur für den Typ VPK1 umgesetzt.
+* Textfelder: Passt der Übergabewert mit seiner Länge in das entsprechende Feld?
+* Integer-Felder: Richtige Anzahl Vorkommastellen?
+* Real-Felder: Richtige Anzahl von Vor- und Nachkommastellen?
+* Datums-Felder: Kann der Wert in ein abas Datum (Schreibweise siehe Onlinehilfe) umgewandelt werden?
+* Zeitraum-Felder: Kann der Wert in einen abas Zeitraum umgewandelt werden?
+
+. Daten importieren: +
+Beim Importieren der Daten werden die einzelnen Datensätze in dem EDP-Modus NEW bzw. UPDATE in die Datenbank geschrieben.
