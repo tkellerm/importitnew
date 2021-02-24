@@ -19,7 +19,7 @@ fi
 
 if [[ $CODEBUILD_WEBHOOK_HEAD_REF == *"2018"* ]]; then
   export ABAS_VERSION=2018
-  export USE_ERP_VERSION="2018r4n14p46"
+  export USE_ERP_VERSION="2018r4n14p45"
 fi
 
 if [[ $CODEBUILD_WEBHOOK_HEAD_REF == *"2017"* ]]; then
