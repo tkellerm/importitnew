@@ -1,4 +1,4 @@
-V#22
+V#21
 K#0#IMPORTIT#abas Data Import Toolkit#(65)#isrein/screen.OWIMPORTIT.IMPORTIT#25B.1##
 K#(0)#(0)#4000088##0#0#InfosystemImportit#1
 K#0#(1)#
@@ -141,4 +141,4 @@ Z#2#isyimportiert#B#1#importiert#(65)#(65)#(0)######1#1#1#0##1##
 Z#2#isyfehlerda#B#1#Fehler vorhanden#(65)#(65)#(0)######1#1#1#0##1##
 Z#2#isyicon#DV1#1#icon#(65)#(65)#(0)######1#1#1#0##1##
 Z#2#isyiconz#DVZ1#1#icon#(65)#(65)#(0)######0#3#0#0##0##
-Z#2#isykomtext#TN4#1#Fehlerreport#(65)#(65)#(1)######1#1#1#0##1##
+Z#2#isykomtext#TN#1#Fehlerreport#(65)#(65)#(1)######1#1#1#0##1##
